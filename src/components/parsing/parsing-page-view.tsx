@@ -1,14 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
+import {
+  AnalyzeClientError,
+  clearPendingAnalyzeTextStorage,
+  postAnalyze,
+  writeLastAnalyzeResultToSession,
+} from "@/lib/analyze-client";
 import {
   r2aCardBorder,
   r2aCardRadius,
   r2aCardShadow,
   r2aPageShell1020,
 } from "@/lib/r2a-ui-classes";
+import { R2A_SESSION_PENDING_ANALYZE_TEXT_KEY } from "@/types/analyze-api";
 import { cn } from "@/lib/utils";
 
 const STEP_LABELS = [
@@ -26,9 +40,29 @@ const FINAL_PAUSE_BEFORE_REDIRECT_MS = 600;
 
 export function ParsingPageView() {
   const router = useRouter();
+  const routerRef = useRef(router);
+  useLayoutEffect(() => {
+    routerRef.current = router;
+  }, [router]);
+
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  /** 0～3：第 1～4 步依次为「进行中」；仅用于 UI，取消时不再更新 */
+  const abortRef = useRef<AbortController | null>(null);
+  const cancelledRef = useRef(false);
+  const textRef = useRef("");
+  const resultRef = useRef<Awaited<ReturnType<typeof postAnalyze>> | null>(
+    null,
+  );
+  const stepsCompleteRef = useRef(false);
+  /** 与 useEffect 世代对齐：StrictMode cleanup / 取消解析 时递增，丢弃过期异步与定时器回调 */
+  const commitRef = useRef(0);
+  /** 同一时刻最多一个 in-flight POST /api/analyze */
+  const inFlightRef = useRef(false);
+
   const [phase, setPhase] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [canRetry, setCanRetry] = useState(false);
+
+  const innerRetryRef = useRef<(() => void) | null>(null);
 
   const steps = useMemo(() => {
     return STEP_LABELS.map((label, i) => {
@@ -40,37 +74,158 @@ export function ParsingPageView() {
     });
   }, [phase]);
 
-  const clearAllTimeouts = useCallback(() => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-  }, []);
-
   useEffect(() => {
-    const schedule = (fn: () => void, ms: number) => {
-      const id = setTimeout(fn, ms);
-      timeoutsRef.current.push(id);
+    const myCommit = ++commitRef.current;
+    cancelledRef.current = false;
+
+    const clearTimeouts = () => {
+      timeoutsRef.current.forEach(clearTimeout);
+      timeoutsRef.current = [];
     };
 
-    timeoutsRef.current = [];
-    schedule(() => setPhase(1), STEP_ADVANCE_MS * 1);
-    schedule(() => setPhase(2), STEP_ADVANCE_MS * 2);
-    schedule(() => setPhase(3), STEP_ADVANCE_MS * 3);
-    schedule(
-      () => {
-        router.push("/result");
-      },
-      STEP_ADVANCE_MS * 4 + FINAL_PAUSE_BEFORE_REDIRECT_MS,
-    );
+    const tryNavigate = () => {
+      if (cancelledRef.current) return;
+      if (commitRef.current !== myCommit) return;
+      const result = resultRef.current;
+      if (!result || !stepsCompleteRef.current) return;
+      clearPendingAnalyzeTextStorage();
+      writeLastAnalyzeResultToSession(result);
+      routerRef.current.push("/result");
+    };
+
+    const scheduleStepTimers = () => {
+      clearTimeouts();
+      stepsCompleteRef.current = false;
+      setPhase(0);
+      const schedule = (fn: () => void, ms: number) => {
+        const id = setTimeout(() => {
+          if (cancelledRef.current) return;
+          if (commitRef.current !== myCommit) return;
+          fn();
+        }, ms);
+        timeoutsRef.current.push(id);
+      };
+      schedule(() => setPhase(1), STEP_ADVANCE_MS * 1);
+      schedule(() => setPhase(2), STEP_ADVANCE_MS * 2);
+      schedule(() => setPhase(3), STEP_ADVANCE_MS * 3);
+      schedule(() => {
+        stepsCompleteRef.current = true;
+        tryNavigate();
+      }, STEP_ADVANCE_MS * 4 + FINAL_PAUSE_BEFORE_REDIRECT_MS);
+    };
+
+    const runFetchOnce = async (signal: AbortSignal) => {
+      if (inFlightRef.current) return;
+      const text = textRef.current.trim();
+      if (!text) return;
+      inFlightRef.current = true;
+      try {
+        const res = await postAnalyze(
+          { text, requestId: crypto.randomUUID() },
+          { signal },
+        );
+        if (cancelledRef.current) return;
+        if (commitRef.current !== myCommit) return;
+        resultRef.current = res;
+        tryNavigate();
+      } catch (e: unknown) {
+        if (cancelledRef.current) return;
+        if (commitRef.current !== myCommit) return;
+        if (e instanceof Error && e.name === "AbortError") return;
+        resultRef.current = null;
+        clearTimeouts();
+        clearPendingAnalyzeTextStorage();
+        const msg =
+          e instanceof AnalyzeClientError
+            ? e.message
+            : "解析失败，请稍后重试。";
+        queueMicrotask(() => {
+          if (commitRef.current !== myCommit) return;
+          setError(msg);
+        });
+      } finally {
+        inFlightRef.current = false;
+      }
+    };
+
+    const readPendingText = (): string => {
+      try {
+        return (
+          sessionStorage.getItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY)?.trim() ??
+          ""
+        );
+      } catch {
+        return "";
+      }
+    };
+
+    const beginRun = () => {
+      const text = readPendingText();
+      if (!text) {
+        queueMicrotask(() => {
+          if (commitRef.current !== myCommit) return;
+          setCanRetry(false);
+          setError("未找到待解析内容，请返回首页重新输入。");
+        });
+        return;
+      }
+      textRef.current = text;
+      queueMicrotask(() => {
+        if (commitRef.current !== myCommit) return;
+        setCanRetry(true);
+        setError(null);
+        resultRef.current = null;
+        stepsCompleteRef.current = false;
+        abortRef.current?.abort();
+        abortRef.current = new AbortController();
+        scheduleStepTimers();
+        void runFetchOnce(abortRef.current.signal);
+      });
+    };
+
+    const innerRetry = () => {
+      if (!textRef.current.trim()) return;
+      if (inFlightRef.current) return;
+      setError(null);
+      resultRef.current = null;
+      stepsCompleteRef.current = false;
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+      scheduleStepTimers();
+      void runFetchOnce(abortRef.current.signal);
+    };
+
+    innerRetryRef.current = innerRetry;
+    beginRun();
 
     return () => {
-      clearAllTimeouts();
+      commitRef.current += 1;
+      cancelledRef.current = true;
+      abortRef.current?.abort();
+      clearTimeouts();
+      innerRetryRef.current = null;
     };
-  }, [router, clearAllTimeouts]);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    if (!canRetry) return;
+    innerRetryRef.current?.();
+  }, [canRetry]);
 
   const handleCancel = useCallback(() => {
-    clearAllTimeouts();
+    commitRef.current += 1;
+    cancelledRef.current = true;
+    abortRef.current?.abort();
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+    clearPendingAnalyzeTextStorage();
     router.push("/");
-  }, [router, clearAllTimeouts]);
+  }, [router]);
+
+  const handleGoHome = useCallback(() => {
+    clearPendingAnalyzeTextStorage();
+    router.push("/");
+  }, [router]);
 
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
@@ -96,6 +251,39 @@ export function ParsingPageView() {
             取消解析
           </button>
         </header>
+
+        {error ? (
+          <div
+            className="mb-4 rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[14px] text-[#991B1B]"
+            role="alert"
+          >
+            <p>{error}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {canRetry ? (
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className={cn(
+                    "inline-flex min-h-[40px] items-center justify-center rounded-lg border border-[#E5E7EB] bg-white px-4 text-[14px] font-medium text-[#363636]",
+                    "hover:bg-[#FAFAFC]",
+                  )}
+                >
+                  重试
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={handleGoHome}
+                className={cn(
+                  "inline-flex min-h-[40px] items-center justify-center rounded-lg border border-[#E5E7EB] bg-white px-4 text-[14px] font-medium text-[#363636]",
+                  "hover:bg-[#FAFAFC]",
+                )}
+              >
+                返回首页
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         <nav
           className="flex flex-wrap items-center gap-4"

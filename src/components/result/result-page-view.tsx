@@ -1,7 +1,7 @@
 "use client";
 
 import { Download, Link2, Pencil, Trash2 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { SaveToProjectDialog } from "./save-to-project-dialog";
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { mockParseResult } from "@/data/result.mock";
+import { readLastAnalyzeResultFromSession } from "@/lib/analyze-client";
 import type { KnowledgeCard, ParseResultPreview } from "@/types";
 
 import {
@@ -92,13 +93,33 @@ function SectionCard({
 }
 
 export function ResultPageView({ data }: { data?: ParseResultPreview }) {
-  const d = data ?? mockParseResult;
+  const [d, setD] = useState<ParseResultPreview>(() => data ?? mockParseResult);
+
+  useEffect(() => {
+    if (data) {
+      queueMicrotask(() => setD(data));
+      return;
+    }
+    const fromSession = readLastAnalyzeResultFromSession();
+    if (fromSession) queueMicrotask(() => setD(fromSession));
+  }, [data]);
+
   const [tab, setTab] = useState<TabId>("summary");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogResetKey, setSaveDialogResetKey] = useState(0);
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(d.actionItems.map((a) => [a.id, a.isDone])),
+    Object.fromEntries(
+      (data ?? mockParseResult).actionItems.map((a) => [a.id, a.isDone]),
+    ),
   );
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setChecks(
+        Object.fromEntries(d.actionItems.map((a) => [a.id, a.isDone])),
+      );
+    });
+  }, [d]);
 
   const doneCount = useMemo(
     () => d.actionItems.filter((a) => checks[a.id]).length,

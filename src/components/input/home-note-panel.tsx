@@ -6,6 +6,7 @@ import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { ModelSelect } from "@/components/ui/model-select";
+import { R2A_SESSION_PENDING_ANALYZE_TEXT_KEY } from "@/types/analyze-api";
 import {
   r2aBtnPrimary,
   r2aCardBorder,
@@ -36,6 +37,11 @@ export function HomeNotePanel() {
     if (!value.trim()) {
       toast.info("请输入内容后再解析");
       return;
+    }
+    try {
+      sessionStorage.setItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY, value.trim());
+    } catch {
+      // 隐私模式等：仍进入 /parsing，由解析页提示无正文
     }
     router.push("/parsing");
   }, [router, value]);
