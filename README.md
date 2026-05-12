@@ -1,5 +1,29 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## AI 分析接口（1.1 服务端）
+
+`POST /api/analyze` 为 **服务端** OpenAI-compatible `chat/completions` 封装；密钥 **仅** 通过环境变量在服务端读取，**不会**进入客户端 bundle。
+
+### 环境变量
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `AI_API_KEY` | 是 | Bearer Token，对应兼容接口的 API Key |
+| `AI_MODEL` | 是 | 模型 id，如 `gpt-4o-mini` |
+| `AI_BASE_URL` | 否 | 兼容网关根 URL；**未设置**时默认 `https://api.openai.com/v1`（将请求 `…/chat/completions`） |
+
+复制仓库根目录 [`.env.example`](./.env.example) 为 `.env.local` 并填写；**切勿**将含真实密钥的文件提交到 Git。
+
+### curl 示例
+
+```bash
+curl -sS -X POST "http://localhost:3000/api/analyze" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"这里是一段需要解析的纯文本……"}'
+```
+
+成功时 HTTP `200`，JSON 含 `ok: true` 与 `data`（结构化结果）。错误时见接口返回的 `ok: false` 与 `error.code`。
+
 ## Getting Started
 
 First, run the development server:
