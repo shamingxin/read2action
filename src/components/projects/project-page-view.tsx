@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Folder, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,6 +17,10 @@ import {
   r2aPlusCircleButton,
   r2aSurfaceShadow,
 } from "@/lib/r2a-ui-classes";
+import {
+  readAllLocalSavedNotes,
+  R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
+} from "@/lib/local-saved-notes";
 import { cn } from "@/lib/utils";
 
 const TYPE_LABEL: Record<SourceType, string> = {
@@ -39,6 +43,23 @@ function formatListDate(iso: string) {
   }
 }
 
+function sortNotesByUpdatedDesc(list: Note[]): Note[] {
+  return [...list].sort(
+    (a, b) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  );
+}
+
+function mergeServerAndLocalNotes(projectId: string, serverNotes: Note[]): Note[] {
+  const localForProject = readAllLocalSavedNotes().filter(
+    (n) => n.projectId === projectId,
+  );
+  const byId = new Map<string, Note>();
+  for (const n of serverNotes) byId.set(n.id, n);
+  for (const n of localForProject) byId.set(n.id, n);
+  return sortNotesByUpdatedDesc([...byId.values()]);
+}
+
 export function ProjectPageView({
   project,
   notes,
@@ -49,6 +70,24 @@ export function ProjectPageView({
   const router = useRouter();
   const [quickInput, setQuickInput] = useState("");
   const [model, setModel] = useState<string>("sonnet-4.6");
+  const [mergedNotes, setMergedNotes] = useState<Note[]>(() =>
+    sortNotesByUpdatedDesc(notes),
+  );
+
+  useEffect(() => {
+    const recompute = () =>
+      queueMicrotask(() =>
+        setMergedNotes(mergeServerAndLocalNotes(project.id, notes)),
+      );
+    recompute();
+    const bump = () => recompute();
+    window.addEventListener(R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, [notes, project.id]);
 
   const canSubmit = quickInput.trim().length > 0;
 
@@ -59,15 +98,6 @@ export function ProjectPageView({
     }
     router.push("/parsing");
   }, [quickInput, router]);
-
-  const sortedNotes = useMemo(
-    () =>
-      [...notes].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      ),
-    [notes],
-  );
 
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
@@ -149,13 +179,13 @@ export function ProjectPageView({
               <span className="text-right">操作</span>
             </div>
 
-            {sortedNotes.length === 0 ? (
+            {mergedNotes.length === 0 ? (
               <div className="px-4 py-10 text-center text-[14px] text-[#939393]">
                 该项目下暂无笔记
               </div>
             ) : (
               <ul className="divide-y divide-[#E5E7EB]">
-                {sortedNotes.map((note) => (
+                {mergedNotes.map((note) => (
                   <li key={note.id}>
                     <div
                       role="link"
@@ -223,7 +253,7 @@ export function ProjectPageView({
 
           <footer className="flex flex-col gap-2 text-[12px] text-[#939393] sm:flex-row sm:items-center sm:justify-between">
             <span>
-              显示 1–{sortedNotes.length} 条，共 {sortedNotes.length} 条
+              显示 1–{mergedNotes.length} 条，共 {mergedNotes.length} 条
             </span>
             <div className="flex items-center gap-2">
               <span className="rounded-md border border-[#E5E7EB] bg-white px-2 py-1 text-[#363636]">

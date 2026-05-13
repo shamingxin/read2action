@@ -15,6 +15,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { mockProjects } from "@/data/projects.mock";
+import { readLastAnalyzeResultFromSession } from "@/lib/analyze-client";
+import {
+  appendOrUpsertLocalSavedNote,
+  dispatchLocalSavedNotesChanged,
+} from "@/lib/local-saved-notes";
+import { buildNoteFromLastAnalyze } from "@/lib/note-from-last-analyze";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -22,14 +28,44 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
+function newNoteId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 export function SaveToProjectDialog({ open, onOpenChange }: Props) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState("sha");
 
   const handleConfirm = () => {
+    const preview = readLastAnalyzeResultFromSession();
+    if (!preview) {
+      toast.error("未找到本次解析结果，请重新解析后再保存。");
+      return;
+    }
+    const noteId = newNoteId();
+    const savedAtIso = new Date().toISOString();
+    const note = buildNoteFromLastAnalyze({
+      preview,
+      projectId: selectedId,
+      noteId,
+      savedAtIso,
+    });
+    if (!note) {
+      toast.error("解析结果不完整，无法保存。");
+      return;
+    }
+    const result = appendOrUpsertLocalSavedNote(note);
+    if (!result.ok) {
+      toast.error(result.reason);
+      return;
+    }
+    dispatchLocalSavedNotesChanged();
     onOpenChange(false);
     toast.success("已保存到项目");
-    router.push(`/projects/${selectedId}`);
+    router.push(`/projects/${selectedId}/notes/${noteId}`);
   };
 
   return (
@@ -42,7 +78,7 @@ export function SaveToProjectDialog({ open, onOpenChange }: Props) {
           <DialogHeader>
             <DialogTitle>保存到项目</DialogTitle>
             <DialogDescription className="whitespace-nowrap">
-              选择要保存到的项目。当前为演示数据，不会真实写入。
+              将当前解析结果保存在本浏览器（刷新后仍可见）。
             </DialogDescription>
           </DialogHeader>
         </div>

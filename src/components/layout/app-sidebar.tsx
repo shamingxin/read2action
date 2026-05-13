@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Folder,
   FolderPlus,
@@ -21,14 +22,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { mockNotes } from "@/data/notes.mock";
 import { mockProjects } from "@/data/projects.mock";
+import {
+  readAllLocalSavedNotes,
+  R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
+} from "@/lib/local-saved-notes";
 import { cn } from "@/lib/utils";
+import type { Note } from "@/types";
 
-const recentNotes = [...mockNotes]
-  .sort(
-    (a, b) =>
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  )
-  .slice(0, 4);
+function mockRecentSlice(): Note[] {
+  return [...mockNotes]
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )
+    .slice(0, 4);
+}
+
+function mergeRecentNotes(): Note[] {
+  const local = readAllLocalSavedNotes();
+  return [...mockNotes, ...local]
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )
+    .slice(0, 4);
+}
 
 const NEW_PROJECT_ENTRY_ID = "new";
 
@@ -56,6 +74,20 @@ function NavItem({
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [recentNotes, setRecentNotes] = useState<Note[]>(mockRecentSlice);
+
+  useEffect(() => {
+    queueMicrotask(() => setRecentNotes(mergeRecentNotes()));
+    const bump = () =>
+      queueMicrotask(() => setRecentNotes(mergeRecentNotes()));
+    window.addEventListener(R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
+
   const newEntry = mockProjects.find((p) => p.id === NEW_PROJECT_ENTRY_ID);
   const linkProjects = mockProjects.filter((p) => p.id !== NEW_PROJECT_ENTRY_ID);
 

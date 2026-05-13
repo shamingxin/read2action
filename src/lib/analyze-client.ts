@@ -4,6 +4,9 @@ import type {
   AnalyzeSuccessResponse,
 } from "@/types/analyze-api";
 import {
+  R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
+  R2A_SESSION_ANALYZE_RUN_ID_KEY,
+  R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
   R2A_SESSION_LAST_ANALYZE_RESULT_KEY,
   R2A_SESSION_PENDING_ANALYZE_TEXT_KEY,
 } from "@/types/analyze-api";
@@ -24,10 +27,94 @@ export class AnalyzeClientError extends Error {
 
 const DEFAULT_ANALYZE_TIMEOUT_MS = 30_000;
 
-/** 从 sessionStorage 移除待解析正文（成功 / 失败 / 取消后调用，避免再次进入 /parsing 自动打 API） */
+/**
+ * 从 sessionStorage 移除待解析正文。
+ * 调用时机（与 `/parsing` 一致）：解析成功、已写入 `lastAnalyzeResult` 且准备 `push("/result")` **之前**清 pending；或用户点「取消解析」「返回首页」。不在 effect cleanup / fetch 发起前 / Abort 路径中调用。
+ * 不在 `postAnalyze` 失败 catch 中调用，以免 StrictMode / abort 竞态下误删 pending。
+ */
 export function clearPendingAnalyzeTextStorage(): void {
   try {
     sessionStorage.removeItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * `/parsing` 选用待解析正文：优先当前 sessionStorage；若为空则回退到 ref 内已同步的正文。
+ * 用于 StrictMode 双次 effect 或 storage 短暂读空时，避免误判「无正文」而跳过 `postAnalyze`。
+ */
+export function pickPendingAnalyzeTextForRun(
+  fromSessionStorage: string,
+  cachedFromRef: string,
+): string {
+  const a = fromSessionStorage.trim();
+  const b = cachedFromRef.trim();
+  return (a || b).trim();
+}
+
+function analyzeAutoSlotValue(runId: string, attemptId: string): string {
+  return `${runId}|${attemptId}`;
+}
+
+export function readAnalyzeRunIdFromSession(): string {
+  try {
+    return sessionStorage.getItem(R2A_SESSION_ANALYZE_RUN_ID_KEY)?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function readAnalyzeAttemptIdFromSession(): string {
+  try {
+    return (
+      sessionStorage.getItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY)?.trim() ?? ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * 自动路径（非重试）：同一 `runId|attemptId` 在 tab 内只允许占用一次，用于 StrictMode / 重挂载防重复 POST。
+ * @returns true 表示本次可继续发起 `postAnalyze`；false 表示已占用，应跳过。
+ */
+export function tryTakeAutoAnalyzeSessionSlot(
+  runId: string,
+  attemptId: string,
+): boolean {
+  if (!runId || !attemptId) return true;
+  try {
+    const want = analyzeAutoSlotValue(runId, attemptId);
+    const cur = sessionStorage.getItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
+    if (cur === want) return false;
+    sessionStorage.setItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY, want);
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+/** 用户点「重试」：新 attempt，使自动槽与下一次 POST 对齐 */
+export function bumpAnalyzeAttemptForRetry(): string {
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  try {
+    sessionStorage.setItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY, id);
+  } catch {
+    /* ignore */
+  }
+  return id;
+}
+
+/** 成功离开 /parsing、取消、回首页时移除 run / attempt / 自动槽（不含 pending，pending 由调用方清） */
+export function clearAnalyzeRunSessionLocks(): void {
+  try {
+    sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
+    sessionStorage.removeItem(R2A_SESSION_ANALYZE_RUN_ID_KEY);
+    sessionStorage.removeItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY);
   } catch {
     /* ignore */
   }

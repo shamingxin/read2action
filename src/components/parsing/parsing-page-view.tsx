@@ -12,8 +12,14 @@ import {
 
 import {
   AnalyzeClientError,
+  bumpAnalyzeAttemptForRetry,
+  clearAnalyzeRunSessionLocks,
   clearPendingAnalyzeTextStorage,
+  pickPendingAnalyzeTextForRun,
   postAnalyze,
+  readAnalyzeAttemptIdFromSession,
+  readAnalyzeRunIdFromSession,
+  tryTakeAutoAnalyzeSessionSlot,
   writeLastAnalyzeResultToSession,
 } from "@/lib/analyze-client";
 import {
@@ -22,7 +28,12 @@ import {
   r2aCardShadow,
   r2aPageShell1020,
 } from "@/lib/r2a-ui-classes";
-import { R2A_SESSION_PENDING_ANALYZE_TEXT_KEY } from "@/types/analyze-api";
+import {
+  R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
+  R2A_SESSION_ANALYZE_RUN_ID_KEY,
+  R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
+  R2A_SESSION_PENDING_ANALYZE_TEXT_KEY,
+} from "@/types/analyze-api";
 import { cn } from "@/lib/utils";
 
 const STEP_LABELS = [
@@ -37,6 +48,13 @@ type StepState = "done" | "current" | "upcoming";
 /** 四步依次 current：约每步 950ms，最后一步展示后再跳转，总时长约 4.2s */
 const STEP_ADVANCE_MS = 950;
 const FINAL_PAUSE_BEFORE_REDIRECT_MS = 600;
+
+function isAbortError(e: unknown): boolean {
+  return (
+    (e instanceof DOMException && e.name === "AbortError") ||
+    (e instanceof Error && e.name === "AbortError")
+  );
+}
 
 export function ParsingPageView() {
   const router = useRouter();
@@ -57,6 +75,10 @@ export function ParsingPageView() {
   const commitRef = useRef(0);
   /** 同一时刻最多一个 in-flight POST /api/analyze */
   const inFlightRef = useRef(false);
+  /** A：setTimeout(0) 启动自动解析的句柄，cleanup 必须 clearTimeout（浏览器下为 number） */
+  const autoBootTimerRef = useRef<number | null>(null);
+  /** B：自动路径宏任务回调是否已执行（cleanup 复位，避免残留 + StrictMode 第二轮） */
+  const autoBootRanRef = useRef(false);
 
   const [phase, setPhase] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -88,8 +110,10 @@ export function ParsingPageView() {
       if (commitRef.current !== myCommit) return;
       const result = resultRef.current;
       if (!result || !stepsCompleteRef.current) return;
-      clearPendingAnalyzeTextStorage();
+      // 成功且请求已结束：先落结果 → 清 pending（仅此时）→ 再跳转 /result；不在 cleanup / abort / catch 中清 pending
       writeLastAnalyzeResultToSession(result);
+      clearPendingAnalyzeTextStorage();
+      clearAnalyzeRunSessionLocks();
       routerRef.current.push("/result");
     };
 
@@ -114,10 +138,24 @@ export function ParsingPageView() {
       }, STEP_ADVANCE_MS * 4 + FINAL_PAUSE_BEFORE_REDIRECT_MS);
     };
 
-    const runFetchOnce = async (signal: AbortSignal) => {
+    const runFetchOnce = async (
+      signal: AbortSignal,
+      source: "auto" | "retry",
+    ) => {
       if (inFlightRef.current) return;
       const text = textRef.current.trim();
       if (!text) return;
+      if (source === "auto") {
+        const runId = readAnalyzeRunIdFromSession();
+        const attemptId = readAnalyzeAttemptIdFromSession();
+        if (
+          runId &&
+          attemptId &&
+          !tryTakeAutoAnalyzeSessionSlot(runId, attemptId)
+        ) {
+          return;
+        }
+      }
       inFlightRef.current = true;
       try {
         const res = await postAnalyze(
@@ -131,10 +169,10 @@ export function ParsingPageView() {
       } catch (e: unknown) {
         if (cancelledRef.current) return;
         if (commitRef.current !== myCommit) return;
-        if (e instanceof Error && e.name === "AbortError") return;
+        if (isAbortError(e)) return;
         resultRef.current = null;
         clearTimeouts();
-        clearPendingAnalyzeTextStorage();
+        // 解析失败不清 session pending：避免未发起/未完成 POST 时 key 被误删；重试依赖 textRef；仅成功 tryNavigate 或用户取消/回首页时清理。
         const msg =
           e instanceof AnalyzeClientError
             ? e.message
@@ -160,7 +198,10 @@ export function ParsingPageView() {
     };
 
     const beginRun = () => {
-      const text = readPendingText();
+      const text = pickPendingAnalyzeTextForRun(
+        readPendingText(),
+        textRef.current,
+      );
       if (!text) {
         queueMicrotask(() => {
           if (commitRef.current !== myCommit) return;
@@ -170,8 +211,36 @@ export function ParsingPageView() {
         return;
       }
       textRef.current = text;
-      queueMicrotask(() => {
+      try {
+        let runId = readAnalyzeRunIdFromSession();
+        let attemptId = readAnalyzeAttemptIdFromSession();
+        if (!runId || !attemptId) {
+          runId =
+            runId ||
+            (typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `${Date.now()}-r`);
+          attemptId =
+            attemptId ||
+            (typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `${Date.now()}-a`);
+          sessionStorage.setItem(R2A_SESSION_ANALYZE_RUN_ID_KEY, runId);
+          sessionStorage.setItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY, attemptId);
+          sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
+        }
+      } catch {
+        /* ignore */
+      }
+      if (autoBootTimerRef.current != null) {
+        clearTimeout(autoBootTimerRef.current);
+        autoBootTimerRef.current = null;
+      }
+      autoBootTimerRef.current = window.setTimeout(() => {
+        autoBootTimerRef.current = null;
         if (commitRef.current !== myCommit) return;
+        if (autoBootRanRef.current) return;
+        autoBootRanRef.current = true;
         setCanRetry(true);
         setError(null);
         resultRef.current = null;
@@ -179,20 +248,22 @@ export function ParsingPageView() {
         abortRef.current?.abort();
         abortRef.current = new AbortController();
         scheduleStepTimers();
-        void runFetchOnce(abortRef.current.signal);
-      });
+        void runFetchOnce(abortRef.current.signal, "auto");
+      }, 0);
     };
 
     const innerRetry = () => {
       if (!textRef.current.trim()) return;
       if (inFlightRef.current) return;
+      bumpAnalyzeAttemptForRetry();
+      autoBootRanRef.current = false;
       setError(null);
       resultRef.current = null;
       stepsCompleteRef.current = false;
       abortRef.current?.abort();
       abortRef.current = new AbortController();
       scheduleStepTimers();
-      void runFetchOnce(abortRef.current.signal);
+      void runFetchOnce(abortRef.current.signal, "retry");
     };
 
     innerRetryRef.current = innerRetry;
@@ -201,9 +272,16 @@ export function ParsingPageView() {
     return () => {
       commitRef.current += 1;
       cancelledRef.current = true;
+      if (autoBootTimerRef.current != null) {
+        clearTimeout(autoBootTimerRef.current);
+        autoBootTimerRef.current = null;
+      }
+      autoBootRanRef.current = false;
       abortRef.current?.abort();
+      inFlightRef.current = false;
       clearTimeouts();
       innerRetryRef.current = null;
+      // 刻意不调用 clearPendingAnalyzeTextStorage：StrictMode cleanup 只打断请求/定时器，不得删待解析正文
     };
   }, []);
 
@@ -215,15 +293,25 @@ export function ParsingPageView() {
   const handleCancel = useCallback(() => {
     commitRef.current += 1;
     cancelledRef.current = true;
+    if (autoBootTimerRef.current != null) {
+      clearTimeout(autoBootTimerRef.current);
+      autoBootTimerRef.current = null;
+    }
     abortRef.current?.abort();
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
     clearPendingAnalyzeTextStorage();
+    clearAnalyzeRunSessionLocks();
     router.push("/");
   }, [router]);
 
   const handleGoHome = useCallback(() => {
+    if (autoBootTimerRef.current != null) {
+      clearTimeout(autoBootTimerRef.current);
+      autoBootTimerRef.current = null;
+    }
     clearPendingAnalyzeTextStorage();
+    clearAnalyzeRunSessionLocks();
     router.push("/");
   }, [router]);
 

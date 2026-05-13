@@ -6,7 +6,12 @@ import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { ModelSelect } from "@/components/ui/model-select";
-import { R2A_SESSION_PENDING_ANALYZE_TEXT_KEY } from "@/types/analyze-api";
+import {
+  R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
+  R2A_SESSION_ANALYZE_RUN_ID_KEY,
+  R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
+  R2A_SESSION_PENDING_ANALYZE_TEXT_KEY,
+} from "@/types/analyze-api";
 import {
   r2aBtnPrimary,
   r2aCardBorder,
@@ -40,6 +45,11 @@ export function HomeNotePanel() {
     }
     try {
       sessionStorage.setItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY, value.trim());
+      const runId = crypto.randomUUID();
+      const attemptId = crypto.randomUUID();
+      sessionStorage.setItem(R2A_SESSION_ANALYZE_RUN_ID_KEY, runId);
+      sessionStorage.setItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY, attemptId);
+      sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
     } catch {
       // 隐私模式等：仍进入 /parsing，由解析页提示无正文
     }
