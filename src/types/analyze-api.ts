@@ -24,6 +24,10 @@ export const R2A_SESSION_LAST_ANALYZE_RESULT_KEY =
 export const R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY =
   "r2a:lastAnalyzeNoteId" as const;
 
+/** 项目页发起解析时写入的 projectId；`/parsing` 成功后用于自动归档 */
+export const R2A_SESSION_ANALYZE_PROJECT_ID_KEY =
+  "r2a:analyzeProjectId" as const;
+
 /** POST /api/analyze 请求体（与 docs/08 §6.1 对齐） */
 export interface AnalyzeRequestBody {
   text: string;

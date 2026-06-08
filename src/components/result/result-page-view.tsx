@@ -101,7 +101,9 @@ function SectionCard({
 
 export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   const [d, setD] = useState<ParseResultPreview>(() => data ?? mockParseResult);
-  const [showAutoSavedHint, setShowAutoSavedHint] = useState(false);
+  const [resultStatusHint, setResultStatusHint] = useState<
+    "temporary" | "project-saved" | null
+  >(null);
 
   useEffect(() => {
     if (data) {
@@ -115,15 +117,25 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   useEffect(() => {
     const noteId = readLastAnalyzeNoteIdFromSession();
     if (!noteId) {
-      queueMicrotask(() => setShowAutoSavedHint(false));
+      queueMicrotask(() => setResultStatusHint(null));
       return;
     }
     const note = findLocalSavedNoteById(noteId);
-    queueMicrotask(() =>
-      setShowAutoSavedHint(
-        note != null && resolveNoteSavedStatus(note) === "temporary",
-      ),
-    );
+    queueMicrotask(() => {
+      if (note == null) {
+        setResultStatusHint(null);
+        return;
+      }
+      if (resolveNoteSavedStatus(note) === "temporary") {
+        setResultStatusHint("temporary");
+        return;
+      }
+      if (note.sourceContext === "project") {
+        setResultStatusHint("project-saved");
+        return;
+      }
+      setResultStatusHint(null);
+    });
   }, [d]);
 
   const [tab, setTab] = useState<TabId>("summary");
@@ -238,12 +250,20 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
           </div>
         </header>
 
-        {showAutoSavedHint ? (
+        {resultStatusHint === "temporary" ? (
           <p
             className="mb-1 rounded-lg border border-[#E0E7FF] bg-[#EEF2FF] px-4 py-2.5 text-[13px] font-normal text-[#4338CA]"
             role="status"
           >
             已自动暂存，可保存到项目归档
+          </p>
+        ) : null}
+        {resultStatusHint === "project-saved" ? (
+          <p
+            className="mb-1 rounded-lg border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-2.5 text-[13px] font-normal text-[#047857]"
+            role="status"
+          >
+            已保存到项目
           </p>
         ) : null}
 

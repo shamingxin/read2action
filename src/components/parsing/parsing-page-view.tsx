@@ -10,15 +10,19 @@ import {
   useState,
 } from "react";
 
-import { autoSaveGlobalAnalyzeResult } from "@/lib/auto-save-analyze-result";
+import {
+  autoSaveGlobalAnalyzeResult,
+  autoSaveProjectAnalyzeResult,
+} from "@/lib/auto-save-analyze-result";
 import {
   AnalyzeClientError,
   bumpAnalyzeAttemptForRetry,
   clearAnalyzeRunSessionLocks,
-  clearPendingAnalyzeTextStorage,
+  clearPendingAnalyzeContextStorage,
   pickPendingAnalyzeTextForRun,
   postAnalyze,
   readAnalyzeAttemptIdFromSession,
+  readAnalyzeProjectIdFromSession,
   readAnalyzeRunIdFromSession,
   tryTakeAutoAnalyzeSessionSlot,
   writeLastAnalyzeResultToSession,
@@ -111,10 +115,15 @@ export function ParsingPageView() {
       if (commitRef.current !== myCommit) return;
       const result = resultRef.current;
       if (!result || !stepsCompleteRef.current) return;
-      // 成功且请求已结束：先落结果 → 自动暂存 → 清 pending（仅此时）→ 再跳转 /result；不在 cleanup / abort / catch 中清 pending
+      // 成功且请求已结束：先落结果 → 按来源自动落库 → 清 pending/project 上下文（仅此时）→ 再跳转 /result
       writeLastAnalyzeResultToSession(result);
-      autoSaveGlobalAnalyzeResult(result);
-      clearPendingAnalyzeTextStorage();
+      const projectId = readAnalyzeProjectIdFromSession();
+      if (projectId) {
+        autoSaveProjectAnalyzeResult(result, projectId);
+      } else {
+        autoSaveGlobalAnalyzeResult(result);
+      }
+      clearPendingAnalyzeContextStorage();
       clearAnalyzeRunSessionLocks();
       routerRef.current.push("/result");
     };
@@ -302,7 +311,7 @@ export function ParsingPageView() {
     abortRef.current?.abort();
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
-    clearPendingAnalyzeTextStorage();
+    clearPendingAnalyzeContextStorage();
     clearAnalyzeRunSessionLocks();
     router.push("/");
   }, [router]);
@@ -312,7 +321,7 @@ export function ParsingPageView() {
       clearTimeout(autoBootTimerRef.current);
       autoBootTimerRef.current = null;
     }
-    clearPendingAnalyzeTextStorage();
+    clearPendingAnalyzeContextStorage();
     clearAnalyzeRunSessionLocks();
     router.push("/");
   }, [router]);

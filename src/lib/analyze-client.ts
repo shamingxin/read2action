@@ -5,6 +5,7 @@ import type {
 } from "@/types/analyze-api";
 import {
   R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
+  R2A_SESSION_ANALYZE_PROJECT_ID_KEY,
   R2A_SESSION_ANALYZE_RUN_ID_KEY,
   R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
   R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY,
@@ -41,13 +42,36 @@ export function clearPendingAnalyzeTextStorage(): void {
   }
 }
 
+export function clearAnalyzeProjectIdFromSession(): void {
+  try {
+    sessionStorage.removeItem(R2A_SESSION_ANALYZE_PROJECT_ID_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 成功离开 /parsing 或用户取消时：清除待解析正文与项目来源上下文 */
+export function clearPendingAnalyzeContextStorage(): void {
+  clearPendingAnalyzeTextStorage();
+  clearAnalyzeProjectIdFromSession();
+}
+
+export type SeedPendingAnalyzeSessionOptions = {
+  projectId?: string;
+};
+
 /**
  * 首页 / 项目页进入 `/parsing` 前写入待解析正文与 run 锁。
  * 与 `/parsing` A+B+C 配套：每次新解析使用新的 runId / attemptId，并清除自动槽。
+ * 项目页传入 `projectId` 时写入，供成功后自动归档；全局入口不传并清除残留 projectId。
  */
-export function seedPendingAnalyzeSession(text: string): void {
+export function seedPendingAnalyzeSession(
+  text: string,
+  options?: SeedPendingAnalyzeSessionOptions,
+): void {
   const trimmed = text.trim();
   if (!trimmed) return;
+  const projectId = options?.projectId?.trim();
   try {
     sessionStorage.setItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY, trimmed);
     const runId =
@@ -61,8 +85,25 @@ export function seedPendingAnalyzeSession(text: string): void {
     sessionStorage.setItem(R2A_SESSION_ANALYZE_RUN_ID_KEY, runId);
     sessionStorage.setItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY, attemptId);
     sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
+    if (projectId) {
+      sessionStorage.setItem(R2A_SESSION_ANALYZE_PROJECT_ID_KEY, projectId);
+    } else {
+      sessionStorage.removeItem(R2A_SESSION_ANALYZE_PROJECT_ID_KEY);
+    }
   } catch {
     /* 隐私模式等：仍进入 /parsing，由解析页提示无正文 */
+  }
+}
+
+export function readAnalyzeProjectIdFromSession(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const id = sessionStorage
+      .getItem(R2A_SESSION_ANALYZE_PROJECT_ID_KEY)
+      ?.trim();
+    return id || null;
+  } catch {
+    return null;
   }
 }
 

@@ -7,7 +7,10 @@ import {
   appendOrUpsertLocalSavedNote,
   dispatchLocalSavedNotesChanged,
 } from "@/lib/local-saved-notes";
-import { buildTemporaryNoteFromLastAnalyze } from "@/lib/note-from-last-analyze";
+import {
+  buildNoteFromLastAnalyze,
+  buildTemporaryNoteFromLastAnalyze,
+} from "@/lib/note-from-last-analyze";
 
 function newNoteId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -30,6 +33,34 @@ export function autoSaveGlobalAnalyzeResult(
     preview: result.data,
     noteId,
     savedAtIso,
+  });
+  if (!note) return;
+  const writeResult = appendOrUpsertLocalSavedNote(note);
+  if (!writeResult.ok) return;
+  writeLastAnalyzeNoteIdToSession(noteId);
+  dispatchLocalSavedNotesChanged();
+}
+
+/**
+ * 项目页解析成功后自动写入 localStorage（saved + project）。
+ * 失败时静默跳过，不阻断跳转 /result。
+ */
+export function autoSaveProjectAnalyzeResult(
+  result: AnalyzeSuccessResponse,
+  projectId: string,
+): void {
+  if (typeof window === "undefined") return;
+  const trimmedProjectId = projectId.trim();
+  if (!trimmedProjectId) return;
+  const noteId = newNoteId();
+  const savedAtIso = new Date().toISOString();
+  const note = buildNoteFromLastAnalyze({
+    preview: result.data,
+    projectId: trimmedProjectId,
+    noteId,
+    savedAtIso,
+    savedStatus: "saved",
+    sourceContext: "project",
   });
   if (!note) return;
   const writeResult = appendOrUpsertLocalSavedNote(note);

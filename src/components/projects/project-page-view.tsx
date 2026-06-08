@@ -98,9 +98,9 @@ export function ProjectPageView({
       toast.info("请输入内容后再解析");
       return;
     }
-    seedPendingAnalyzeSession(quickInput);
+    seedPendingAnalyzeSession(quickInput, { projectId: project.id });
     router.push("/parsing");
-  }, [quickInput, router]);
+  }, [quickInput, project.id, router]);
 
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">

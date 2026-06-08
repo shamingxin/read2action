@@ -5,6 +5,7 @@ import type { AnalyzeSuccessResponse } from "@/types/analyze-api";
 import type { ParseResultPreview } from "@/types";
 import {
   R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
+  R2A_SESSION_ANALYZE_PROJECT_ID_KEY,
   R2A_SESSION_ANALYZE_RUN_ID_KEY,
   R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
 } from "@/types/analyze-api";
@@ -302,5 +303,41 @@ describe("clearPendingAnalyzeTextStorage", () => {
     expect(store[R2A_SESSION_ANALYZE_RUN_ID_KEY]).toBeTruthy();
     expect(store[R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY]).toBeTruthy();
     expect(store[R2A_SESSION_AUTO_ANALYZE_STARTED_KEY]).toBeUndefined();
+    expect(store[R2A_SESSION_ANALYZE_PROJECT_ID_KEY]).toBeUndefined();
+  });
+
+  it("seedPendingAnalyzeSession with projectId writes analyze project context", () => {
+    const store: Record<string, string> = {};
+    vi.stubGlobal(
+      "sessionStorage",
+      {
+        getItem: (k: string) => (k in store ? store[k]! : null),
+        setItem: (k: string, v: string) => {
+          store[k] = v;
+        },
+        removeItem: (k: string) => {
+          delete store[k];
+        },
+        clear: () => {
+          for (const k of Object.keys(store)) delete store[k];
+        },
+        key: () => null,
+        get length() {
+          return Object.keys(store).length;
+        },
+      } as Storage,
+    );
+    vi.stubGlobal(
+      "crypto",
+      Object.assign(globalThis.crypto ?? {}, {
+        randomUUID: () => "00000000-0000-4000-8000-000000000100",
+      }),
+    );
+
+    store[R2A_SESSION_ANALYZE_PROJECT_ID_KEY] = "stale";
+    seedPendingAnalyzeSession("project note", { projectId: "sha" });
+
+    expect(store[R2A_SESSION_PENDING_ANALYZE_TEXT_KEY]).toBe("project note");
+    expect(store[R2A_SESSION_ANALYZE_PROJECT_ID_KEY]).toBe("sha");
   });
 });
