@@ -10,6 +10,13 @@ export const mockProjects: Project[] = [
     updatedAt: now,
   },
   {
+    id: "1",
+    name: "默认项目",
+    description: "通用验收项目",
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
     id: "sha",
     name: "沙",
     description: "默认试验项目",

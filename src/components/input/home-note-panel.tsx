@@ -21,7 +21,6 @@ import {
   r2aPageShell1020,
   r2aPlusCircleButton,
 } from "@/lib/r2a-ui-classes";
-import { readAllLocalSavedNotes } from "@/lib/local-saved-notes";
 import { cn } from "@/lib/utils";
 
 /** 与 Figma「Frame 3 / FeatureGrid」文案一致 */
@@ -36,10 +35,6 @@ export function HomeNotePanel() {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [model, setModel] = useState<string>("sonnet-4.6");
-  const [hasAnyRecord] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return readAllLocalSavedNotes().length > 0;
-  });
 
   const canSubmit = value.trim().length > 0;
 
@@ -72,11 +67,6 @@ export function HomeNotePanel() {
             <p className="max-w-[384px] text-[15px] font-normal leading-normal text-[#363636]">
               粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记
             </p>
-            {!hasAnyRecord ? (
-              <p className="max-w-[520px] rounded-[10px] border border-dashed border-[#D5D8E2] bg-white/60 px-3 py-2 text-[13px] leading-relaxed text-[#6B7280]">
-                当前还没有解析记录，开始一次解析后会在最近列表中看到你的内容。
-              </p>
-            ) : null}
           </header>
 
           <section
