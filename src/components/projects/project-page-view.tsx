@@ -180,8 +180,11 @@ export function ProjectPageView({
             </div>
 
             {mergedNotes.length === 0 ? (
-              <div className="px-4 py-10 text-center text-[14px] text-[#939393]">
-                该项目下暂无笔记
+              <div className="px-4 py-10 text-center">
+                <p className="text-[14px] text-[#6B7280]">当前项目暂无解析记录</p>
+                <p className="mt-1 text-[12px] text-[#939393]">
+                  可在上方输入内容解析，或从首页开始新建内容
+                </p>
               </div>
             ) : (
               <ul className="divide-y divide-[#E5E7EB]">
@@ -253,7 +256,9 @@ export function ProjectPageView({
 
           <footer className="flex flex-col gap-2 text-[12px] text-[#939393] sm:flex-row sm:items-center sm:justify-between">
             <span>
-              显示 1–{mergedNotes.length} 条，共 {mergedNotes.length} 条
+              {mergedNotes.length > 0
+                ? `显示 1–${mergedNotes.length} 条，共 ${mergedNotes.length} 条`
+                : "当前暂无解析记录"}
             </span>
             <div className="flex items-center gap-2">
               <span className="rounded-md border border-[#E5E7EB] bg-white px-2 py-1 text-[#363636]">

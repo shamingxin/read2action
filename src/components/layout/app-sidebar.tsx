@@ -29,18 +29,15 @@ import {
 import { cn } from "@/lib/utils";
 import type { Note } from "@/types";
 
-function mockRecentSlice(): Note[] {
-  return [...mockNotes]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    )
-    .slice(0, 4);
+function isMockDebugEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("mock") === "true";
 }
 
-function mergeRecentNotes(): Note[] {
+function mergeRecentNotes(includeMock: boolean): Note[] {
   const local = readAllLocalSavedNotes();
-  return [...mockNotes, ...local]
+  const source = includeMock ? [...mockNotes, ...local] : local;
+  return source
     .sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -74,12 +71,13 @@ function NavItem({
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [recentNotes, setRecentNotes] = useState<Note[]>(mockRecentSlice);
+  const [recentNotes, setRecentNotes] = useState<Note[]>([]);
 
   useEffect(() => {
-    queueMicrotask(() => setRecentNotes(mergeRecentNotes()));
+    const includeMock = isMockDebugEnabled();
+    queueMicrotask(() => setRecentNotes(mergeRecentNotes(includeMock)));
     const bump = () =>
-      queueMicrotask(() => setRecentNotes(mergeRecentNotes()));
+      queueMicrotask(() => setRecentNotes(mergeRecentNotes(includeMock)));
     window.addEventListener(R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT, bump);
     window.addEventListener("storage", bump);
     return () => {
@@ -240,19 +238,25 @@ export function AppSidebar() {
           <div className="mb-1 px-1 text-[11px] font-semibold text-[#121212]">
             最近
           </div>
-          <nav className="flex flex-col gap-0.5">
-            {recentNotes.map((n) => (
-              <NavItem
-                key={n.id}
-                href={`/projects/${n.projectId}/notes/${n.id}`}
-                className="items-start"
-              >
-                <span className="line-clamp-2 text-left leading-snug">
-                  {n.title}
-                </span>
-              </NavItem>
-            ))}
-          </nav>
+          {recentNotes.length === 0 ? (
+            <div className="rounded-[10px] border border-dashed border-[#D5D8E2] bg-white/60 px-3 py-2.5 text-[12px] leading-relaxed text-[#6B7280]">
+              当前还没有解析记录，从首页开始解析吧。
+            </div>
+          ) : (
+            <nav className="flex flex-col gap-0.5">
+              {recentNotes.map((n) => (
+                <NavItem
+                  key={n.id}
+                  href={`/projects/${n.projectId}/notes/${n.id}`}
+                  className="items-start"
+                >
+                  <span className="line-clamp-2 text-left leading-snug">
+                    {n.title}
+                  </span>
+                </NavItem>
+              ))}
+            </nav>
+          )}
         </div>
       </div>
 
