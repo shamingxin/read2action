@@ -15,10 +15,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { mockProjects } from "@/data/projects.mock";
-import { readLastAnalyzeResultFromSession } from "@/lib/analyze-client";
+import {
+  readLastAnalyzeNoteIdFromSession,
+  readLastAnalyzeResultFromSession,
+} from "@/lib/analyze-client";
 import {
   appendOrUpsertLocalSavedNote,
   dispatchLocalSavedNotesChanged,
+  findLocalSavedNoteById,
+  resolveNoteSavedStatus,
+  upgradeTemporaryNoteToSaved,
 } from "@/lib/local-saved-notes";
 import { buildNoteFromLastAnalyze } from "@/lib/note-from-last-analyze";
 import { cn } from "@/lib/utils";
@@ -45,19 +51,40 @@ export function SaveToProjectDialog({ open, onOpenChange }: Props) {
       toast.error("未找到本次解析结果，请重新解析后再保存。");
       return;
     }
-    const noteId = newNoteId();
+    const sessionNoteId = readLastAnalyzeNoteIdFromSession();
+    const existing =
+      sessionNoteId != null ? findLocalSavedNoteById(sessionNoteId) : undefined;
+    const isTemporaryUpgrade =
+      existing != null && resolveNoteSavedStatus(existing) === "temporary";
+    const noteId = isTemporaryUpgrade ? sessionNoteId! : newNoteId();
     const savedAtIso = new Date().toISOString();
-    const note = buildNoteFromLastAnalyze({
+    const built = buildNoteFromLastAnalyze({
       preview,
       projectId: selectedId,
       noteId,
       savedAtIso,
+      savedStatus: "saved",
+      sourceContext: "global",
     });
-    if (!note) {
+    if (!built) {
       toast.error("解析结果不完整，无法保存。");
       return;
     }
-    const result = appendOrUpsertLocalSavedNote(note);
+
+    const result = isTemporaryUpgrade
+      ? upgradeTemporaryNoteToSaved(noteId, selectedId, {
+          title: built.title,
+          summary: built.summary,
+          rawContent: built.rawContent,
+          keyInsights: built.keyInsights,
+          actionItems: built.actionItems,
+          knowledgeCards: built.knowledgeCards,
+          tags: built.tags,
+          wordCount: built.wordCount,
+          sourceName: built.sourceName,
+        })
+      : appendOrUpsertLocalSavedNote(built);
+
     if (!result.ok) {
       toast.error(result.reason);
       return;

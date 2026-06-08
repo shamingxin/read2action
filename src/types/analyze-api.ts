@@ -20,6 +20,10 @@ export const R2A_SESSION_AUTO_ANALYZE_STARTED_KEY =
 export const R2A_SESSION_LAST_ANALYZE_RESULT_KEY =
   "r2a:lastAnalyzeResult" as const;
 
+/** 全局解析自动暂存后写入的 noteId，供 /result 与「保存到项目」复用同一条记录 */
+export const R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY =
+  "r2a:lastAnalyzeNoteId" as const;
+
 /** POST /api/analyze 请求体（与 docs/08 §6.1 对齐） */
 export interface AnalyzeRequestBody {
   text: string;

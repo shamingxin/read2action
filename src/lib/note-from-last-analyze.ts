@@ -1,3 +1,4 @@
+import { R2A_TEMPORARY_PROJECT_ID } from "@/lib/local-saved-notes";
 import type {
   ActionItem,
   KnowledgeCard,
@@ -60,16 +61,17 @@ export type BuildNoteFromLastAnalyzeInput = {
   projectId: string;
   noteId: string;
   savedAtIso: string;
+  savedStatus?: Note["savedStatus"];
+  sourceContext?: Note["sourceContext"];
 };
 
-/**
- * 将 session 中的解析预览映射为持久化 `Note`。
- * 缺 title / summary（非空）时返回 null，与保存弹窗失败一致。
- */
-export function buildNoteFromLastAnalyze(
-  input: BuildNoteFromLastAnalyzeInput,
+function buildNoteCore(
+  preview: ParseResultPreview,
+  noteId: string,
+  projectId: string,
+  savedAtIso: string,
+  extra?: Pick<Note, "savedStatus" | "sourceContext">,
 ): Note | null {
-  const { preview, projectId, noteId, savedAtIso } = input;
   const title = preview.title?.trim();
   const summary = preview.summary?.trim();
   if (!title || !summary) return null;
@@ -89,5 +91,37 @@ export function buildNoteFromLastAnalyze(
     wordCount: fallbackWordCount(preview),
     createdAt: savedAtIso,
     updatedAt: savedAtIso,
+    ...extra,
   };
+}
+
+/**
+ * 将 session 中的解析预览映射为持久化 `Note`。
+ * 缺 title / summary（非空）时返回 null，与保存弹窗失败一致。
+ */
+export function buildNoteFromLastAnalyze(
+  input: BuildNoteFromLastAnalyzeInput,
+): Note | null {
+  const { preview, projectId, noteId, savedAtIso, savedStatus, sourceContext } =
+    input;
+  return buildNoteCore(preview, noteId, projectId, savedAtIso, {
+    savedStatus: savedStatus ?? "saved",
+    sourceContext: sourceContext ?? "global",
+  });
+}
+
+/** 全局解析成功后自动暂存的未归档记录 */
+export function buildTemporaryNoteFromLastAnalyze(input: {
+  preview: ParseResultPreview;
+  noteId: string;
+  savedAtIso: string;
+}): Note | null {
+  const { preview, noteId, savedAtIso } = input;
+  return buildNoteCore(
+    preview,
+    noteId,
+    R2A_TEMPORARY_PROJECT_ID,
+    savedAtIso,
+    { savedStatus: "temporary", sourceContext: "global" },
+  );
 }

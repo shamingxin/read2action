@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 
+import { autoSaveGlobalAnalyzeResult } from "@/lib/auto-save-analyze-result";
 import {
   AnalyzeClientError,
   bumpAnalyzeAttemptForRetry,
@@ -110,8 +111,9 @@ export function ParsingPageView() {
       if (commitRef.current !== myCommit) return;
       const result = resultRef.current;
       if (!result || !stepsCompleteRef.current) return;
-      // 成功且请求已结束：先落结果 → 清 pending（仅此时）→ 再跳转 /result；不在 cleanup / abort / catch 中清 pending
+      // 成功且请求已结束：先落结果 → 自动暂存 → 清 pending（仅此时）→ 再跳转 /result；不在 cleanup / abort / catch 中清 pending
       writeLastAnalyzeResultToSession(result);
+      autoSaveGlobalAnalyzeResult(result);
       clearPendingAnalyzeTextStorage();
       clearAnalyzeRunSessionLocks();
       routerRef.current.push("/result");

@@ -38,6 +38,18 @@ export function ModelSelect({
   const label =
     MODEL_OPTIONS.find((o) => o.value === value)?.label ?? value;
 
+  if (MODEL_OPTIONS.length === 1) {
+    return (
+      <span
+        id={id}
+        aria-label={ariaLabel ?? "模型"}
+        className={cn(triggerClass, "cursor-default", className)}
+      >
+        <span className="min-w-0 truncate">{MODEL_OPTIONS[0].label}</span>
+      </span>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger

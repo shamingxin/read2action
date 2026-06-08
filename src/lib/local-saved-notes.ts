@@ -1,7 +1,10 @@
-import type { Note } from "@/types";
+import type { Note, NoteSavedStatus } from "@/types";
 
 /** localStorage 中用户从 /result 保存的笔记（与 mock 合并展示） */
 export const R2A_LOCAL_SAVED_NOTES_KEY = "r2a:localSavedNotes" as const;
+
+/** 全局未归档暂存笔记的占位 projectId（仅用于路由与本地查找） */
+export const R2A_TEMPORARY_PROJECT_ID = "_temporary" as const;
 
 /** 同标签页保存后通知侧栏 / 项目列表刷新 */
 export const R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT =
@@ -15,21 +18,43 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 
 function isNoteLike(v: unknown): v is Note {
   if (!isRecord(v)) return false;
-  return (
-    typeof v.id === "string" &&
-    typeof v.projectId === "string" &&
-    typeof v.title === "string" &&
-    typeof v.summary === "string" &&
-    typeof v.rawContent === "string" &&
-    Array.isArray(v.keyInsights) &&
-    Array.isArray(v.actionItems) &&
-    Array.isArray(v.knowledgeCards) &&
-    Array.isArray(v.tags) &&
-    typeof v.wordCount === "number" &&
-    typeof v.createdAt === "string" &&
-    typeof v.updatedAt === "string" &&
-    typeof v.sourceType === "string"
-  );
+  if (
+    typeof v.id !== "string" ||
+    typeof v.projectId !== "string" ||
+    typeof v.title !== "string" ||
+    typeof v.summary !== "string" ||
+    typeof v.rawContent !== "string" ||
+    !Array.isArray(v.keyInsights) ||
+    !Array.isArray(v.actionItems) ||
+    !Array.isArray(v.knowledgeCards) ||
+    !Array.isArray(v.tags) ||
+    typeof v.wordCount !== "number" ||
+    typeof v.createdAt !== "string" ||
+    typeof v.updatedAt !== "string" ||
+    typeof v.sourceType !== "string"
+  ) {
+    return false;
+  }
+  if (
+    v.savedStatus !== undefined &&
+    v.savedStatus !== "temporary" &&
+    v.savedStatus !== "saved"
+  ) {
+    return false;
+  }
+  if (
+    v.sourceContext !== undefined &&
+    v.sourceContext !== "global" &&
+    v.sourceContext !== "project"
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/** 1.1 历史记录无 savedStatus 时视为已保存 */
+export function resolveNoteSavedStatus(note: Note): NoteSavedStatus {
+  return note.savedStatus ?? "saved";
 }
 
 function safeParseEnvelope(raw: string | null): LocalSavedNotesEnvelope {
@@ -75,6 +100,42 @@ export function findLocalSavedNote(
   return readAllLocalSavedNotes().find(
     (n) => n.id === noteId && n.projectId === projectId,
   );
+}
+
+export function findLocalSavedNoteById(noteId: string): Note | undefined {
+  return readAllLocalSavedNotes().find((n) => n.id === noteId);
+}
+
+/**
+ * 将暂存记录升级为已保存并写入目标项目。
+ * @returns ok: false 时带可读 reason，供 Toast
+ */
+export function upgradeTemporaryNoteToSaved(
+  noteId: string,
+  projectId: string,
+  patch: Partial<Pick<Note, "title" | "summary" | "rawContent" | "keyInsights" | "actionItems" | "knowledgeCards" | "tags" | "wordCount" | "sourceName">>,
+): { ok: true; note: Note } | { ok: false; reason: string } {
+  if (typeof window === "undefined") {
+    return { ok: false, reason: "仅可在浏览器中保存。" };
+  }
+  const existing = findLocalSavedNoteById(noteId);
+  if (!existing) {
+    return { ok: false, reason: "未找到暂存记录，请重新解析后再保存。" };
+  }
+  const savedAtIso = new Date().toISOString();
+  const upgraded: Note = {
+    ...existing,
+    ...patch,
+    id: noteId,
+    projectId,
+    savedStatus: "saved",
+    sourceContext: existing.sourceContext ?? "global",
+    createdAt: existing.createdAt,
+    updatedAt: savedAtIso,
+  };
+  const result = appendOrUpsertLocalSavedNote(upgraded);
+  if (!result.ok) return result;
+  return { ok: true, note: upgraded };
 }
 
 function sortByUpdatedAtDesc(notes: Note[]): Note[] {

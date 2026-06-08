@@ -8,6 +8,8 @@ import {
   readLocalSavedNotesEnvelope,
   R2A_LOCAL_SAVED_NOTES_KEY,
   listLocalSavedNotesByProjectSorted,
+  resolveNoteSavedStatus,
+  upgradeTemporaryNoteToSaved,
 } from "./local-saved-notes";
 
 function memoryStorage(): Storage {
@@ -124,6 +126,35 @@ describe("local-saved-notes", () => {
     );
     const sorted = listLocalSavedNotesByProjectSorted("sha");
     expect(sorted.map((x) => x.id)).toEqual(["2", "1"]);
+  });
+
+  it("resolveNoteSavedStatus defaults missing field to saved", () => {
+    expect(resolveNoteSavedStatus(sampleNote())).toBe("saved");
+    expect(
+      resolveNoteSavedStatus(sampleNote({ savedStatus: "temporary" })),
+    ).toBe("temporary");
+  });
+
+  it("upgradeTemporaryNoteToSaved promotes note to saved with projectId", () => {
+    appendOrUpsertLocalSavedNote(
+      sampleNote({
+        id: "temp-1",
+        projectId: "_temporary",
+        savedStatus: "temporary",
+        sourceContext: "global",
+        createdAt: "2026-05-01T00:00:00.000Z",
+      }),
+    );
+    const r = upgradeTemporaryNoteToSaved("temp-1", "sha", {
+      title: "Updated",
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.note.projectId).toBe("sha");
+    expect(r.note.savedStatus).toBe("saved");
+    expect(r.note.title).toBe("Updated");
+    expect(r.note.createdAt).toBe("2026-05-01T00:00:00.000Z");
+    expect(readAllLocalSavedNotes()).toHaveLength(1);
   });
 
   it("returns ok:false when setItem throws", () => {

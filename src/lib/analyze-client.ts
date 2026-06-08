@@ -7,6 +7,7 @@ import {
   R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
   R2A_SESSION_ANALYZE_RUN_ID_KEY,
   R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
+  R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY,
   R2A_SESSION_LAST_ANALYZE_RESULT_KEY,
   R2A_SESSION_PENDING_ANALYZE_TEXT_KEY,
 } from "@/types/analyze-api";
@@ -37,6 +38,31 @@ export function clearPendingAnalyzeTextStorage(): void {
     sessionStorage.removeItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY);
   } catch {
     /* ignore */
+  }
+}
+
+/**
+ * 首页 / 项目页进入 `/parsing` 前写入待解析正文与 run 锁。
+ * 与 `/parsing` A+B+C 配套：每次新解析使用新的 runId / attemptId，并清除自动槽。
+ */
+export function seedPendingAnalyzeSession(text: string): void {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  try {
+    sessionStorage.setItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY, trimmed);
+    const runId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-r`;
+    const attemptId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-a`;
+    sessionStorage.setItem(R2A_SESSION_ANALYZE_RUN_ID_KEY, runId);
+    sessionStorage.setItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY, attemptId);
+    sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
+  } catch {
+    /* 隐私模式等：仍进入 /parsing，由解析页提示无正文 */
   }
 }
 
@@ -220,6 +246,32 @@ export function writeLastAnalyzeResultToSession(
     );
   } catch {
     // 配额或隐私模式：仍尝试跳转，由结果页决定是否回退 mock
+  }
+}
+
+export function writeLastAnalyzeNoteIdToSession(noteId: string): void {
+  try {
+    sessionStorage.setItem(R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY, noteId);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function readLastAnalyzeNoteIdFromSession(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const id = sessionStorage.getItem(R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY)?.trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearLastAnalyzeNoteIdFromSession(): void {
+  try {
+    sessionStorage.removeItem(R2A_SESSION_LAST_ANALYZE_NOTE_ID_KEY);
+  } catch {
+    /* ignore */
   }
 }
 

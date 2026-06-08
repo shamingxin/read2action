@@ -12,7 +12,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { mockParseResult } from "@/data/result.mock";
-import { readLastAnalyzeResultFromSession } from "@/lib/analyze-client";
+import {
+  readLastAnalyzeNoteIdFromSession,
+  readLastAnalyzeResultFromSession,
+} from "@/lib/analyze-client";
+import {
+  findLocalSavedNoteById,
+  resolveNoteSavedStatus,
+} from "@/lib/local-saved-notes";
 import type { KnowledgeCard, ParseResultPreview } from "@/types";
 
 import {
@@ -94,6 +101,7 @@ function SectionCard({
 
 export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   const [d, setD] = useState<ParseResultPreview>(() => data ?? mockParseResult);
+  const [showAutoSavedHint, setShowAutoSavedHint] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -103,6 +111,20 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
     const fromSession = readLastAnalyzeResultFromSession();
     if (fromSession) queueMicrotask(() => setD(fromSession));
   }, [data]);
+
+  useEffect(() => {
+    const noteId = readLastAnalyzeNoteIdFromSession();
+    if (!noteId) {
+      queueMicrotask(() => setShowAutoSavedHint(false));
+      return;
+    }
+    const note = findLocalSavedNoteById(noteId);
+    queueMicrotask(() =>
+      setShowAutoSavedHint(
+        note != null && resolveNoteSavedStatus(note) === "temporary",
+      ),
+    );
+  }, [d]);
 
   const [tab, setTab] = useState<TabId>("summary");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -215,6 +237,15 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
             </DropdownMenu>
           </div>
         </header>
+
+        {showAutoSavedHint ? (
+          <p
+            className="mb-1 rounded-lg border border-[#E0E7FF] bg-[#EEF2FF] px-4 py-2.5 text-[13px] font-normal text-[#4338CA]"
+            role="status"
+          >
+            已自动暂存，可保存到项目归档
+          </p>
+        ) : null}
 
         <div className={cn("flex flex-col", r2aPageSectionStackGap)}>
           <div className={r2aTabListRow} role="tablist" aria-label="解析结果视图">

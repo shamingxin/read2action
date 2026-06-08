@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { NoteDetailResolver } from "@/components/notes/note-detail-resolver";
 import { getNoteById } from "@/data/notes.mock";
 import { getProjectById } from "@/data/projects.mock";
+import { R2A_TEMPORARY_PROJECT_ID } from "@/lib/local-saved-notes";
 
 type PageProps = {
   params: Promise<{ projectId: string; id: string }>;
@@ -11,7 +12,15 @@ type PageProps = {
 export default async function NoteDetailPage({ params }: PageProps) {
   const { projectId, id } = await params;
 
-  const project = getProjectById(projectId);
+  const project =
+    projectId === R2A_TEMPORARY_PROJECT_ID
+      ? {
+          id: R2A_TEMPORARY_PROJECT_ID,
+          name: "未归档",
+          createdAt: "",
+          updatedAt: "",
+        }
+      : getProjectById(projectId);
   if (!project) notFound();
 
   const note = getNoteById(id);

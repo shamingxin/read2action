@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import type { Note, Project, SourceType } from "@/types";
 
 import { ModelSelect } from "@/components/ui/model-select";
+import { seedPendingAnalyzeSession } from "@/lib/analyze-client";
+import { DEFAULT_MODEL_VALUE } from "@/lib/model-options";
 import {
   r2aBtnPrimaryPill,
   r2aCardBorder,
@@ -69,7 +71,7 @@ export function ProjectPageView({
 }) {
   const router = useRouter();
   const [quickInput, setQuickInput] = useState("");
-  const [model, setModel] = useState<string>("sonnet-4.6");
+  const [model, setModel] = useState<string>(DEFAULT_MODEL_VALUE);
   const [mergedNotes, setMergedNotes] = useState<Note[]>(() =>
     sortNotesByUpdatedDesc(notes),
   );
@@ -96,6 +98,7 @@ export function ProjectPageView({
       toast.info("请输入内容后再解析");
       return;
     }
+    seedPendingAnalyzeSession(quickInput);
     router.push("/parsing");
   }, [quickInput, router]);
 

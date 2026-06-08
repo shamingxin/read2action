@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import type { ActionItem, KnowledgeCard, ParseResultPreview } from "@/types";
 
-import { buildNoteFromLastAnalyze } from "./note-from-last-analyze";
+import { R2A_TEMPORARY_PROJECT_ID } from "./local-saved-notes";
+import {
+  buildNoteFromLastAnalyze,
+  buildTemporaryNoteFromLastAnalyze,
+} from "./note-from-last-analyze";
 
 const iso = "2026-05-13T12:00:00.000Z";
 
@@ -93,6 +97,31 @@ describe("buildNoteFromLastAnalyze", () => {
     expect(note?.actionItems[0].id.length).toBeGreaterThan(4);
     expect(note?.knowledgeCards[0].id.length).toBeGreaterThan(4);
     expect(note?.actionItems[0].isDone).toBe(true);
+  });
+
+  it("sets savedStatus saved and sourceContext global by default", () => {
+    const note = buildNoteFromLastAnalyze({
+      preview: basePreview(),
+      projectId: "sha",
+      noteId: "n",
+      savedAtIso: iso,
+    });
+    expect(note?.savedStatus).toBe("saved");
+    expect(note?.sourceContext).toBe("global");
+  });
+
+  it("buildTemporaryNoteFromLastAnalyze maps temporary global note", () => {
+    const note = buildTemporaryNoteFromLastAnalyze({
+      preview: basePreview(),
+      noteId: "temp-1",
+      savedAtIso: iso,
+    });
+    expect(note).not.toBeNull();
+    if (!note) return;
+    expect(note.id).toBe("temp-1");
+    expect(note.projectId).toBe(R2A_TEMPORARY_PROJECT_ID);
+    expect(note.savedStatus).toBe("temporary");
+    expect(note.sourceContext).toBe("global");
   });
 
   it("rawContent fallback is never undefined", () => {

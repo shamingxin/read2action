@@ -6,12 +6,8 @@ import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { ModelSelect } from "@/components/ui/model-select";
-import {
-  R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY,
-  R2A_SESSION_ANALYZE_RUN_ID_KEY,
-  R2A_SESSION_AUTO_ANALYZE_STARTED_KEY,
-  R2A_SESSION_PENDING_ANALYZE_TEXT_KEY,
-} from "@/types/analyze-api";
+import { seedPendingAnalyzeSession } from "@/lib/analyze-client";
+import { DEFAULT_MODEL_VALUE } from "@/lib/model-options";
 import {
   r2aBtnPrimary,
   r2aCardBorder,
@@ -34,7 +30,7 @@ const featureItems = [
 export function HomeNotePanel() {
   const router = useRouter();
   const [value, setValue] = useState("");
-  const [model, setModel] = useState<string>("sonnet-4.6");
+  const [model, setModel] = useState<string>(DEFAULT_MODEL_VALUE);
 
   const canSubmit = value.trim().length > 0;
 
@@ -43,16 +39,7 @@ export function HomeNotePanel() {
       toast.info("请输入内容后再解析");
       return;
     }
-    try {
-      sessionStorage.setItem(R2A_SESSION_PENDING_ANALYZE_TEXT_KEY, value.trim());
-      const runId = crypto.randomUUID();
-      const attemptId = crypto.randomUUID();
-      sessionStorage.setItem(R2A_SESSION_ANALYZE_RUN_ID_KEY, runId);
-      sessionStorage.setItem(R2A_SESSION_ANALYZE_ATTEMPT_ID_KEY, attemptId);
-      sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
-    } catch {
-      // 隐私模式等：仍进入 /parsing，由解析页提示无正文
-    }
+    seedPendingAnalyzeSession(value);
     router.push("/parsing");
   }, [router, value]);
 
