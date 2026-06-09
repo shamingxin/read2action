@@ -124,7 +124,7 @@ describe("buildNoteFromLastAnalyze", () => {
     expect(note.sourceContext).toBe("global");
   });
 
-  it("rawContent fallback is never undefined", () => {
+  it("rawContent fallback is never undefined when preview lacks rawContent", () => {
     const note = buildNoteFromLastAnalyze({
       preview: basePreview(),
       projectId: "sha",
@@ -134,5 +134,27 @@ describe("buildNoteFromLastAnalyze", () => {
     expect(note?.rawContent).toBeDefined();
     expect(typeof note?.rawContent).toBe("string");
     expect(note!.rawContent.length).toBeGreaterThan(0);
+    expect(note!.rawContent).toContain("摘要内容");
+  });
+
+  it("persists preview.rawContent as note rawContent when provided", () => {
+    const pasted = "用户粘贴的完整原文\n第二段内容";
+    const note = buildNoteFromLastAnalyze({
+      preview: basePreview({ rawContent: pasted }),
+      projectId: "sha",
+      noteId: "n",
+      savedAtIso: iso,
+    });
+    expect(note?.rawContent).toBe(pasted);
+  });
+
+  it("buildTemporaryNoteFromLastAnalyze keeps pasted rawContent", () => {
+    const pasted = "暂存笔记原文";
+    const note = buildTemporaryNoteFromLastAnalyze({
+      preview: basePreview({ rawContent: pasted }),
+      noteId: "temp-2",
+      savedAtIso: iso,
+    });
+    expect(note?.rawContent).toBe(pasted);
   });
 });

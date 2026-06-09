@@ -66,6 +66,8 @@ export interface ParseResultPreview {
   /** 如 2024-05-20 */
   createdAtDisplay?: string;
   wordCount?: number;
+  /** 用户粘贴的完整原文；旧 session 可能缺失 */
+  rawContent?: string;
   summary: string;
   keyInsights: string[];
   actionItems: ActionItem[];

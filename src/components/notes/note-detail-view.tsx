@@ -140,21 +140,23 @@ export function NoteDetailView({
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
       <div className={r2aPageShell1020}>
-        <nav
-          className="flex flex-wrap items-center gap-1 text-[13px] text-[#939393]"
-          aria-label="面包屑"
-        >
-          <Link
-            href={`/projects/${projectId}`}
-            className="font-medium text-[#363636] hover:text-[#121212]"
+        {!isTemporaryNote ? (
+          <nav
+            className="flex flex-wrap items-center gap-1 text-[13px] text-[#939393]"
+            aria-label="面包屑"
           >
-            {projectName}
-          </Link>
-          <span className="text-[#D1D5DB]">/</span>
-          <span className="max-w-[min(100%,48rem)] truncate text-[#939393]">
-            {note.title}
-          </span>
-        </nav>
+            <Link
+              href={`/projects/${projectId}`}
+              className="font-medium text-[#363636] hover:text-[#121212]"
+            >
+              {projectName}
+            </Link>
+            <span className="text-[#D1D5DB]">/</span>
+            <span className="max-w-[min(100%,48rem)] truncate text-[#939393]">
+              {note.title}
+            </span>
+          </nav>
+        ) : null}
 
         <header className={r2aContentPageHeaderRow}>
           <div className="flex min-w-0 flex-1 flex-col gap-2">

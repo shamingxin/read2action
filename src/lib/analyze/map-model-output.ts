@@ -115,6 +115,7 @@ export function mapModelJsonToParseResult(params: {
     tags: [],
     createdAtDisplay: new Date().toISOString().slice(0, 10),
     wordCount,
+    rawContent: params.rawContent,
     summary,
     keyInsights,
     actionItems,

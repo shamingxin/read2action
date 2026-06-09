@@ -47,7 +47,13 @@ function fallbackWordCount(preview: ParseResultPreview): number {
   return [...blob].length;
 }
 
-/** 本阶段不依赖完整粘贴原文；保证非空字符串供详情页使用 */
+function resolveRawContent(preview: ParseResultPreview): string {
+  const fromPreview = preview.rawContent?.trim();
+  if (fromPreview) return fromPreview;
+  return buildRawContentFallback(preview);
+}
+
+/** 旧 session 无 rawContent 时兜底；保证非空字符串供详情页使用 */
 function buildRawContentFallback(preview: ParseResultPreview): string {
   const parts: string[] = [preview.title, preview.summary];
   if (preview.keyInsights.length) {
@@ -82,7 +88,7 @@ function buildNoteCore(
     title,
     sourceType: "user_note",
     sourceName: preview.sourceName?.trim() || "用户粘贴文本",
-    rawContent: buildRawContentFallback(preview),
+    rawContent: resolveRawContent(preview),
     summary,
     keyInsights: preview.keyInsights.map((s) => String(s)),
     actionItems: ensureActionItems(preview.actionItems),

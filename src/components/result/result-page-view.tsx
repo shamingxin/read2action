@@ -390,13 +390,32 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
             </div>
           ) : (
             <section
-              className={cn(r2aPlainWhitePanel, "p-8")}
+              className={cn(
+                r2aPlainWhitePanel,
+                "flex w-full flex-col gap-3 p-8",
+              )}
               aria-label="原文对照"
               role="tabpanel"
             >
-              <p className="text-[14px] leading-relaxed text-[#939393]">
-                原文对照内容占位。下一阶段可在此展示解析来源全文或粘贴原文。
-              </p>
+              {d.rawContent?.trim() ? (
+                <>
+                  <h2 className="text-base font-semibold text-[#121212]">
+                    原始内容
+                  </h2>
+                  <p className="text-[13px] font-normal leading-normal text-[#939393]">
+                    以下内容为原始输入内容，便于与 AI 总结结果对照查看。
+                  </p>
+                  <div className="max-h-[min(400px,55vh)] min-h-[120px] overflow-y-auto pr-1">
+                    <p className="whitespace-pre-wrap text-[14px] font-normal leading-6 text-[#363636]">
+                      {d.rawContent}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-[14px] leading-relaxed text-[#939393]">
+                  原文对照内容占位。下一阶段可在此展示解析来源全文或粘贴原文。
+                </p>
+              )}
             </section>
           )}
         </div>

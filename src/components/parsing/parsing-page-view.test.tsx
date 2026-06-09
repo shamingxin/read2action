@@ -35,6 +35,23 @@ function seedSession() {
   sessionStorage.removeItem(R2A_SESSION_AUTO_ANALYZE_STARTED_KEY);
 }
 
+/** 与 parsing-page-view 四步动画总时长对齐；避免 runAllTimersAsync 与 1s 倒计时 interval 死循环 */
+const PARSING_STEP_TOTAL_MS = 950 * 4 + 600;
+
+async function bootAutoParsing() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+    await Promise.resolve();
+  });
+}
+
+async function finishParsingStepAnimation() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(PARSING_STEP_TOTAL_MS);
+    await Promise.resolve();
+  });
+}
+
 describe("ParsingPageView /api/analyze dedupe", () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -67,9 +84,8 @@ describe("ParsingPageView /api/analyze dedupe", () => {
       </StrictMode>,
     );
 
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
+    await bootAutoParsing();
+    await finishParsingStepAnimation();
 
     const analyzePosts = fetchMock.mock.calls.filter(
       (c) =>
@@ -106,17 +122,16 @@ describe("ParsingPageView /api/analyze dedupe", () => {
       </StrictMode>,
     );
 
-    await act(async () => {
-      await vi.runAllTimersAsync();
-    });
+    await bootAutoParsing();
 
     const retryBtn = await screen.findByRole("button", { name: "重试" });
     await act(async () => {
       fireEvent.click(retryBtn);
     });
     await act(async () => {
-      await vi.runAllTimersAsync();
+      await Promise.resolve();
     });
+    await finishParsingStepAnimation();
 
     const analyzePosts = fetchMock.mock.calls.filter(
       (c) =>

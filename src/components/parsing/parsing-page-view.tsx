@@ -53,6 +53,18 @@ type StepState = "done" | "current" | "upcoming";
 /** 四步依次 current：约每步 950ms，最后一步展示后再跳转，总时长约 4.2s */
 const STEP_ADVANCE_MS = 950;
 const FINAL_PAUSE_BEFORE_REDIRECT_MS = 600;
+const LONG_PARSE_HINT_SECONDS = 20;
+
+function computeElapsedSeconds(startedAt: number, now = Date.now()): number {
+  return Math.max(1, Math.floor((now - startedAt) / 1000) + 1);
+}
+
+function formatParsingTimeHint(elapsedSeconds: number): string {
+  if (elapsedSeconds > LONG_PARSE_HINT_SECONDS) {
+    return `已用 ${elapsedSeconds} 秒，仍在处理中...`;
+  }
+  return `已用 ${elapsedSeconds} 秒`;
+}
 
 function isAbortError(e: unknown): boolean {
   return (
@@ -88,8 +100,62 @@ export function ParsingPageView() {
   const [phase, setPhase] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [canRetry, setCanRetry] = useState(false);
+  const parsingStartedAtRef = useRef<number | null>(null);
+  const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timeHintVisible, setTimeHintVisible] = useState(false);
 
   const innerRetryRef = useRef<(() => void) | null>(null);
+
+  const clearTickInterval = useCallback(() => {
+    if (tickIntervalRef.current != null) {
+      clearInterval(tickIntervalRef.current);
+      tickIntervalRef.current = null;
+    }
+  }, []);
+
+  const syncElapsedFromStartedAt = useCallback(() => {
+    const startedAt = parsingStartedAtRef.current;
+    if (startedAt == null) return;
+    setElapsedSeconds(computeElapsedSeconds(startedAt));
+  }, []);
+
+  const startTickInterval = useCallback(() => {
+    if (tickIntervalRef.current != null) return;
+    tickIntervalRef.current = setInterval(() => {
+      syncElapsedFromStartedAt();
+    }, 1000);
+  }, [syncElapsedFromStartedAt]);
+
+  /** 解析开始：保留已有 startedAt，避免 StrictMode 重挂载导致计时闪回 */
+  const ensureParsingTimeHint = useCallback(() => {
+    if (parsingStartedAtRef.current == null) {
+      parsingStartedAtRef.current = Date.now();
+    }
+    setTimeHintVisible(true);
+    syncElapsedFromStartedAt();
+    startTickInterval();
+  }, [startTickInterval, syncElapsedFromStartedAt]);
+
+  /** 用户重试：显式重置 startedAt */
+  const resetParsingTimeHintForRetry = useCallback(() => {
+    clearTickInterval();
+    parsingStartedAtRef.current = Date.now();
+    setTimeHintVisible(true);
+    syncElapsedFromStartedAt();
+    startTickInterval();
+  }, [clearTickInterval, startTickInterval, syncElapsedFromStartedAt]);
+
+  const stopParsingTimeHint = useCallback(() => {
+    clearTickInterval();
+    parsingStartedAtRef.current = null;
+    setTimeHintVisible(false);
+    setElapsedSeconds(0);
+  }, [clearTickInterval]);
+
+  const pauseParsingTimeHint = useCallback(() => {
+    clearTickInterval();
+  }, [clearTickInterval]);
 
   const steps = useMemo(() => {
     return STEP_LABELS.map((label, i) => {
@@ -115,6 +181,7 @@ export function ParsingPageView() {
       if (commitRef.current !== myCommit) return;
       const result = resultRef.current;
       if (!result || !stepsCompleteRef.current) return;
+      stopParsingTimeHint();
       // 成功且请求已结束：先落结果 → 按来源自动落库 → 清 pending/project 上下文（仅此时）→ 再跳转 /result
       writeLastAnalyzeResultToSession(result);
       const projectId = readAnalyzeProjectIdFromSession();
@@ -190,6 +257,7 @@ export function ParsingPageView() {
             : "解析失败，请稍后重试。";
         queueMicrotask(() => {
           if (commitRef.current !== myCommit) return;
+          pauseParsingTimeHint();
           setError(msg);
         });
       } finally {
@@ -258,6 +326,7 @@ export function ParsingPageView() {
         stepsCompleteRef.current = false;
         abortRef.current?.abort();
         abortRef.current = new AbortController();
+        ensureParsingTimeHint();
         scheduleStepTimers();
         void runFetchOnce(abortRef.current.signal, "auto");
       }, 0);
@@ -273,6 +342,7 @@ export function ParsingPageView() {
       stepsCompleteRef.current = false;
       abortRef.current?.abort();
       abortRef.current = new AbortController();
+      resetParsingTimeHintForRetry();
       scheduleStepTimers();
       void runFetchOnce(abortRef.current.signal, "retry");
     };
@@ -292,9 +362,17 @@ export function ParsingPageView() {
       inFlightRef.current = false;
       clearTimeouts();
       innerRetryRef.current = null;
+      clearTickInterval();
+      // 刻意不调用 stopParsingTimeHint：StrictMode 重挂载时保留 startedAt，避免时间闪回
       // 刻意不调用 clearPendingAnalyzeTextStorage：StrictMode cleanup 只打断请求/定时器，不得删待解析正文
     };
-  }, []);
+  }, [
+    clearTickInterval,
+    ensureParsingTimeHint,
+    pauseParsingTimeHint,
+    resetParsingTimeHintForRetry,
+    stopParsingTimeHint,
+  ]);
 
   const handleRetry = useCallback(() => {
     if (!canRetry) return;
@@ -304,6 +382,7 @@ export function ParsingPageView() {
   const handleCancel = useCallback(() => {
     commitRef.current += 1;
     cancelledRef.current = true;
+    stopParsingTimeHint();
     if (autoBootTimerRef.current != null) {
       clearTimeout(autoBootTimerRef.current);
       autoBootTimerRef.current = null;
@@ -314,9 +393,10 @@ export function ParsingPageView() {
     clearPendingAnalyzeContextStorage();
     clearAnalyzeRunSessionLocks();
     router.push("/");
-  }, [router]);
+  }, [router, stopParsingTimeHint]);
 
   const handleGoHome = useCallback(() => {
+    stopParsingTimeHint();
     if (autoBootTimerRef.current != null) {
       clearTimeout(autoBootTimerRef.current);
       autoBootTimerRef.current = null;
@@ -324,7 +404,7 @@ export function ParsingPageView() {
     clearPendingAnalyzeContextStorage();
     clearAnalyzeRunSessionLocks();
     router.push("/");
-  }, [router]);
+  }, [router, stopParsingTimeHint]);
 
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
@@ -334,9 +414,11 @@ export function ParsingPageView() {
             <h1 className="text-[24px] font-semibold leading-tight text-[#121212]">
               正在为你解析内容…
             </h1>
-            <p className="text-[14px] font-normal leading-tight text-[#939393]">
-              预计 20 秒
-            </p>
+            {timeHintVisible ? (
+              <p className="text-[14px] font-normal leading-tight text-[#939393]">
+                {formatParsingTimeHint(elapsedSeconds)}
+              </p>
+            ) : null}
           </div>
           <button
             type="button"
