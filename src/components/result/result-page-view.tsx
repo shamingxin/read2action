@@ -29,8 +29,8 @@ import {
   r2aContentPageHeaderRow,
   r2aKnowledgeAddSlotShell,
   r2aKnowledgeMiniCardShell,
+  r2aContentPageShell,
   r2aPageSectionStackGap,
-  r2aPageShell1020,
   r2aPlainWhitePanel,
   r2aSectionCardShell,
   r2aTabLabelActive,
@@ -179,7 +179,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
 
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
-      <div className={r2aPageShell1020}>
+      <div className={r2aContentPageShell}>
         <header className={r2aContentPageHeaderRow}>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <h1 className="text-[26px] font-semibold leading-tight text-[#121212]">

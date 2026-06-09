@@ -22,8 +22,8 @@ import {
   r2aContentPageHeaderActions,
   r2aContentPageHeaderRow,
   r2aKnowledgeMiniCardShell,
+  r2aContentPageShell,
   r2aPageSectionStackGap,
-  r2aPageShell1020,
   r2aPlainWhitePanel,
   r2aSectionCardShell,
   r2aTabLabelActive,
@@ -139,7 +139,7 @@ export function NoteDetailView({
 
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
-      <div className={r2aPageShell1020}>
+      <div className={r2aContentPageShell}>
         {!isTemporaryNote ? (
           <nav
             className="flex flex-wrap items-center gap-1 text-[13px] text-[#939393]"

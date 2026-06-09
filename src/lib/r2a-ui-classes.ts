@@ -25,6 +25,14 @@ export const r2aPageShell1020 = cn(
   r2aPageBlockGap,
 );
 
+/** 结果页 / 笔记详情页：较窄阅读宽度，宽屏不无限拉伸；小屏仍 w-full 响应 */
+export const r2aContentPageShell = cn(
+  "mx-auto flex w-full max-w-[960px] flex-col",
+  r2aPagePadX,
+  r2aPagePadY,
+  r2aPageBlockGap,
+);
+
 /* ─── 9.2 卡片 / 表面 token ─── */
 
 export const r2aCardRadius = "rounded-[12px]";
