@@ -5,6 +5,8 @@ import { Download, Link2, Pencil, Trash2 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { SaveToProjectDialog } from "@/components/result/save-to-project-dialog";
+import { resolveNoteSavedStatus } from "@/lib/local-saved-notes";
 import type { KnowledgeCard, Note } from "@/types";
 
 import {
@@ -111,9 +113,11 @@ export function NoteDetailView({
   projectName: string;
 }) {
   const [tab, setTab] = useState<TabId>("summary");
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(note.actionItems.map((a) => [a.id, a.isDone])),
   );
+  const isTemporaryNote = resolveNoteSavedStatus(note) === "temporary";
 
   const doneCount = useMemo(
     () => note.actionItems.filter((a) => checks[a.id]).length,
@@ -174,9 +178,15 @@ export function NoteDetailView({
               <Download className="size-5 shrink-0 text-[#363636]" aria-hidden />
               导出
             </button>
-            <button type="button" className={r2aBtnSecondary}>
-              保存到项目
-            </button>
+            {isTemporaryNote ? (
+              <button
+                type="button"
+                className={r2aBtnSecondary}
+                onClick={() => setSaveDialogOpen(true)}
+              >
+                保存到项目
+              </button>
+            ) : null}
             <div className="relative z-20 shrink-0">
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -366,6 +376,14 @@ export function NoteDetailView({
             </section>
           )}
         </div>
+
+        {isTemporaryNote ? (
+          <SaveToProjectDialog
+            open={saveDialogOpen}
+            onOpenChange={setSaveDialogOpen}
+            noteId={note.id}
+          />
+        ) : null}
       </div>
     </div>
   );

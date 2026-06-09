@@ -32,6 +32,8 @@ import { cn } from "@/lib/utils";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** 详情页传入：按 localStorage 中的 noteId 升级暂存记录 */
+  noteId?: string;
 };
 
 function newNoteId(): string {
@@ -41,11 +43,37 @@ function newNoteId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-export function SaveToProjectDialog({ open, onOpenChange }: Props) {
+export function SaveToProjectDialog({
+  open,
+  onOpenChange,
+  noteId: detailNoteId,
+}: Props) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState("sha");
 
   const handleConfirm = () => {
+    if (detailNoteId != null) {
+      const existing = findLocalSavedNoteById(detailNoteId);
+      if (!existing) {
+        toast.error("未找到暂存记录，请重新解析后再保存。");
+        return;
+      }
+      if (resolveNoteSavedStatus(existing) !== "temporary") {
+        toast.error("该记录已保存，无需重复操作。");
+        return;
+      }
+      const result = upgradeTemporaryNoteToSaved(detailNoteId, selectedId, {});
+      if (!result.ok) {
+        toast.error(result.reason);
+        return;
+      }
+      dispatchLocalSavedNotesChanged();
+      onOpenChange(false);
+      toast.success("已保存到项目");
+      router.push(`/projects/${selectedId}/notes/${detailNoteId}`);
+      return;
+    }
+
     const preview = readLastAnalyzeResultFromSession();
     if (!preview) {
       toast.error("未找到本次解析结果，请重新解析后再保存。");
