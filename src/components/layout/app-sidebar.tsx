@@ -1,7 +1,8 @@
 "use client";
 
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Folder,
@@ -26,6 +27,7 @@ import {
   readAllLocalSavedNotes,
   R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
 } from "@/lib/local-saved-notes";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Note } from "@/types";
 
@@ -71,7 +73,10 @@ function NavItem({
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     const includeMock = isMockDebugEnabled();
@@ -85,6 +90,35 @@ export function AppSidebar() {
       window.removeEventListener("storage", bump);
     };
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      setAuthUser(user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.refresh();
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
 
   const newEntry = mockProjects.find((p) => p.id === NEW_PROJECT_ENTRY_ID);
   const linkProjects = mockProjects.filter((p) => p.id !== NEW_PROJECT_ENTRY_ID);
@@ -265,13 +299,34 @@ export function AppSidebar() {
           <div className="flex size-[34px] shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] bg-white">
             <User className="size-4 text-[#121212]" aria-hidden />
           </div>
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="truncate text-[13px] font-semibold leading-none text-[#121212]">
-              访客
-            </span>
-            <span className="inline-flex w-fit rounded-md border border-[#3B82F5] bg-[#3B82F5] px-1.5 py-0.5 text-[10px] font-bold text-[#2673B8]">
-              MVP
-            </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            {authUser ? (
+              <>
+                <span className="truncate text-[13px] font-semibold leading-none text-[#121212]">
+                  {authUser.email ?? "已登录用户"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void handleSignOut()}
+                  disabled={isSigningOut}
+                  className="inline-flex w-fit text-left text-[12px] font-medium text-[#615d59] transition-colors hover:text-[#4F46E5] disabled:opacity-50"
+                >
+                  {isSigningOut ? "退出中…" : "退出登录"}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="truncate text-[13px] font-semibold leading-none text-[#121212]">
+                  访客
+                </span>
+                <Link
+                  href="/login"
+                  className="inline-flex w-fit text-[12px] font-medium text-[#4F46E5] transition-colors hover:text-[#4338CA]"
+                >
+                  登录
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
