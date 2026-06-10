@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read2Action · 界面设计规范 v1.0 预览</title>
+  <style>
+    /* ─────────────────────────────────────────────
+       Theme Variables  —  CSS 变量统一使用 --r2a-* 前缀
+    ───────────────────────────────────────────── */
+    :root,
+    [data-theme="light"] {
+      /* 主操作色 */
+      --r2a-primary:        #0075de;
+      --r2a-primary-active: #005bab;
+      --r2a-on-primary:     #ffffff;
+      --r2a-primary-bg:     #e8f3fd;
+
+      /* 表面色 */
+      --r2a-canvas:         #ffffff;
+      --r2a-canvas-soft:    #f6f5f4;
+      --r2a-surface:        #ffffff;
+
+      /* 文字色 */
+      --r2a-ink:            #000000;
+      --r2a-ink-secondary:  #31302e;
+      --r2a-ink-muted:      #615d59;
+      --r2a-ink-faint:      #a39e98;
+
+      /* 边框 */
+      --r2a-hairline:       #e6e6e6;
+
+      /* 语义色 */
+      --r2a-success:        #1aae39;
+      --r2a-success-bg:     #e6f9eb;
+      --r2a-error:          #e53935;
+      --r2a-error-bg:       #fde8e8;
+      --r2a-warning:        #f59e0b;
+      --r2a-warning-bg:     #fef3c7;
+
+      /* Accent 色（仅装饰/状态）*/
+      --r2a-accent-sky:         #62aef0;
+      --r2a-accent-sky-bg:      #e8f3fd;
+      --r2a-accent-sky-text:    #1a76c8;
+      --r2a-accent-purple:      #9b79d8;
+      --r2a-accent-purple-bg:   #f2eefe;
+      --r2a-accent-purple-text: #7c4dcc;
+      --r2a-accent-orange:      #dd5b00;
+      --r2a-accent-orange-bg:   #fdf0e6;
+
+      /* 阴影 */
+      --r2a-shadow-soft:
+        0 0.175px 1px rgba(0,0,0,0.01),
+        0 0.8px 2.9px  rgba(0,0,0,0.02),
+        0 2px 7.8px    rgba(0,0,0,0.027),
+        0 4px 18px     rgba(0,0,0,0.04);
+      --r2a-shadow-elevated:
+        0 1px 3px   rgba(0,0,0,0.05),
+        0 4px 10px  rgba(0,0,0,0.06),
+        0 12px 28px rgba(0,0,0,0.07);
+    }
+
+    [data-theme="dark"] {
+      /* 主操作色（深色下保持 Notion Blue，白字对比度通过 AA） */
+      --r2a-primary:        #0075de;
+      --r2a-primary-active: #005bab;
+      --r2a-on-primary:     #ffffff;
+      --r2a-primary-bg:     #0b1e33;
+
+      /* 表面色（暖深灰，非纯黑） */
+      --r2a-canvas:         #2b2822;
+      --r2a-canvas-soft:    #1c1a17;
+      --r2a-surface:        #2b2822;
+
+      /* 文字色（适度提亮，保证可读性） */
+      --r2a-ink:            #f0ede6;
+      --r2a-ink-secondary:  #c4bfb5;
+      --r2a-ink-muted:      #9a948a;  /* 调亮：旧值 #7e7970 */
+      --r2a-ink-faint:      #736d64;  /* 调亮：旧值 #4e4944 */
+
+      /* 边框（适度提亮） */
+      --r2a-hairline:       #3d3932;  /* 调亮：旧值 #302d27 */
+
+      /* 语义色 */
+      --r2a-success:        #2ecc5a;
+      --r2a-success-bg:     #0b2714;
+      --r2a-error:          #f56565;
+      --r2a-error-bg:       #2e1010;
+      --r2a-warning:        #fbbf24;
+      --r2a-warning-bg:     #2a1e00;
+
+      /* Accent 色 */
+      --r2a-accent-sky:         #62aef0;
+      --r2a-accent-sky-bg:      #0c1e33;
+      --r2a-accent-sky-text:    #62aef0;
+      --r2a-accent-purple:      #c4a3f5;
+      --r2a-accent-purple-bg:   #1a1030;
+      --r2a-accent-purple-text: #c4a3f5;
+      --r2a-accent-orange:      #f5924a;
+      --r2a-accent-orange-bg:   #281400;
+
+      /* 阴影 */
+      --r2a-shadow-soft:
+        0 0.175px 1px rgba(0,0,0,0.1),
+        0 0.8px 2.9px  rgba(0,0,0,0.15),
+        0 2px 7.8px    rgba(0,0,0,0.2),
+        0 4px 18px     rgba(0,0,0,0.25);
+      --r2a-shadow-elevated:
+        0 1px 3px   rgba(0,0,0,0.2),
+        0 4px 10px  rgba(0,0,0,0.3),
+        0 12px 28px rgba(0,0,0,0.35);
+    }
+
+    /* ─────────────────────────────────────────────
+       Base Reset
+    ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--r2a-canvas-soft);
+      color: var(--r2a-ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      min-height: 100vh;
+    }
+
+    /* ─────────────────────────────────────────────
+       Layout
+    ───────────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 52px;
+      background: var(--r2a-surface);
+      border-bottom: 1px solid var(--r2a-hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: var(--r2a-shadow-soft);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-brand {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--r2a-ink);
+    }
+
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--r2a-ink-muted);  /* 修复：旧版用 ink-faint 深色下不可读 */
+    }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 14px;
+      background: var(--r2a-canvas-soft);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--r2a-ink-secondary);
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .theme-btn:hover { background: var(--r2a-hairline); }
+
+    .content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 100px;
+    }
+
+    /* ─────────────────────────────────────────────
+       Section
+    ───────────────────────────────────────────── */
+    .section { margin-bottom: 60px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--r2a-ink-muted);  /* 修复：旧版用 ink-faint 深色下不可读 */
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--r2a-hairline);
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .col { display: flex; flex-direction: column; gap: 12px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ─────────────────────────────────────────────
+       Color Swatches
+    ───────────────────────────────────────────── */
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 12px;
+    }
+
+    .swatch { display: flex; flex-direction: column; gap: 5px; }
+
+    .swatch-block {
+      height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--r2a-hairline);
+    }
+
+    .swatch-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--r2a-ink-secondary);
+    }
+
+    .swatch-hex {
+      font-size: 11px;
+      color: var(--r2a-ink-muted);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    .swatch-note {
+      font-size: 10px;
+      color: var(--r2a-warning);
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────
+       Typography
+    ───────────────────────────────────────────── */
+    .typo-list { display: flex; flex-direction: column; }
+
+    .typo-row {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--r2a-hairline);
+    }
+
+    .typo-tag {
+      min-width: 110px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--r2a-ink-faint);
+      flex-shrink: 0;
+    }
+
+    .typo-spec {
+      min-width: 160px;
+      font-size: 11px;
+      color: var(--r2a-ink-faint);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      flex-shrink: 0;
+    }
+
+    /* ─────────────────────────────────────────────
+       Cards
+    ───────────────────────────────────────────── */
+    .card {
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .card-sm {
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+
+    .card-elevated {
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--r2a-shadow-soft);
+    }
+
+    /* ─────────────────────────────────────────────
+       Buttons
+    ───────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.5;
+      height: 44px;
+      padding: 0 24px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--r2a-primary);
+      color: var(--r2a-on-primary);
+      border-radius: 9999px;
+    }
+
+    .btn-primary:hover { background: var(--r2a-primary-active); }
+    .btn-primary:focus-visible { outline: 2px solid var(--r2a-primary); outline-offset: 2px; }
+
+    .btn-secondary {
+      background: var(--r2a-surface);
+      color: var(--r2a-ink);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 9999px;
+    }
+
+    .btn-secondary:hover { background: var(--r2a-canvas-soft); }
+
+    .btn-utility {
+      background: var(--r2a-surface);
+      color: var(--r2a-ink);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 8px;
+      height: 36px;
+      font-size: 15px;
+      padding: 0 14px;
+    }
+
+    .btn-utility:hover { background: var(--r2a-canvas-soft); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--r2a-primary);
+      border: none;
+      border-radius: 8px;
+      height: 36px;
+      font-size: 15px;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover { background: var(--r2a-canvas-soft); }
+
+    .btn-disabled {
+      background: var(--r2a-canvas-soft);
+      color: var(--r2a-ink-faint);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 9999px;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .btn-full { width: 100%; }
+
+    /* ─────────────────────────────────────────────
+       Inputs
+    ───────────────────────────────────────────── */
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .input-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--r2a-ink);
+    }
+
+    .input {
+      background: var(--r2a-surface);
+      color: var(--r2a-ink);
+      border: 1px solid rgba(0, 0, 0, 0.14);
+      border-radius: 4px;
+      height: 44px;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 15px;
+      outline: none;
+      width: 100%;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+
+    [data-theme="dark"] .input { border-color: var(--r2a-hairline); }
+
+    .input::placeholder { color: var(--r2a-ink-faint); }
+
+    .input:focus { box-shadow: 0 0 0 2px var(--r2a-primary); }
+
+    .input-error { border-color: var(--r2a-error) !important; }
+    .input-error:focus { box-shadow: 0 0 0 2px var(--r2a-error); }
+
+    .input-hint { font-size: 13px; color: var(--r2a-ink-muted); }
+    .input-error-msg { font-size: 13px; color: var(--r2a-error); }
+
+    textarea.input {
+      height: auto;
+      min-height: 120px;
+      resize: vertical;
+      padding: 10px 12px;
+    }
+
+    /* ─────────────────────────────────────────────
+       Badges
+    ───────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      line-height: 1.33;
+    }
+
+    .badge-default  { background: var(--r2a-canvas-soft);       color: var(--r2a-ink-secondary); border: 1px solid var(--r2a-hairline); }
+    .badge-primary  { background: var(--r2a-primary-bg);         color: var(--r2a-primary); }
+    .badge-success  { background: var(--r2a-success-bg);         color: var(--r2a-success); }
+    .badge-error    { background: var(--r2a-error-bg);           color: var(--r2a-error); }
+    .badge-warning  { background: var(--r2a-warning-bg);         color: var(--r2a-warning); }
+    .badge-sky      { background: var(--r2a-accent-sky-bg);      color: var(--r2a-accent-sky-text); }
+    .badge-purple   { background: var(--r2a-accent-purple-bg);   color: var(--r2a-accent-purple-text); }
+    .badge-orange   { background: var(--r2a-accent-orange-bg);   color: var(--r2a-accent-orange); }
+
+    /* ─────────────────────────────────────────────
+       Toast
+    ───────────────────────────────────────────── */
+    .toast {
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      box-shadow: var(--r2a-shadow-elevated);
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .toast-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      margin-top: 1px;
+    }
+
+    .toast-body { flex: 1; }
+
+    .toast-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--r2a-ink);
+      margin-bottom: 2px;
+    }
+
+    .toast-msg { font-size: 13px; color: var(--r2a-ink-muted); }
+
+    /* ─────────────────────────────────────────────
+       Empty State
+    ───────────────────────────────────────────── */
+    .empty-state {
+      background: var(--r2a-canvas-soft);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 16px;
+      padding: 56px 32px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .empty-icon {
+      width: 48px;
+      height: 48px;
+      color: var(--r2a-ink-faint);
+      margin-bottom: 6px;
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--r2a-ink);
+    }
+
+    .empty-desc {
+      font-size: 14px;
+      color: var(--r2a-ink-muted);
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    /* ─────────────────────────────────────────────
+       Divider
+    ───────────────────────────────────────────── */
+    .divider { width: 100%; height: 1px; background: var(--r2a-hairline); margin: 8px 0; }
+
+    /* ─────────────────────────────────────────────
+       Sync Status
+    ───────────────────────────────────────────── */
+    .sync-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+    }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .sync-label { font-size: 13px; color: var(--r2a-ink-muted); flex: 1; }
+
+    .sync-action {
+      font-size: 12px;
+      color: var(--r2a-primary);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* ─────────────────────────────────────────────
+       Migration Banner
+    ───────────────────────────────────────────── */
+    .migration-banner {
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+      border-left: 4px solid var(--r2a-warning);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .migration-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .migration-body { flex: 1; }
+
+    .migration-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--r2a-ink);
+      margin-bottom: 4px;
+    }
+
+    .migration-desc {
+      font-size: 13px;
+      color: var(--r2a-ink-muted);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .migration-actions { display: flex; gap: 8px; }
+
+    /* ─────────────────────────────────────────────
+       Parse Steps
+    ───────────────────────────────────────────── */
+    .parse-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .parse-step + .parse-step { border-top: 1px solid var(--r2a-hairline); }
+
+    .parse-step-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .parse-step-body { flex: 1; }
+
+    .parse-step-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--r2a-ink);
+    }
+
+    .parse-step-desc { font-size: 12px; color: var(--r2a-ink-muted); }
+
+    /* ─────────────────────────────────────────────
+       Action Items
+    ───────────────────────────────────────────── */
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .action-item + .action-item { border-top: 1px solid var(--r2a-hairline); }
+
+    .action-check {
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid var(--r2a-hairline);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .action-text { font-size: 14px; color: var(--r2a-ink-secondary); line-height: 1.5; }
+
+    /* ─────────────────────────────────────────────
+       Project Card
+    ───────────────────────────────────────────── */
+    .project-card {
+      background: var(--r2a-surface);
+      border: 1px solid var(--r2a-hairline);
+      border-radius: 12px;
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .project-card:hover { background: var(--r2a-canvas-soft); }
+
+    .project-title { font-size: 15px; font-weight: 600; color: var(--r2a-ink); margin-bottom: 3px; }
+    .project-meta  { font-size: 12px; color: var(--r2a-ink-muted); }
+
+    /* ─────────────────────────────────────────────
+       Spinner
+    ───────────────────────────────────────────── */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    /* ─────────────────────────────────────────────
+       Utility
+    ───────────────────────────────────────────── */
+    .text-muted   { color: var(--r2a-ink-muted); }
+    .text-faint   { color: var(--r2a-ink-faint); }
+    .text-primary { color: var(--r2a-primary); }
+    .f12 { font-size: 12px; }
+    .f13 { font-size: 13px; }
+    .mt-md { margin-top: 16px; }
+    .mt-lg { margin-top: 20px; }
+    .bold { font-weight: 600; }
+    a { color: var(--r2a-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─────────────────────────────────────────────
+       Responsive — 移动端适配
+    ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      /* 小屏隐藏 topbar 副标题，避免挤压 */
+      .topbar-meta { display: none; }
+
+      /* 字体层级行改为纵向堆叠 */
+      .typo-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .typo-tag  { min-width: auto; }
+      .typo-spec { min-width: auto; }
+
+      /* 2 列变 1 列 */
+      .grid-2 { grid-template-columns: 1fr; }
+
+      .content { padding: 24px 16px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Top Bar ── -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">Read2Action</span>
+      <span class="topbar-meta">界面设计规范 v1.0 · 视觉预览</span>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+      <span id="themeIcon">🌙</span>
+      <span id="themeLabel">深色</span>
+    </button>
+  </nav>
+
+  <div class="content">
+
+    <!-- ══════════════════════════════════════════
+         1. COLOR TOKENS
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">色彩 Token</h2>
+
+      <p style="font-size:13px;color:var(--r2a-ink-muted);margin-bottom:16px;">
+        色块随主题切换自动变色。带 ⚠️ 的 accent 色仅允许小面积装饰/状态使用，禁止用于结构色或主按钮。
+        hex 标注同步更新为当前主题色值。
+      </p>
+
+      <div class="swatch-grid">
+        <!-- 结构色 -->
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-primary);border-color:var(--r2a-primary);"></div>
+          <div class="swatch-name">--r2a-primary</div>
+          <div class="swatch-hex" id="sh-primary">#0075de</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-primary-active);border-color:var(--r2a-primary-active);"></div>
+          <div class="swatch-name">--r2a-primary-active</div>
+          <div class="swatch-hex" id="sh-primary-active">#005bab</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-primary-bg);"></div>
+          <div class="swatch-name">--r2a-primary-bg</div>
+          <div class="swatch-hex" id="sh-primary-bg">#e8f3fd</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-canvas-soft);"></div>
+          <div class="swatch-name">--r2a-canvas-soft</div>
+          <div class="swatch-hex" id="sh-canvas-soft">#f6f5f4</div>
+          <div class="swatch-note" style="color:var(--r2a-ink-faint);" id="note-canvas-soft">页面底</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-surface);"></div>
+          <div class="swatch-name">--r2a-surface</div>
+          <div class="swatch-hex" id="sh-surface">#ffffff</div>
+          <div class="swatch-note" style="color:var(--r2a-ink-faint);" id="note-surface">卡片面</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-ink);border-color:var(--r2a-hairline);"></div>
+          <div class="swatch-name">--r2a-ink</div>
+          <div class="swatch-hex" id="sh-ink">#000000</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-ink-secondary);"></div>
+          <div class="swatch-name">--r2a-ink-secondary</div>
+          <div class="swatch-hex" id="sh-ink-secondary">#31302e</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-ink-muted);"></div>
+          <div class="swatch-name">--r2a-ink-muted</div>
+          <div class="swatch-hex" id="sh-ink-muted">#615d59</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-ink-faint);"></div>
+          <div class="swatch-name">--r2a-ink-faint</div>
+          <div class="swatch-hex" id="sh-ink-faint">#a39e98</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-hairline);"></div>
+          <div class="swatch-name">--r2a-hairline</div>
+          <div class="swatch-hex" id="sh-hairline">#e6e6e6</div>
+        </div>
+        <!-- 语义色 -->
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-success);border-color:var(--r2a-success);"></div>
+          <div class="swatch-name">--r2a-success</div>
+          <div class="swatch-hex" id="sh-success">#1aae39</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-success-bg);"></div>
+          <div class="swatch-name">--r2a-success-bg</div>
+          <div class="swatch-hex" id="sh-success-bg">#e6f9eb</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-error);border-color:var(--r2a-error);"></div>
+          <div class="swatch-name">--r2a-error</div>
+          <div class="swatch-hex" id="sh-error">#e53935</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-error-bg);"></div>
+          <div class="swatch-name">--r2a-error-bg</div>
+          <div class="swatch-hex" id="sh-error-bg">#fde8e8</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-warning);border-color:var(--r2a-warning);"></div>
+          <div class="swatch-name">--r2a-warning</div>
+          <div class="swatch-hex" id="sh-warning">#f59e0b</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-warning-bg);"></div>
+          <div class="swatch-name">--r2a-warning-bg</div>
+          <div class="swatch-hex" id="sh-warning-bg">#fef3c7</div>
+        </div>
+        <!-- Accent 色 -->
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-accent-sky);border-color:var(--r2a-accent-sky);"></div>
+          <div class="swatch-name">--r2a-accent-sky</div>
+          <div class="swatch-hex" id="sh-accent-sky">#62aef0</div>
+          <div class="swatch-note">⚠️ 仅装饰/状态</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-accent-sky-bg);"></div>
+          <div class="swatch-name">--r2a-accent-sky-bg</div>
+          <div class="swatch-hex" id="sh-accent-sky-bg">#e8f3fd</div>
+          <div class="swatch-note">⚠️ 仅装饰/状态</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-accent-purple);border-color:var(--r2a-accent-purple);"></div>
+          <div class="swatch-name">--r2a-accent-purple</div>
+          <div class="swatch-hex" id="sh-accent-purple">#9b79d8</div>
+          <div class="swatch-note">⚠️ 仅装饰/状态</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-accent-purple-bg);"></div>
+          <div class="swatch-name">--r2a-accent-purple-bg</div>
+          <div class="swatch-hex" id="sh-accent-purple-bg">#f2eefe</div>
+          <div class="swatch-note">⚠️ 仅装饰/状态</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-accent-orange);border-color:var(--r2a-accent-orange);"></div>
+          <div class="swatch-name">--r2a-accent-orange</div>
+          <div class="swatch-hex" id="sh-accent-orange">#dd5b00</div>
+          <div class="swatch-note">⚠️ 仅装饰/状态</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-block" style="background:var(--r2a-accent-orange-bg);"></div>
+          <div class="swatch-name">--r2a-accent-orange-bg</div>
+          <div class="swatch-hex" id="sh-accent-orange-bg">#fdf0e6</div>
+          <div class="swatch-note">⚠️ 仅装饰/状态</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         2. TYPOGRAPHY
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">字体层级</h2>
+      <div class="typo-list">
+        <div class="typo-row">
+          <div class="typo-tag">display-lg</div>
+          <div class="typo-spec">40px · 700 · -0.025em</div>
+          <div style="font-size:40px;font-weight:700;letter-spacing:-0.025em;color:var(--r2a-ink);line-height:1.1;">把阅读转化为行动</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">display-md</div>
+          <div class="typo-spec">26px · 700 · -0.02em</div>
+          <div style="font-size:26px;font-weight:700;letter-spacing:-0.02em;color:var(--r2a-ink);line-height:1.23;">解析结果 · 行动项提炼</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">title</div>
+          <div class="typo-spec">20px · 600 · -0.006em</div>
+          <div style="font-size:20px;font-weight:600;letter-spacing:-0.006em;color:var(--r2a-ink);line-height:1.4;">项目笔记</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">title-sm</div>
+          <div class="typo-spec">18px · 600 · 0</div>
+          <div style="font-size:18px;font-weight:600;color:var(--r2a-ink);line-height:1.4;">保存到项目</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">body-md</div>
+          <div class="typo-spec">16px · 400 · 0</div>
+          <div style="font-size:16px;font-weight:400;color:var(--r2a-ink);line-height:1.5;">Read2Action 帮你从任意文章、报告中提炼核心观点和可执行行动项，无需手动摘录。</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">body-sm</div>
+          <div class="typo-spec">15px · 400 · 0</div>
+          <div style="font-size:15px;font-weight:400;color:var(--r2a-ink-secondary);line-height:1.33;">登录后可跨设备同步项目和笔记</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">button</div>
+          <div class="typo-spec">16px · 500 · 0</div>
+          <div style="font-size:16px;font-weight:500;color:var(--r2a-ink);line-height:1.5;">登录 Read2Action</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">caption</div>
+          <div class="typo-spec">14px · 400 · 0</div>
+          <div style="font-size:14px;color:var(--r2a-ink-muted);line-height:1.43;">2026-06-09 · 3 条行动项</div>
+        </div>
+        <div class="typo-row">
+          <div class="typo-tag">eyebrow</div>
+          <div class="typo-spec">12px · 600 · +0.09em</div>
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--r2a-ink-muted);line-height:1.33;">AI 解析阶段</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         3. BUTTONS
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">按钮</h2>
+      <div class="row" style="align-items:center;">
+        <button class="btn btn-primary">登录 Read2Action</button>
+        <button class="btn btn-secondary">取消</button>
+        <button class="btn btn-utility">保存到项目</button>
+        <button class="btn btn-ghost">忘记密码</button>
+        <button class="btn btn-disabled">正在处理…</button>
+      </div>
+      <p class="f12 text-faint" style="margin-top:10px;">
+        Primary（pill · 全站唯一实心色）· Secondary（pill + hairline）· Utility（8px 圆角）· Ghost（透明）· Disabled
+      </p>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         4. INPUTS
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">输入框</h2>
+      <div class="grid-2">
+        <div class="col">
+          <div class="input-group">
+            <label class="input-label">邮箱（默认）</label>
+            <input class="input" type="email" placeholder="you@example.com" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">密码（默认）</label>
+            <input class="input" type="password" placeholder="••••••••" />
+            <span class="input-hint">至少 8 位字符</span>
+          </div>
+        </div>
+        <div class="col">
+          <div class="input-group">
+            <label class="input-label">邮箱（错误态）</label>
+            <input class="input input-error" type="email" value="invalid-email" />
+            <span class="input-error-msg">请输入有效的邮箱地址</span>
+          </div>
+          <div class="input-group">
+            <label class="input-label">备注（Textarea）</label>
+            <textarea class="input" placeholder="添加笔记或备注…"></textarea>
+          </div>
+        </div>
+      </div>
+      <p class="f12 text-faint" style="margin-top:10px;">输入框圆角 4px（radius-xs），禁止使用 pill 圆角</p>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         5. CARDS
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">卡片</h2>
+      <div class="row">
+        <div class="card" style="flex:1;min-width:220px;">
+          <p class="f12 bold text-faint" style="text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">标准卡片（无阴影）</p>
+          <p style="font-size:16px;font-weight:600;color:var(--r2a-ink);margin-bottom:6px;">解析结果摘要</p>
+          <p class="text-muted" style="font-size:14px;line-height:1.5;">hairline 边框 + surface 底，不加 shadow。这是默认卡片风格。</p>
+        </div>
+        <div class="card-elevated" style="flex:1;min-width:220px;">
+          <p class="f12 bold text-faint" style="text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">浮起卡片（软阴影）</p>
+          <p style="font-size:16px;font-weight:600;color:var(--r2a-ink);margin-bottom:6px;">项目笔记</p>
+          <p class="text-muted" style="font-size:14px;line-height:1.5;">多层近透明叠影，不用 hard drop-shadow。用于 Toast、Modal、登录卡。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         6. BADGES
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">标签 / Badge</h2>
+      <div class="row" style="align-items:center;flex-wrap:wrap;">
+        <span class="badge badge-default">默认标签</span>
+        <span class="badge badge-primary">Read2Action</span>
+        <span class="badge badge-success">已同步</span>
+        <span class="badge badge-error">同步失败</span>
+        <span class="badge badge-warning">待迁移</span>
+        <span class="badge badge-sky">阅读原文</span>
+        <span class="badge badge-purple">提炼结构</span>
+        <span class="badge badge-orange">理解内容</span>
+        <span class="badge badge-success">✓ 解析完成</span>
+      </div>
+      <p class="f12 text-faint" style="margin-top:10px;">
+        ⚠️ 彩色 accent badge 仅限 AI 解析阶段、同步状态；禁止用于主按钮或大面积结构色
+      </p>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         7. TOAST
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">Toast 通知</h2>
+      <div class="col" style="max-width:360px;">
+        <div class="toast">
+          <div class="toast-icon" style="color:var(--r2a-success);">✓</div>
+          <div class="toast-body">
+            <div class="toast-title">已同步</div>
+            <div class="toast-msg">项目和笔记已成功同步到云端</div>
+          </div>
+        </div>
+        <div class="toast">
+          <div class="toast-icon" style="color:var(--r2a-error);">✕</div>
+          <div class="toast-body">
+            <div class="toast-title">同步失败，可重试</div>
+            <div class="toast-msg">网络连接超时，<a href="#">点击重试</a></div>
+          </div>
+        </div>
+        <div class="toast">
+          <div class="toast-icon" style="color:var(--r2a-warning);">⚠</div>
+          <div class="toast-body">
+            <div class="toast-title">本地数据待迁移</div>
+            <div class="toast-msg">检测到 5 条本地笔记未上传</div>
+          </div>
+        </div>
+        <div class="toast">
+          <div class="toast-icon" style="color:var(--r2a-primary);">
+            <span class="spinner" style="border-color:var(--r2a-primary);border-top-color:transparent;"></span>
+          </div>
+          <div class="toast-body">
+            <div class="toast-title">正在同步到云端</div>
+            <div class="toast-msg">请稍候…</div>
+          </div>
+        </div>
+      </div>
+      <p class="f12 text-faint" style="margin-top:10px;">Toast 背景不得彩色化；语义由图标色传达</p>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         8. EMPTY STATE
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">空状态</h2>
+      <div class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="8" width="32" height="32" rx="4"/>
+          <line x1="16" y1="20" x2="32" y2="20"/>
+          <line x1="16" y1="26" x2="26" y2="26"/>
+        </svg>
+        <div class="empty-title">暂无项目笔记</div>
+        <div class="empty-desc">解析一篇文章，将结果保存到项目后，笔记就会出现在这里。</div>
+        <button class="btn btn-primary" style="margin-top:10px;">开始解析</button>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         9. LOGIN CARD
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">登录 / 注册卡片</h2>
+      <div class="grid-2">
+        <!-- Login -->
+        <div class="card-elevated">
+          <div style="text-align:center;margin-bottom:24px;">
+            <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--r2a-ink);margin-bottom:6px;">登录 Read2Action</div>
+            <div class="text-muted" style="font-size:14px;">把阅读转化为行动</div>
+          </div>
+          <div class="col" style="gap:14px;">
+            <div class="input-group">
+              <label class="input-label">邮箱</label>
+              <input class="input" type="email" placeholder="you@example.com" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">密码</label>
+              <input class="input" type="password" placeholder="••••••••" />
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" style="margin-top:18px;">登录</button>
+          <div style="text-align:center;margin-top:10px;">
+            <a href="#" class="f13 text-muted">忘记密码？</a>
+          </div>
+          <div class="divider" style="margin:14px 0;"></div>
+          <div style="text-align:center;" class="f13 text-muted">
+            还没有账号？<a href="#">免费注册</a>
+          </div>
+        </div>
+        <!-- Register -->
+        <div class="card-elevated">
+          <div style="text-align:center;margin-bottom:24px;">
+            <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--r2a-ink);margin-bottom:6px;">创建账号</div>
+            <div class="text-muted" style="font-size:14px;">当前数据仅保存在本机</div>
+          </div>
+          <div class="col" style="gap:14px;">
+            <div class="input-group">
+              <label class="input-label">邮箱</label>
+              <input class="input" type="email" placeholder="you@example.com" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">密码</label>
+              <input class="input" type="password" placeholder="••••••••" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">确认密码</label>
+              <input class="input" type="password" placeholder="••••••••" />
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" style="margin-top:18px;">注册</button>
+          <div class="divider" style="margin:14px 0;"></div>
+          <div style="text-align:center;" class="f13 text-muted">
+            已有账号？<a href="#">直接登录</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         10. PARSE RESULT CARD
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">解析结果卡片</h2>
+      <div class="card">
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:18px;font-weight:600;color:var(--r2a-ink);margin-bottom:4px;">AI 知识整理工具的产品设计方向</div>
+            <div class="f13 text-muted">来源：medium.com · 解析于 2026-06-09</div>
+          </div>
+          <span class="badge badge-success" style="flex-shrink:0;">✓ 解析完成</span>
+        </div>
+
+        <!-- Parse steps -->
+        <div style="margin-bottom:16px;">
+          <p class="f12 bold text-faint" style="text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">解析过程</p>
+          <div class="parse-step">
+            <div class="parse-step-icon" style="background:var(--r2a-accent-orange-bg);color:var(--r2a-accent-orange);">🧠</div>
+            <div class="parse-step-body">
+              <div class="parse-step-name">理解内容</div>
+              <div class="parse-step-desc">识别文章结构与核心议题</div>
+            </div>
+            <span class="badge badge-orange">完成</span>
+          </div>
+          <div class="parse-step">
+            <div class="parse-step-icon" style="background:var(--r2a-accent-sky-bg);color:var(--r2a-accent-sky-text);">📖</div>
+            <div class="parse-step-body">
+              <div class="parse-step-name">阅读原文</div>
+              <div class="parse-step-desc">深度分析段落与论据</div>
+            </div>
+            <span class="badge badge-sky">完成</span>
+          </div>
+          <div class="parse-step">
+            <div class="parse-step-icon" style="background:var(--r2a-accent-purple-bg);color:var(--r2a-accent-purple-text);">✨</div>
+            <div class="parse-step-body">
+              <div class="parse-step-name">提炼结构</div>
+              <div class="parse-step-desc">生成行动项与摘要</div>
+            </div>
+            <span class="badge badge-purple">完成</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Action items -->
+        <div style="margin-top:14px;">
+          <p class="f12 bold text-faint" style="text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">行动项</p>
+          <div class="action-item">
+            <div class="action-check"></div>
+            <div class="action-text">评估现有产品在「内容优先」设计原则上的差距，列出 Top 3 问题</div>
+          </div>
+          <div class="action-item">
+            <div class="action-check"></div>
+            <div class="action-text">收集 3 个 paper-calm 风格参考，确定字体与色彩迁移方向</div>
+          </div>
+          <div class="action-item">
+            <div class="action-check"></div>
+            <div class="action-text">在下一迭代中将工具栏 chrome 缩减，减少非内容 UI 占比</div>
+          </div>
+        </div>
+
+        <!-- CTAs -->
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" style="flex:1;min-width:120px;">保存到项目</button>
+          <button class="btn btn-utility">复制摘要</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         11. PROJECT CARDS
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">项目卡片</h2>
+      <div class="col" style="max-width:560px;gap:8px;">
+        <div class="project-card">
+          <div>
+            <div class="project-title">AI 产品设计研究</div>
+            <div class="project-meta">5 篇解析 · 12 条笔记 · 最近更新 2 天前</div>
+          </div>
+          <span class="badge badge-success">已同步</span>
+        </div>
+        <div class="project-card">
+          <div>
+            <div class="project-title">阅读笔记 2026</div>
+            <div class="project-meta">2 篇解析 · 4 条笔记 · 最近更新 今天</div>
+          </div>
+          <span class="badge badge-warning">待同步</span>
+        </div>
+        <div class="project-card">
+          <div>
+            <div class="project-title">产品规划 Q3</div>
+            <div class="project-meta">0 篇解析 · 1 条笔记 · 刚创建</div>
+          </div>
+          <span class="badge badge-default">本地</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         12. SYNC STATUS
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">云端同步状态</h2>
+      <div class="col" style="max-width:420px;gap:8px;">
+        <div class="sync-row">
+          <div class="sync-dot" style="background:var(--r2a-ink-faint);"></div>
+          <span class="sync-label">当前数据仅保存在本机</span>
+          <a class="sync-action" href="#">登录以同步</a>
+        </div>
+        <div class="sync-row">
+          <div class="sync-dot" style="background:var(--r2a-warning);"></div>
+          <span class="sync-label">等待同步</span>
+        </div>
+        <div class="sync-row">
+          <div class="sync-dot" style="background:var(--r2a-accent-sky);"></div>
+          <span class="sync-label">正在同步到云端…</span>
+          <span class="spinner" style="border-color:var(--r2a-accent-sky);border-top-color:transparent;"></span>
+        </div>
+        <div class="sync-row">
+          <div class="sync-dot" style="background:var(--r2a-success);"></div>
+          <span class="sync-label">已同步</span>
+        </div>
+        <div class="sync-row">
+          <div class="sync-dot" style="background:var(--r2a-error);"></div>
+          <span class="sync-label">同步失败，可重试</span>
+          <a class="sync-action" href="#">重试</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         13. MIGRATION BANNER
+    ══════════════════════════════════════════ -->
+    <section class="section">
+      <h2 class="section-label">localStorage 迁移提示</h2>
+      <div style="max-width:560px;">
+        <div class="migration-banner">
+          <div class="migration-icon">📦</div>
+          <div class="migration-body">
+            <div class="migration-title">本地数据待迁移</div>
+            <div class="migration-desc">
+              检测到 5 条本地笔记。登录后可跨设备同步项目和笔记，数据不会丢失。
+            </div>
+            <div class="migration-actions">
+              <button class="btn btn-utility" style="height:32px;font-size:13px;padding:0 12px;">立即同步</button>
+              <button class="btn btn-ghost" style="height:32px;font-size:13px;padding:0 10px;color:var(--r2a-ink-muted);">暂时跳过</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+
+  <script>
+    /* ── Theme token hex map（切换时同步更新 swatch 文案）── */
+    const TOKENS = {
+      light: {
+        'sh-primary':           '#0075de',
+        'sh-primary-active':    '#005bab',
+        'sh-primary-bg':        '#e8f3fd',
+        'sh-canvas-soft':       '#f6f5f4',
+        'sh-surface':           '#ffffff',
+        'sh-ink':               '#000000',
+        'sh-ink-secondary':     '#31302e',
+        'sh-ink-muted':         '#615d59',
+        'sh-ink-faint':         '#a39e98',
+        'sh-hairline':          '#e6e6e6',
+        'sh-success':           '#1aae39',
+        'sh-success-bg':        '#e6f9eb',
+        'sh-error':             '#e53935',
+        'sh-error-bg':          '#fde8e8',
+        'sh-warning':           '#f59e0b',
+        'sh-warning-bg':        '#fef3c7',
+        'sh-accent-sky':        '#62aef0',
+        'sh-accent-sky-bg':     '#e8f3fd',
+        'sh-accent-purple':     '#9b79d8',
+        'sh-accent-purple-bg':  '#f2eefe',
+        'sh-accent-orange':     '#dd5b00',
+        'sh-accent-orange-bg':  '#fdf0e6',
+      },
+      dark: {
+        'sh-primary':           '#0075de',
+        'sh-primary-active':    '#005bab',
+        'sh-primary-bg':        '#0b1e33',
+        'sh-canvas-soft':       '#1c1a17',
+        'sh-surface':           '#2b2822',
+        'sh-ink':               '#f0ede6',
+        'sh-ink-secondary':     '#c4bfb5',
+        'sh-ink-muted':         '#9a948a',
+        'sh-ink-faint':         '#736d64',
+        'sh-hairline':          '#3d3932',
+        'sh-success':           '#2ecc5a',
+        'sh-success-bg':        '#0b2714',
+        'sh-error':             '#f56565',
+        'sh-error-bg':          '#2e1010',
+        'sh-warning':           '#fbbf24',
+        'sh-warning-bg':        '#2a1e00',
+        'sh-accent-sky':        '#62aef0',
+        'sh-accent-sky-bg':     '#0c1e33',
+        'sh-accent-purple':     '#c4a3f5',
+        'sh-accent-purple-bg':  '#1a1030',
+        'sh-accent-orange':     '#f5924a',
+        'sh-accent-orange-bg':  '#281400',
+      },
+    };
+
+    function toggleTheme() {
+      const html   = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const next   = isDark ? 'light' : 'dark';
+
+      html.setAttribute('data-theme', next);
+      document.getElementById('themeIcon').textContent  = isDark ? '🌙' : '☀️';
+      document.getElementById('themeLabel').textContent = isDark ? '深色' : '浅色';
+
+      /* 同步所有 swatch 的 hex 文案 */
+      const map = TOKENS[next];
+      for (const [id, hex] of Object.entries(map)) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = hex;
+      }
+
+      /* 更新 canvas-soft / surface 注释 */
+      const noteCs = document.getElementById('note-canvas-soft');
+      const noteSf = document.getElementById('note-surface');
+      if (noteCs) noteCs.textContent = next === 'dark' ? '页面暗底' : '页面底';
+      if (noteSf) noteSf.textContent = next === 'dark' ? '卡片暗面' : '卡片面';
+    }
+  </script>
+</body>
+</html>
