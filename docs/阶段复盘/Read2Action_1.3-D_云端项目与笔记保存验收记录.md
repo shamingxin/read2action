@@ -1,7 +1,7 @@
-# Read2Action 1.3-D「云端项目 / 笔记保存」· 本地验收记录（D-1 / D-2 / D-3）
+# Read2Action 1.3-D「云端项目 / 笔记保存」· 验收记录（D-1 / D-2 / D-3 / D-4）
 
 > **文档性质**：**1.3-D 子阶段**事实记录与验收归档（非 1.3 全版本终稿）。**不写**真实 API Key / token / 数据库密码。  
-> **交叉引用**：`docs/核心记录/02_当前进度快照.md`、`docs/核心记录/03_下一步任务清单.md`、`docs/核心记录/04_重要决策日志.md`（**2026-06-11 · 1.3-D-3 本地验收**）、`docs/核心记录/06_版本更新记录.md`、`docs/PRD/1.3/1.3-A_Supabase账号与数据库方案.md`、`docs/版本启动方案/09_1.3-B_Supabase项目创建与环境变量启动方案.md`。
+> **交叉引用**：`docs/核心记录/02_当前进度快照.md`、`docs/核心记录/03_下一步任务清单.md`、`docs/核心记录/04_重要决策日志.md`（**2026-06-11 · 1.3-D-4 线上验收**）、`docs/核心记录/06_版本更新记录.md`、`docs/阶段复盘/Read2Action_1.3_账号登录与数据库版总复盘.md`、`docs/PRD/1.3/1.3-A_Supabase账号与数据库方案.md`、`docs/版本启动方案/09_1.3-B_Supabase项目创建与环境变量启动方案.md`。
 
 ---
 
@@ -76,39 +76,106 @@
 
 ---
 
-## 五、本阶段明确不做
+## 五、1.3-D-4 ✅ 最终验收与线上部署（本地 + Production 验收通过）
+
+### 5.1 D-4 前置检查（只读）
+
+| 检查项 | 结果 |
+|--------|------|
+| `git status` | 工作区干净（仅未跟踪 SOP 文件，不纳入版本） |
+| `npm run test` | **52 passed** |
+| `npm run build` | 通过 |
+
+### 5.2 本地验收发现的阻塞 bug 与修复
+
+| 项 | 内容 |
+|----|------|
+| **现象** | 已登录保存到「默认项目」后，项目列表可见云端 note；**点击进入 note 详情页 404** |
+| **根因** | `notes/[id]/page.tsx` 仅查 mock 项目 / mock note + localStorage；云端 UUID 项目与 note 未接入 Supabase 读取 |
+| **修复** | `page.tsx` 已登录时 `getCloudProjectById` + `getCloudNoteById`；`NoteDetailResolver` 增加 `cloudNote` 优先渲染分支 |
+| **commit** | **`9c08757`** `fix(1.3-D): support cloud note detail page` |
+| **本地复验** | ✅ 通过 |
+
+### 5.3 Vercel Production 部署
+
+| 项 | 内容 |
+|----|------|
+| **部署 commit** | **`9c08757`**（`main`） |
+| **线上地址** | `https://read2action.vercel.app` |
+| **Vercel 环境变量（Production）** | `AI_MODEL`、`AI_BASE_URL`、`AI_API_KEY`、`NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+
+### 5.4 线上排障记录
+
+| 项 | 内容 |
+|----|------|
+| **现象** | Production 曾出现 **500**：`MIDDLEWARE_INVOCATION_FAILED` |
+| **日志原因** | `Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY`（middleware 每次请求调用 `getSupabaseEnv()`） |
+| **处理** | 在 Vercel 补齐 Supabase 两项环境变量 → **Redeploy** → 恢复 |
+
+### 5.5 Supabase Auth URL Configuration（Production）
+
+| 配置项 | 值 |
+|--------|-----|
+| **Site URL** | `https://read2action.vercel.app` |
+| **Redirect URLs** | `http://localhost:3000/**` + `https://read2action.vercel.app/**` + `https://*.vercel.app/**` |
+
+### 5.6 线上验收清单（✅ 全部通过）
+
+| # | 验收项 | 结果 |
+|---|--------|------|
+| 1 | 登录 | ✅ |
+| 2 | 文本解析 → `/result` 展示 AI 结果 | ✅ |
+| 3 | 结果页「保存到默认项目」 | ✅ |
+| 4 | 侧栏进入「默认项目」，列表可见刚保存 note | ✅ |
+| 5 | 点击云端 note 进入详情页 **不 404** | ✅ |
+| 6 | 刷新后 note 仍在 | ✅ |
+| 7 | 退出登录落 **`/`**，不 404 | ✅ |
+
+### 5.7 已知非阻塞项（留待后续体验优化）
+
+- 部分页面切换 / 云端数据加载存在**轻微卡顿或等待感**；**不作为 1.3-D 阻塞问题**，记入后续体验优化 backlog。
+
+### 5.8 工程检查（D-4 收尾时）
+
+- **`npm run test`**：**52 passed**。  
+- **`npm run build`**：通过。
+
+---
+
+## 六、本阶段明确不做
 
 1. **不做** localStorage 迁移（属 **1.3-E**）。  
 2. **不做** 保存后自动跳转项目详情页（维持 D-2：**停留 `/result`**）。  
 3. **不改** `/api/analyze`。  
-4. **不改** 保存弹窗主逻辑（D-3 仅侧栏 / 详情页读取与稳定性修复）。  
-5. **不做** 数据库表结构 / RLS 策略调整（GRANT 为环境侧人工修复）。  
-6. **不做** Vercel 部署。  
-7. **不 git commit / push**（截至本文档写入时；功能代码与 docs 均在本地工作区）。
+4. **不做** 数据库表结构 / RLS 策略调整（GRANT 为环境侧人工修复）。  
+5. **不做** 侧栏「最近」读云端（留待后续单独立项）。  
+6. **不做** 上传文件解析 / 链接解析（属 **1.4**）。
 
 ---
 
-## 六、当前状态与下一步
+## 七、当前状态与下一步
 
 | 项 | 状态 |
 |----|------|
 | **1.3-D-1** | ✅ 本地验收通过 |
 | **1.3-D-2** | ✅ 本地验收通过 |
 | **1.3-D-3** | ✅ 本地验收通过 |
-| **1.3-D 整体** | **进行中** — **等待决定是否进入 D-4**（如 note 详情读云端、最近列表读云端等，须单独立项） |
+| **1.3-D-4** | ✅ 本地 + **Production 线上验收通过** |
+| **1.3-D 整体** | **✅ 完成** |
+| **功能 commit** | **`d5f5a88`**（云端读写主链路）+ **`9c08757`**（note 详情页修复） |
 | **test / build** | **52 passed** / **build 通过** |
 
-**默认下一决策点**：是否立项 **1.3-D-4**（或直接进入 **1.3-E** localStorage 迁移）；开工前仍须 **列文件清单 → 用户确认**。
+**默认下一决策点**：是否立项 **1.3-E**（localStorage 迁移）或 **1.3-F**（轻量 UI 统一 + 体验优化）；开工前仍须 **列文件清单 → 用户确认**。
 
 ---
 
-## 七、人工验收清单（D-3 主链路 · 可复现）
+## 八、人工验收清单（D-4 全链路 · 可复现）
 
-1. 登录新账号。  
-2. 完成一次解析。  
-3. 在结果页保存到「默认项目」→ 确认仍在 **`/result`**。  
-4. Supabase **`public.notes`** 新增记录。  
-5. 点击左侧云端「默认项目」进入详情页 → 可见刚保存的 **note 标题**。  
-6. 刷新详情页 → **notes 仍展示**；侧栏 **不闪现** mock 项目列表。  
+1. 登录账号（本地或 `https://read2action.vercel.app`）。  
+2. 完成一次解析 → 进入 **`/result`**。  
+3. 保存到「默认项目」→ 确认仍在 **`/result`**。  
+4. 侧栏进入「默认项目」→ 列表可见刚保存 **note 标题**。  
+5. **点击 note 标题** → 详情页正常展示（**不 404**）。  
+6. 刷新详情页 → **note 仍在**。  
 7. 退出登录 → 落 **`/`**，无 **404**。  
-8. 访客模式访问 mock 项目 → **不崩溃**，localStorage 逻辑可用。
+8. 访客模式 → mock / localStorage 回退仍可用。
