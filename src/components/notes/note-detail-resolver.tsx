@@ -12,6 +12,7 @@ type Props = {
   projectName: string;
   noteId: string;
   mockNote: Note | null;
+  cloudNote?: Note | null;
 };
 
 export function NoteDetailResolver({
@@ -19,12 +20,24 @@ export function NoteDetailResolver({
   projectName,
   noteId,
   mockNote,
+  cloudNote,
 }: Props) {
   const [clientReady, setClientReady] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => setClientReady(true));
   }, []);
+
+  // 已登录云端 note（Server Component 预取，优先展示）
+  if (cloudNote) {
+    return (
+      <NoteDetailView
+        note={cloudNote}
+        projectId={projectId}
+        projectName={projectName}
+      />
+    );
+  }
 
   if (mockNote && mockNote.projectId === projectId) {
     return (
