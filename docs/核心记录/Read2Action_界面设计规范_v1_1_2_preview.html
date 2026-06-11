@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Read2Action · 界面设计规范 v1.1.2 · 预览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     R2A v1.1 — TOKEN ROOT
+     ========================================================= */
+  :root[data-theme="light"] {
+    /* Structure */
+    --r2a-primary: #1e4d80;
+    --r2a-primary-active: #163d68;
+    --r2a-on-primary: #ffffff;
+    --r2a-primary-bg: #e8eff7;
+    --r2a-canvas: #ffffff;
+    --r2a-canvas-soft: #f8f7f3;
+    --r2a-surface: #ffffff;
+    --r2a-hover: #f2efe7;
+    --r2a-ink: #1f1d18;
+    --r2a-ink-secondary: #4a4640;
+    --r2a-ink-muted: #6e6a62;
+    --r2a-ink-faint: #a8a39a;
+    --r2a-hairline: #ebe9e2;
+    --r2a-hairline-soft: #f2f0ea;
+
+    /* Ink accent */
+    --r2a-accent-ink: #8b5a3c;
+    --r2a-accent-ink-bg: rgba(139, 90, 60, 0.10);
+
+    /* Semantic */
+    --r2a-success: #1aae39;
+    --r2a-error: #e53935;
+    --r2a-warning: #f59e0b;
+    --r2a-success-bg: #e6f9eb;
+    --r2a-error-bg: #fde8e8;
+    --r2a-warning-bg: #fef3c7;
+
+    /* Shadow tone (warm) */
+    --r2a-shadow-soft:
+      0 1px 2px rgba(20, 16, 10, 0.02),
+      0 4px 18px rgba(20, 16, 10, 0.04);
+    --r2a-shadow-elevated:
+      0 2px 4px rgba(20, 16, 10, 0.03),
+      0 12px 32px rgba(20, 16, 10, 0.06);
+
+    /* Page chrome (preview-only) */
+    --nav-bg: rgba(248, 247, 243, 0.85);
+  }
+
+  :root[data-theme="dark"] {
+    --r2a-primary: #5a87bd;
+    --r2a-primary-active: #7aa3d0;
+    --r2a-on-primary: #f0eadc;
+    --r2a-primary-bg: #162435;
+    --r2a-canvas: #1a1814;
+    --r2a-canvas-soft: #1a1814;
+    --r2a-surface: #25221c;
+    --r2a-hover: #2f2b24;
+    --r2a-ink: #f0eadc;
+    --r2a-ink-secondary: #c8c0b0;
+    --r2a-ink-muted: #928876;
+    --r2a-ink-faint: #6e6557;
+    --r2a-hairline: #3a3429;
+    --r2a-hairline-soft: #322d24;
+
+    --r2a-accent-ink: #c89878;
+    --r2a-accent-ink-bg: rgba(200, 152, 120, 0.14);
+
+    --r2a-success: #2ecc5a;
+    --r2a-error: #f56565;
+    --r2a-warning: #fbbf24;
+    --r2a-success-bg: #0b2714;
+    --r2a-error-bg: #2e1010;
+    --r2a-warning-bg: #2a1e00;
+
+    --r2a-shadow-soft:
+      0 1px 2px rgba(0, 0, 0, 0.20),
+      0 4px 18px rgba(0, 0, 0, 0.30);
+    --r2a-shadow-elevated:
+      0 2px 4px rgba(0, 0, 0, 0.25),
+      0 12px 32px rgba(0, 0, 0, 0.40);
+
+    --nav-bg: rgba(26, 24, 20, 0.85);
+  }
+
+  /* Theme-independent tokens */
+  :root {
+    /* Duration */
+    --r2a-duration-fast: 80ms;
+    --r2a-duration-base: 150ms;
+    --r2a-duration-slow: 250ms;
+    /* Easing */
+    --r2a-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --r2a-ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
+
+    /* Font stacks */
+    --r2a-font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', system-ui, -apple-system, sans-serif;
+    --r2a-font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+    --r2a-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+    /* Radius */
+    --r2a-radius-xs: 3px;
+    --r2a-radius-sm: 4px;
+    --r2a-radius-md: 6px;
+    --r2a-radius-button: 8px;
+    --r2a-radius-lg: 8px;
+    --r2a-radius-xl: 12px;
+  }
+
+  /* =========================================================
+     RESET & BASE
+     ========================================================= */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--r2a-canvas-soft);
+    color: var(--r2a-ink);
+    font-family: var(--r2a-font-sans);
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      background-color var(--r2a-duration-slow) var(--r2a-ease-out),
+      color var(--r2a-duration-slow) var(--r2a-ease-out);
+  }
+
+  /* Focus discipline — keyboard only */
+  *:focus { outline: none; }
+  *:focus-visible {
+    outline: 2px solid var(--r2a-primary);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  ::selection {
+    background: var(--r2a-accent-ink-bg);
+    color: var(--r2a-ink);
+  }
+
+  /* =========================================================
+     NAV
+     ========================================================= */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    background: var(--nav-bg);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--r2a-hairline);
+    transition:
+      background-color var(--r2a-duration-slow) var(--r2a-ease-out),
+      border-color var(--r2a-duration-slow) var(--r2a-ease-out);
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--r2a-font-serif);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    letter-spacing: -0.005em;
+  }
+  .nav-brand-mark {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--r2a-ink);
+    color: var(--r2a-canvas-soft);
+    border-radius: var(--r2a-radius-sm);
+    font-family: var(--r2a-font-serif);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    transition:
+      background-color var(--r2a-duration-slow) var(--r2a-ease-out),
+      color var(--r2a-duration-slow) var(--r2a-ease-out);
+  }
+  .nav-brand-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+    margin-left: 6px;
+    padding-left: 12px;
+    border-left: 1px solid var(--r2a-hairline);
+    letter-spacing: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--r2a-ink-secondary);
+    padding: 6px 10px;
+    border-radius: var(--r2a-radius-md);
+    transition:
+      color var(--r2a-duration-base) var(--r2a-ease-out),
+      background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .nav-link::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .nav-link:hover {
+    color: var(--r2a-ink);
+    background: var(--r2a-hover);
+  }
+  .nav-link:hover::before {
+    background: var(--r2a-accent-ink);
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--r2a-hairline);
+    background: var(--r2a-surface);
+    color: var(--r2a-ink-secondary);
+    border-radius: var(--r2a-radius-md);
+    cursor: pointer;
+    margin-left: 16px;
+    transition:
+      background-color var(--r2a-duration-base) var(--r2a-ease-out),
+      border-color var(--r2a-duration-base) var(--r2a-ease-out),
+      color var(--r2a-duration-base) var(--r2a-ease-out),
+      transform var(--r2a-duration-fast) var(--r2a-ease-out);
+  }
+  .theme-toggle:hover {
+    background: var(--r2a-hover);
+    color: var(--r2a-ink);
+  }
+  .theme-toggle:active { transform: scale(0.96); }
+  .theme-toggle svg { width: 16px; height: 16px; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  /* =========================================================
+     HERO
+     ========================================================= */
+  .hero {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 96px 40px 80px;
+  }
+  .hero-eyebrow {
+    font-family: var(--r2a-font-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::after {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--r2a-hairline);
+  }
+  .hero-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--r2a-ink);
+    margin: 0 0 18px;
+    max-width: 720px;
+  }
+  .hero-title em { font-style: normal; }
+  .hero-lede {
+    font-family: var(--r2a-font-serif);
+    font-size: 18px;
+    line-height: 1.85;
+    letter-spacing: 0.005em;
+    color: var(--r2a-ink-secondary);
+    max-width: 640px;
+    margin: 0 0 36px;
+  }
+  .hero-lede mark {
+    background: linear-gradient(to bottom, transparent 60%, var(--r2a-accent-ink-bg) 60%);
+    color: var(--r2a-ink);
+    font-weight: 500;
+    padding: 0 2px;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    font-family: var(--r2a-font-mono);
+    font-size: 12.5px;
+    color: var(--r2a-ink-muted);
+  }
+  .hero-meta-item { display: inline-flex; align-items: center; gap: 8px; }
+  .hero-meta-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+  }
+  .hero-meta-item:first-child::before { display: none; }
+
+  /* =========================================================
+     SECTION SHELL
+     ========================================================= */
+  .section {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 56px 40px 64px;
+    border-top: 1px solid var(--r2a-hairline);
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 36px;
+  }
+  .section-eyebrow {
+    font-family: var(--r2a-font-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--r2a-ink-muted);
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .section-heading {
+    font-family: var(--r2a-font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--r2a-ink);
+    margin: 0;
+  }
+  .section-intro {
+    font-family: var(--r2a-font-sans);
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--r2a-ink-secondary);
+    max-width: 680px;
+    margin: -18px 0 36px;
+  }
+  .section-subhead {
+    font-family: var(--r2a-font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--r2a-ink);
+    margin: 40px 0 16px;
+    letter-spacing: -0.005em;
+  }
+  .section-subhead:first-child { margin-top: 0; }
+  .section-subhead-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--r2a-ink-muted);
+    margin-left: 10px;
+    letter-spacing: 0;
+  }
+
+  /* =========================================================
+     01 — COLOR PALETTE
+     ========================================================= */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .swatch {
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-button);
+    overflow: hidden;
+    background: var(--r2a-surface);
+    transition:
+      border-color var(--r2a-duration-base) var(--r2a-ease-out),
+      transform var(--r2a-duration-slow) var(--r2a-ease-out);
+  }
+  .swatch:hover {
+    border-color: var(--r2a-ink-faint);
+    transform: translateY(-1px);
+  }
+  .swatch-block {
+    height: 88px;
+    position: relative;
+    border-bottom: 1px solid var(--r2a-hairline);
+  }
+  .swatch-block.has-ring { box-shadow: inset 0 0 0 1px var(--r2a-hairline); }
+  .swatch-info { padding: 12px 14px 14px; }
+  .swatch-token {
+    font-family: var(--r2a-font-mono);
+    font-size: 11.5px;
+    color: var(--r2a-ink);
+    font-weight: 500;
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  .swatch-hex {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 8px;
+  }
+  .swatch-role {
+    font-size: 12.5px;
+    color: var(--r2a-ink-secondary);
+    line-height: 1.5;
+  }
+
+  /* Sync-state row */
+  .sync-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+  }
+  .sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--r2a-radius-xl);
+    font-size: 12.5px;
+    font-weight: 500;
+    border: 1px solid var(--r2a-hairline);
+    background: var(--r2a-surface);
+  }
+  .sync-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+  }
+  .sync-pill .dot.dot-warning { background: var(--r2a-warning); }
+  .sync-pill .dot.dot-primary { background: var(--r2a-primary); }
+  .sync-pill .dot.dot-success { background: var(--r2a-success); }
+  .sync-pill .dot.dot-error { background: var(--r2a-error); }
+  .sync-pill-text { color: var(--r2a-ink-secondary); }
+  .sync-pill-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+    margin-left: 4px;
+  }
+
+  /* =========================================================
+     02 — TYPOGRAPHY
+     ========================================================= */
+  .type-sample {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--r2a-hairline-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .type-sample:last-child { border-bottom: none; }
+  .type-sample-text { color: var(--r2a-ink); }
+  .type-sample-label {
+    font-family: var(--r2a-font-mono);
+    font-size: 11.5px;
+    color: var(--r2a-ink-muted);
+    letter-spacing: 0;
+  }
+  .type-sample-label .ts-token {
+    color: var(--r2a-ink-secondary);
+    font-weight: 500;
+  }
+
+  /* =========================================================
+     03 — BUTTONS
+     ========================================================= */
+  .button-row {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(112px, 1fr));
+    gap: 24px;
+    align-items: start;
+  }
+  .btn-demo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    min-width: 0;
+  }
+  .btn-demo .btn {
+    min-width: 112px;
+    white-space: nowrap;
+  }
+  .btn-demo .btn-utility { min-width: 132px; }
+  .btn-demo .btn-ghost {
+    height: 40px;
+    min-width: 136px;
+  }
+  .btn-demo-label {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r2a-ink-muted);
+    text-align: center;
+    line-height: 1.5;
+    min-height: 34px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--r2a-font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    border-radius: var(--r2a-radius-button);
+    padding: 0 18px;
+    height: 40px;
+    cursor: pointer;
+    transition:
+      background-color var(--r2a-duration-base) var(--r2a-ease-out),
+      border-color var(--r2a-duration-base) var(--r2a-ease-out),
+      color var(--r2a-duration-base) var(--r2a-ease-out),
+      transform var(--r2a-duration-fast) var(--r2a-ease-out);
+  }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--r2a-primary);
+    color: var(--r2a-on-primary);
+    border: 1px solid var(--r2a-primary);
+  }
+  .btn-primary:hover { background: var(--r2a-primary-active); border-color: var(--r2a-primary-active); }
+
+  .btn-secondary {
+    background: var(--r2a-surface);
+    color: var(--r2a-ink);
+    border: 1px solid var(--r2a-hairline);
+  }
+  .btn-secondary:hover { background: var(--r2a-hover); border-color: var(--r2a-ink-faint); }
+
+  .btn-utility {
+    background: transparent;
+    color: var(--r2a-ink-secondary);
+    border: 1px solid var(--r2a-hairline);
+    height: 32px;
+    font-size: 13px;
+    padding: 0 14px;
+    border-radius: var(--r2a-radius-md);
+  }
+  .btn-utility:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--r2a-primary);
+    border: none;
+    padding: 0 8px;
+    height: 32px;
+  }
+  .btn-ghost:hover { background: var(--r2a-primary-bg); }
+
+  .btn-dark {
+    background: var(--r2a-ink);
+    color: var(--r2a-canvas-soft);
+    border: 1px solid var(--r2a-ink);
+  }
+  .btn-dark:hover { background: var(--r2a-ink-secondary); border-color: var(--r2a-ink-secondary); }
+
+  .btn-disabled {
+    background: var(--r2a-canvas-soft);
+    color: var(--r2a-ink-faint);
+    border: 1px solid var(--r2a-hairline);
+    cursor: not-allowed;
+  }
+  .btn-disabled:hover { background: var(--r2a-canvas-soft); }
+  .btn-disabled:active { transform: none; }
+
+  /* =========================================================
+     04 — CARDS
+     ========================================================= */
+  .card-grid-two {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  /* A — Content container card */
+  .card-a {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 24px;
+    transition:
+      border-color var(--r2a-duration-base) var(--r2a-ease-out),
+      background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .card-a:hover { background: var(--r2a-hover); border-color: var(--r2a-ink-faint); }
+  .card-a-eyebrow {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 10px;
+  }
+  .card-a-title {
+    font-family: var(--r2a-font-sans);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+    letter-spacing: -0.005em;
+  }
+  .card-a-body {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--r2a-ink-secondary);
+    margin: 0;
+  }
+
+  /* B — Index card (knowledge card) */
+  .card-b {
+    background: var(--r2a-canvas-soft);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-sm);
+    padding: 18px 20px;
+    transition:
+      border-color var(--r2a-duration-slow) var(--r2a-ease-out),
+      transform var(--r2a-duration-slow) var(--r2a-ease-out);
+  }
+  .card-b:hover {
+    border-color: var(--r2a-ink-faint);
+    transform: translateY(-1px);
+  }
+  .card-b-tag {
+    font-family: var(--r2a-font-serif);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--r2a-accent-ink);
+    margin-bottom: 10px;
+  }
+  .card-b-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+    letter-spacing: -0.005em;
+    line-height: 1.4;
+  }
+  .card-b-body {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--r2a-ink-secondary);
+    margin: 0;
+  }
+
+  /* =========================================================
+     05 — COMPONENT SIGNATURES (R2A 识别度最高的几样)
+     ========================================================= */
+  .sig-block {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .sig-block-label {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 18px;
+  }
+
+  /* Chinese ordinal list (核心观点) */
+  .ordinal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: cn;
+  }
+  .ordinal-list > li {
+    counter-increment: cn;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--r2a-hairline-soft);
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    column-gap: 18px;
+    align-items: baseline;
+  }
+  .ordinal-list > li:last-child { border-bottom: none; }
+  .ordinal-list > li::before {
+    content: counter(cn, cjk-ideographic) "、";
+    font-family: var(--r2a-font-serif);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--r2a-accent-ink);
+    text-align: right;
+  }
+  .ordinal-list > li > div {
+    min-width: 0;
+    grid-column: 2;
+  }
+  .ordinal-list-title {
+    font-family: var(--r2a-font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    line-height: 1.6;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .ordinal-list-body {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--r2a-ink-secondary);
+  }
+
+  /* Checklist with dashed border */
+  .checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .checklist-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .checklist-meta-count {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-ink-muted);
+  }
+  .checklist > li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px dashed var(--r2a-hairline);
+  }
+  .checklist > li:last-child { border-bottom: none; }
+  .checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--r2a-ink-muted);
+    border-radius: var(--r2a-radius-xs);
+    flex-shrink: 0;
+    display: inline-block;
+    position: relative;
+    background: transparent;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .checkbox.checked { background: var(--r2a-ink); border-color: var(--r2a-ink); }
+  .checkbox.checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 8px;
+    border-right: 1.5px solid var(--r2a-canvas-soft);
+    border-bottom: 1.5px solid var(--r2a-canvas-soft);
+    transform: rotate(45deg);
+  }
+  .checklist-text { font-size: 14.5px; line-height: 1.6; color: var(--r2a-ink); }
+  .checklist > li.is-done .checklist-text { color: var(--r2a-ink-muted); text-decoration: line-through; text-decoration-color: var(--r2a-ink-faint); }
+
+  /* Mark / highlight */
+  .mark-demo {
+    font-family: var(--r2a-font-serif);
+    font-size: 18px;
+    line-height: 1.85;
+    letter-spacing: 0.005em;
+    color: var(--r2a-ink-secondary);
+    margin: 0;
+  }
+  .mark-demo mark {
+    background: linear-gradient(to bottom, transparent 60%, var(--r2a-accent-ink-bg) 60%);
+    color: var(--r2a-ink);
+    font-weight: 500;
+    padding: 0 2px;
+  }
+
+  /* Section eyebrow demo */
+  .eyebrow-demo-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .eyebrow-demo-label {
+    font-family: var(--r2a-font-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--r2a-ink-muted);
+  }
+  .eyebrow-demo-rule {
+    width: 24px;
+    height: 1px;
+    background: var(--r2a-hairline);
+  }
+
+  /* Tag varieties */
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: var(--r2a-radius-sm);
+  }
+  .tag-default {
+    background: var(--r2a-canvas-soft);
+    color: var(--r2a-ink-secondary);
+    border: 1px solid var(--r2a-hairline);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+  }
+  .tag-primary { background: var(--r2a-primary-bg); color: var(--r2a-primary); }
+  .tag-ink {
+    background: transparent;
+    color: var(--r2a-accent-ink);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--r2a-font-serif);
+    font-size: 11px;
+    padding: 2px 0;
+  }
+  .tag-success { background: var(--r2a-success-bg); color: var(--r2a-success); }
+  .tag-error { background: var(--r2a-error-bg); color: var(--r2a-error); }
+  .tag-warning { background: var(--r2a-warning-bg); color: var(--r2a-warning); }
+
+  /* Toolbar demo */
+  .toolbar-demo {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* Sidebar nav demo */
+  .sidebar-demo {
+    background: var(--r2a-canvas-soft);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 16px;
+    max-width: 240px;
+  }
+  .sidebar-section-label {
+    font-family: var(--r2a-font-serif);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--r2a-ink-muted);
+    padding: 8px 10px;
+    margin-bottom: 4px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: var(--r2a-radius-md);
+    font-size: 13.5px;
+    color: var(--r2a-ink-secondary);
+    cursor: pointer;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .sidebar-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+    flex-shrink: 0;
+  }
+  .sidebar-item:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+  .sidebar-item.active {
+    background: var(--r2a-surface);
+    color: var(--r2a-ink);
+    font-weight: 500;
+  }
+  .sidebar-item.active::before { background: var(--r2a-accent-ink); }
+
+  /* =========================================================
+     06 — SPACING
+     ========================================================= */
+  .spacing-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+  }
+  .spacing-item { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .spacing-box {
+    background: var(--r2a-accent-ink-bg);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-xs);
+  }
+  .spacing-label {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+  }
+  .spacing-token {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-secondary);
+  }
+
+  .editorial-spacing {
+    margin-top: 32px;
+    padding: 18px 20px;
+    background: var(--r2a-canvas-soft);
+    border: 1px dashed var(--r2a-hairline);
+    border-radius: var(--r2a-radius-md);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--r2a-ink-secondary);
+  }
+  .editorial-spacing strong {
+    color: var(--r2a-ink);
+    font-weight: 500;
+  }
+  .editorial-spacing code {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  /* =========================================================
+     07 — BORDER RADIUS
+     ========================================================= */
+  .radius-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(116px, 1fr));
+    gap: 28px;
+    align-items: start;
+    max-width: 760px;
+  }
+  .radius-item {
+    display: grid;
+    grid-template-rows: 72px 20px 42px 42px;
+    justify-items: center;
+    align-items: start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .radius-box {
+    width: 64px;
+    height: 64px;
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+  }
+  .radius-label {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .radius-token {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-secondary);
+    text-align: center;
+    line-height: 1.45;
+    max-width: 116px;
+  }
+  .radius-context {
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+    text-align: center;
+    line-height: 1.45;
+    max-width: 96px;
+  }
+
+  /* =========================================================
+     08 — ELEVATION
+     ========================================================= */
+  .elev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  .elev-card {
+    background: var(--r2a-surface);
+    border-radius: var(--r2a-radius-lg);
+    padding: 22px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .elev-flat { border: 1px solid var(--r2a-hairline); }
+  .elev-soft {
+    border: 1px solid var(--r2a-hairline);
+    box-shadow: var(--r2a-shadow-soft);
+  }
+  .elev-elevated {
+    border: 1px solid var(--r2a-hairline);
+    box-shadow: var(--r2a-shadow-elevated);
+  }
+  .elev-name {
+    font-family: var(--r2a-font-serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin-bottom: 6px;
+  }
+  .elev-desc {
+    font-size: 13px;
+    color: var(--r2a-ink-secondary);
+    line-height: 1.6;
+  }
+  .elev-level {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-accent-ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 14px;
+  }
+
+  /* =========================================================
+     09 — MOTION
+     ========================================================= */
+  .motion-table {
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    overflow: hidden;
+    background: var(--r2a-surface);
+  }
+  .motion-row {
+    display: grid;
+    grid-template-columns: 220px 100px 1fr;
+    gap: 24px;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--r2a-hairline-soft);
+    align-items: center;
+  }
+  .motion-row:last-child { border-bottom: none; }
+  .motion-token {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-ink);
+    font-weight: 500;
+  }
+  .motion-value {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-accent-ink);
+  }
+  .motion-desc {
+    font-size: 13px;
+    color: var(--r2a-ink-secondary);
+    line-height: 1.6;
+  }
+
+  /* =========================================================
+     FOOTER
+     ========================================================= */
+  .footer {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+    border-top: 1px solid var(--r2a-hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .footer-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 11.5px;
+    color: var(--r2a-ink-muted);
+  }
+  .footer-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 13px;
+    color: var(--r2a-ink-secondary);
+    font-weight: 500;
+  }
+
+  /* =========================================================
+     MOBILE
+     ========================================================= */
+  @media (max-width: 768px) {
+    .nav { padding: 14px 20px; }
+    .nav-brand-meta { display: none; }
+    .nav-links { display: none; }
+    .hero { padding: 56px 20px 48px; }
+    .hero-title { font-size: 26px; }
+    .hero-lede { font-size: 16px; }
+    .section { padding: 48px 20px 56px; }
+    .section-head { flex-direction: column; gap: 8px; align-items: flex-start; }
+    .section-heading { font-size: 22px; }
+    .button-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .btn-demo .btn { min-width: 0; width: 100%; }
+    .radius-row { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; }
+    .motion-row { grid-template-columns: 1fr; gap: 4px; padding: 14px 18px; }
+    .footer { padding: 32px 20px 56px; }
+    .sig-block { padding: 22px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="nav-brand-mark">读</span>
+    <span>Read2Action</span>
+    <span class="nav-brand-meta">规范 v1.1.2</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="#colors">颜色</a>
+    <a class="nav-link" href="#typography">字体</a>
+    <a class="nav-link" href="#buttons">按钮</a>
+    <a class="nav-link" href="#cards">卡片</a>
+    <a class="nav-link" href="#signatures">组件特征</a>
+    <a class="nav-link" href="#spacing">间距</a>
+    <a class="nav-link" href="#radius">圆角</a>
+    <a class="nav-link" href="#elevation">阴影</a>
+    <a class="nav-link" href="#motion">动效</a>
+    <button class="theme-toggle" id="themeToggle" aria-label="切换深浅色">
+      <!-- Sun -->
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+      <!-- Moon -->
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<header class="hero">
+  <div class="hero-eyebrow">界面设计规范 · v1.1.2 · 1.4-0 校正版 · 预览修复</div>
+  <h1 class="hero-title">把零散文本沉淀为<em>可回看的</em>知识。</h1>
+  <p class="hero-lede">
+    Read2Action 是一款<mark>个人知识沉淀工具</mark>——AI 是手段，长期回看才是目的。本规范确立 1.4「产品气质重构 + 核心体验补齐」的 warm-restrained editorial 视觉基准：近白画布、中文衬线点睛、深墨蓝主操作、墨棕 ink accent，单一视觉真值。
+  </p>
+  <div class="hero-meta">
+    <span class="hero-meta-item">2026-06-11 · 1.4-0 校正</span>
+    <span class="hero-meta-item">取代 v1.0 paper-calm</span>
+    <span class="hero-meta-item">浅色 / 深色双主题</span>
+  </div>
+</header>
+
+<!-- ========== 01 — COLORS ========== -->
+<section class="section" id="colors">
+  <div class="section-head">
+    <span class="section-eyebrow">01 · 颜色系统</span>
+    <h2 class="section-heading">Color Palette</h2>
+  </div>
+  <p class="section-intro">
+    全站仅一个主操作色（深墨蓝）、仅一个 ink accent（墨棕）。语义色与同步状态色严格限定使用场景。Ink accent 仅用于中文序号、知识卡片 tag、文本标记，禁止做按钮填充或大面积背景。
+  </p>
+
+  <!-- Structural -->
+  <h3 class="section-subhead">结构色<span class="section-subhead-meta">primary / surface / ink / hairline</span></h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-primary);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-primary</div>
+        <div class="swatch-hex" data-hex-light="#1e4d80" data-hex-dark="#5a87bd">#1e4d80</div>
+        <div class="swatch-role">主按钮 / focus ring / 链接。深墨蓝，全站唯一主操作色。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-primary-bg);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-primary-bg</div>
+        <div class="swatch-hex" data-hex-light="#e8eff7" data-hex-dark="#162435">#e8eff7</div>
+        <div class="swatch-role">主色极浅底，选中态、链接 hover 背景。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block has-ring" style="background: var(--r2a-canvas-soft);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-canvas-soft</div>
+        <div class="swatch-hex" data-hex-light="#f8f7f3" data-hex-dark="#1a1814">#f8f7f3</div>
+        <div class="swatch-role">页面底。近白带一丝暖意，不是冷灰也不是米色。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block has-ring" style="background: var(--r2a-surface);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-surface</div>
+        <div class="swatch-hex" data-hex-light="#ffffff" data-hex-dark="#25221c">#ffffff</div>
+        <div class="swatch-role">卡片、面板、输入框。纯白浮在略暖画布上。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-ink);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-ink</div>
+        <div class="swatch-hex" data-hex-light="#1f1d18" data-hex-dark="#f0eadc">#1f1d18</div>
+        <div class="swatch-role">主标题、强调正文。暖近黑，禁止使用 #000。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-ink-secondary);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-ink-secondary</div>
+        <div class="swatch-hex" data-hex-light="#4a4640" data-hex-dark="#c8c0b0">#4a4640</div>
+        <div class="swatch-role">次要正文。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-ink-muted);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-ink-muted</div>
+        <div class="swatch-hex" data-hex-light="#6e6a62" data-hex-dark="#928876">#6e6a62</div>
+        <div class="swatch-role">辅助说明、元信息。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-ink-faint);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-ink-faint</div>
+        <div class="swatch-hex" data-hex-light="#a8a39a" data-hex-dark="#6e6557">#a8a39a</div>
+        <div class="swatch-role">占位符、禁用文字、时间戳。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block has-ring" style="background: var(--r2a-hairline);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-hairline</div>
+        <div class="swatch-hex" data-hex-light="#ebe9e2" data-hex-dark="#3a3429">#ebe9e2</div>
+        <div class="swatch-role">1px 默认边框。与画布同温度。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ink accent -->
+  <h3 class="section-subhead">Ink Accent<span class="section-subhead-meta">单一装饰色 · 严格限定</span></h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-accent-ink);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-accent-ink</div>
+        <div class="swatch-hex" data-hex-light="#8b5a3c" data-hex-dark="#c89878">#8b5a3c</div>
+        <div class="swatch-role">墨棕色。仅用于中文序号、知识卡片 tag、文本标记字色。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block has-ring" style="background: var(--r2a-accent-ink-bg);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-accent-ink-bg</div>
+        <div class="swatch-hex">rgba(139,90,60,0.10)</div>
+        <div class="swatch-role"><code style="font-family: var(--r2a-font-mono); font-size: 12px;">&lt;mark&gt;</code> 渐变下划线高亮底色，禁止其他用途。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Semantic -->
+  <h3 class="section-subhead">语义色<span class="section-subhead-meta">仅 toast / inline 校验 · 不参与主结构</span></h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-success);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-success</div>
+        <div class="swatch-hex" data-hex-light="#1aae39" data-hex-dark="#2ecc5a">#1aae39</div>
+        <div class="swatch-role">成功 Toast、已同步。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-error);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-error</div>
+        <div class="swatch-hex" data-hex-light="#e53935" data-hex-dark="#f56565">#e53935</div>
+        <div class="swatch-role">错误、校验失败。</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-block" style="background: var(--r2a-warning);"></div>
+      <div class="swatch-info">
+        <div class="swatch-token">--r2a-warning</div>
+        <div class="swatch-hex" data-hex-light="#f59e0b" data-hex-dark="#fbbf24">#f59e0b</div>
+        <div class="swatch-role">警告、待迁移。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync state -->
+  <h3 class="section-subhead">云端同步状态<span class="section-subhead-meta">仅同步 UI · 禁止与主色混用</span></h3>
+  <div class="sync-row">
+    <span class="sync-pill"><span class="dot"></span><span class="sync-pill-text">本地模式</span><span class="sync-pill-meta">ink-faint</span></span>
+    <span class="sync-pill"><span class="dot dot-warning"></span><span class="sync-pill-text">待同步</span><span class="sync-pill-meta">warning</span></span>
+    <span class="sync-pill"><span class="dot dot-primary"></span><span class="sync-pill-text">同步中</span><span class="sync-pill-meta">primary</span></span>
+    <span class="sync-pill"><span class="dot dot-success"></span><span class="sync-pill-text">已同步</span><span class="sync-pill-meta">success</span></span>
+    <span class="sync-pill"><span class="dot dot-error"></span><span class="sync-pill-text">失败</span><span class="sync-pill-meta">error · 可重试</span></span>
+  </div>
+</section>
+
+<!-- ========== 02 — TYPOGRAPHY ========== -->
+<section class="section" id="typography">
+  <div class="section-head">
+    <span class="section-eyebrow">02 · 字体系统</span>
+    <h2 class="section-heading">Typography</h2>
+  </div>
+  <p class="section-intro">
+    Sans 用于默认界面（Inter + Noto Sans SC），Serif（Noto Serif SC）仅在笔记标题、知识卡片标题与 tag、核心观点序号、section eyebrow 这几处点睛——这是 R2A 气质的最大杠杆。Mono（JetBrains Mono）用于原文对照与 metadata 数字。
+  </p>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-serif); font-size: 36px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em;">把碎片化思考排成清晰的章节</div>
+    <div class="type-sample-label"><span class="ts-token">display-lg</span> · 36 / 600 / 1.3 / -0.01em · serif · 首页 / 登录主标题</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-serif); font-size: 28px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em;">核心观点 与 行动清单</div>
+    <div class="type-sample-label"><span class="ts-token">display-md</span> · 28 / 600 / 1.3 / -0.01em · serif · 笔记详情标题、区块大标题</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-serif); font-size: 18px; font-weight: 600; line-height: 1.4; letter-spacing: -0.005em;">知识卡片标题</div>
+    <div class="type-sample-label"><span class="ts-token">title</span> · 18 / 600 / 1.4 / -0.005em · serif · 知识卡片、对话框标题</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-sans); font-size: 16px; font-weight: 500; line-height: 1.4;">列表项标题 / Project name</div>
+    <div class="type-sample-label"><span class="ts-token">title-sm</span> · 16 / 500 / 1.4 / 0 · sans · 列表项、项目名</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-serif); font-size: 18px; font-weight: 400; line-height: 1.85; letter-spacing: 0.005em; color: var(--r2a-ink-secondary);">真正的知识沉淀，不是把信息归档进文件夹，而是让你<mark style="background: linear-gradient(to bottom, transparent 60%, var(--r2a-accent-ink-bg) 60%); color: var(--r2a-ink); font-weight: 500; padding: 0 2px;">每次重读都比上一次理解得更深</mark>——这才是 Read2Action 想做的事。</div>
+    <div class="type-sample-label"><span class="ts-token">body-lg</span> · 18 / 400 / 1.85 / +0.005em · serif · 一句话总结、长引文</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-sans); font-size: 15px; font-weight: 400; line-height: 1.75;">默认正文。所有长段说明、解析结果、设置项描述都用这个字号。15px / 1.75 是兼顾中英文混排、长文阅读疲劳度与屏幕信息密度的折中点。Read2Action 的解析结果会大段使用这个字号，所以它的舒适度直接影响日常使用体验。</div>
+    <div class="type-sample-label"><span class="ts-token">body-md</span> · 15 / 400 / 1.75 / 0 · sans · <strong>默认正文</strong></div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-sans); font-size: 13.5px; font-weight: 400; line-height: 1.7; color: var(--r2a-ink-secondary);">次要正文。列表卡片内容、侧栏说明、辅助文案使用此层级，比正文低一档，减少视觉竞争。</div>
+    <div class="type-sample-label"><span class="ts-token">body-sm</span> · 13.5 / 400 / 1.7 / 0 · sans · 次要正文、卡片内容</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-sans); font-size: 14px; font-weight: 500; line-height: 1.4;">按钮文字 / Button label</div>
+    <div class="type-sample-label"><span class="ts-token">button</span> · 14 / 500 / 1.4 / 0 · sans · 所有按钮</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-sans); font-size: 12.5px; font-weight: 400; line-height: 1.5; color: var(--r2a-ink-muted);">说明文字 · 2026 年 6 月 11 日 · 修订 12 次</div>
+    <div class="type-sample-label"><span class="ts-token">caption</span> · 12.5 / 400 / 1.5 / 0 · sans · 说明、时间戳、metadata</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-serif); font-size: 11.5px; font-weight: 500; line-height: 1.4; letter-spacing: 0.16em; text-transform: uppercase; color: var(--r2a-ink-muted);">SECTION EYEBROW · 章节眉眼</div>
+    <div class="type-sample-label"><span class="ts-token">eyebrow</span> · 11.5 / 500 / 1.4 / +0.16em · serif uppercase · 章节标识（editorial 关键标识）</div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-sample-text" style="font-family: var(--r2a-font-mono); font-size: 13px; font-weight: 400; line-height: 1.6;">const note = await parse(text); // returns Note</div>
+    <div class="type-sample-label"><span class="ts-token">code-sm</span> · 13 / 400 / 1.6 / 0 · mono · 原文对照、摘录、kbd</div>
+  </div>
+</section>
+
+<!-- ========== 03 — BUTTONS ========== -->
+<section class="section" id="buttons">
+  <div class="section-head">
+    <span class="section-eyebrow">03 · 按钮</span>
+    <h2 class="section-heading">Buttons</h2>
+  </div>
+  <p class="section-intro">
+    全站 8px 圆角，不用 pill。Primary 全站唯一实心强调，Dark Action 与 Primary 不在同一视区同时出现。所有按钮按下时 <code style="font-family: var(--r2a-font-mono); font-size: 12.5px;">scale(0.98)</code> + 80ms 微反馈，<code style="font-family: var(--r2a-font-mono); font-size: 12.5px;">:focus-visible</code> 仅键盘聚焦显示 outline。
+  </p>
+
+  <div style="font-family: var(--r2a-font-mono); font-size: 11.5px; color: var(--r2a-ink-muted); margin-bottom: 24px; padding: 10px 14px; background: var(--r2a-canvas-soft); border: 1px dashed var(--r2a-hairline); border-radius: var(--r2a-radius-md);">注意：此处为变体对照展示。实际产品中 Primary 与 Dark Action 不在同一视区同时出现填充态。</div>
+
+  <div class="button-row">
+    <div class="btn-demo">
+      <button class="btn btn-primary">保存到项目</button>
+      <span class="btn-demo-label">Primary · 主 CTA</span>
+    </div>
+    <div class="btn-demo">
+      <button class="btn btn-secondary">取消</button>
+      <span class="btn-demo-label">Secondary · 次操作</span>
+    </div>
+    <div class="btn-demo">
+      <button class="btn btn-utility">编辑 · 导出 · 复制</button>
+      <span class="btn-demo-label">Utility · 工具栏</span>
+    </div>
+    <div class="btn-demo">
+      <button class="btn btn-ghost">查看完整原文 →</button>
+      <span class="btn-demo-label">Ghost / Text · 链接型</span>
+    </div>
+    <div class="btn-demo">
+      <button class="btn btn-dark">＋ 新建笔记</button>
+      <span class="btn-demo-label">Dark Action · 侧栏入口</span>
+    </div>
+    <div class="btn-demo">
+      <button class="btn btn-disabled" disabled>已保存</button>
+      <span class="btn-demo-label">Disabled</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 04 — CARDS ========== -->
+<section class="section" id="cards">
+  <div class="section-head">
+    <span class="section-eyebrow">04 · 卡片</span>
+    <h2 class="section-heading">Cards</h2>
+  </div>
+  <p class="section-intro">
+    两种卡片类型：内容容器（A 型，纯白 surface + 8px radius）用于笔记列表、面板；index card 知识卡片（B 型，canvas-soft 暖底 + 4px radius）用于笔记详情中的知识卡片 section——刻意小圆角强调"嵌在纸上"质感。
+  </p>
+
+  <h3 class="section-subhead">A 型 · 内容容器<span class="section-subhead-meta">surface · radius-lg 8px · hairline</span></h3>
+  <div class="card-grid-two">
+    <div class="card-a">
+      <div class="card-a-eyebrow">PROJECT</div>
+      <h4 class="card-a-title">读书笔记 · 2026 Q2</h4>
+      <p class="card-a-body">17 篇笔记 · 上次更新于 6 小时前。这个项目沉淀了我这一季度读完的非虚构作品摘要与个人反思。</p>
+    </div>
+    <div class="card-a">
+      <div class="card-a-eyebrow">PROJECT</div>
+      <h4 class="card-a-title">产品研究片段</h4>
+      <p class="card-a-body">42 篇笔记 · 上次更新于昨天。来自 Twitter、Substack、Hacker News 的快速捕捉，每周二例行整理。</p>
+    </div>
+    <div class="card-a">
+      <div class="card-a-eyebrow">PROJECT</div>
+      <h4 class="card-a-title">长文复盘</h4>
+      <p class="card-a-body">8 篇笔记 · 上次更新于 3 天前。深度复盘性内容的归档处，每篇都至少修订过 3 次。</p>
+    </div>
+  </div>
+
+  <h3 class="section-subhead">B 型 · Index Card 知识卡片<span class="section-subhead-meta">canvas-soft · radius-sm 4px · serif tag/title</span></h3>
+  <div class="card-grid-two">
+    <div class="card-b">
+      <div class="card-b-tag">CONCEPT · 概念</div>
+      <h4 class="card-b-title">认知带宽</h4>
+      <p class="card-b-body">人在同一时间能处理的信息量有上限。任何工具的设计都应该减少认知负担，而不是把"功能丰富"等同于"价值高"。</p>
+    </div>
+    <div class="card-b">
+      <div class="card-b-tag">PRINCIPLE · 原则</div>
+      <h4 class="card-b-title">沉淀优先于消费</h4>
+      <p class="card-b-body">阅读完成只是开始。能否在三周后回看这条笔记还能获得新感悟，才是判断笔记质量的真正标准。</p>
+    </div>
+    <div class="card-b">
+      <div class="card-b-tag">QUOTE · 引用</div>
+      <h4 class="card-b-title">关于"工具的人性"</h4>
+      <p class="card-b-body">"好的工具不会让你觉得在'使用工具'，而是延伸了你的感官与思维。" —— 来自 Tools for Thought 这本书的笔记摘录。</p>
+    </div>
+    <div class="card-b">
+      <div class="card-b-tag">HYPOTHESIS · 假设</div>
+      <h4 class="card-b-title">中文衬线的气质杠杆</h4>
+      <p class="card-b-body">在 90% 内容是中文的产品里，是否做了中文衬线优化，是用户截图时一眼能感知到的差别——比配色重要得多。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 05 — COMPONENT SIGNATURES ========== -->
+<section class="section" id="signatures">
+  <div class="section-head">
+    <span class="section-eyebrow">05 · 组件特征</span>
+    <h2 class="section-heading">Component Signatures</h2>
+  </div>
+  <p class="section-intro">
+    这一节展示 R2A 视觉识别度最高的几个组件——它们是把规范从"色板 + 字号"具体化为"R2A 的样子"的关键。如果只展示色板和字体，看不出和其他暖色调工具的区别；这些组件才是真正的差异化标志。
+  </p>
+
+  <!-- Chinese ordinal list -->
+  <div class="sig-block">
+    <div class="sig-block-label">中文序号列表 · 核心观点</div>
+    <ol class="ordinal-list">
+      <li>
+        <div>
+          <span class="ordinal-list-title">内容优先，chrome 退后</span>
+          <span class="ordinal-list-body">界面装饰物退到背景，笔记、解析结果、项目列表是视觉中心。信息层级靠字号、字重、间距、字体（serif vs sans），不靠 heavy shadow 或强色块。</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <span class="ordinal-list-title">温度来自字体与色彩，不靠画布</span>
+          <span class="ordinal-list-body">中文衬线 + ink accent + 暖近黑文字 + 暖色调阴影共同营造温度。画布只取近白带一丝暖意，不走 indie productivity 烂大街米色。</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <span class="ordinal-list-title">单一主色 + 单一 ink accent，禁止视觉碎片</span>
+          <span class="ordinal-list-body">全站仅深墨蓝一个主操作色、仅墨棕一个装饰 accent。语义色仅用于状态 UI，不参与主结构。引入第三种品牌强调色一律视为破坏规范。</span>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Checklist with dashed border -->
+  <div class="sig-block">
+    <div class="sig-block-label">行动清单 · dashed border 分隔（paper checklist 质感）</div>
+    <div class="checklist-meta">
+      <strong style="font-family: var(--r2a-font-sans); font-weight: 500; color: var(--r2a-ink); font-size: 14px;">规范落地待办</strong>
+      <span class="checklist-meta-count">2 / 5 完成</span>
+    </div>
+    <ul class="checklist">
+      <li class="is-done">
+        <span class="checkbox checked"></span>
+        <span class="checklist-text">画布底色从 v1.0 冷调 #f6f5f4 切换为 v1.1 近白 #f8f7f3</span>
+      </li>
+      <li class="is-done">
+        <span class="checkbox checked"></span>
+        <span class="checklist-text">主按钮圆角从 pill 收紧为 8px radius-button</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="checklist-text">核心观点序号从紫色圆形 badge 替换为中文序号 + serif + ink accent</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="checklist-text">侧边栏导航移除图标，改用文字 + 4px 色点</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="checklist-text">Noto Serif SC 加载策略 — font-display: swap + 常用汉字子集拆包</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Mark / highlight -->
+  <div class="sig-block">
+    <div class="sig-block-label">文本高亮 · &lt;mark&gt; 渐变下划线（非纯色底块）</div>
+    <p class="mark-demo">
+      v1.0 与 v1.1 最大的视觉差距不在色板，而在<mark>对中文阅读节奏的尊重</mark>——Inter + Noto Sans SC 默认正文不再强行套用英文字号，长引文转为 18 / 1.85 衬线版本。文本标记不用纯色底块，而是<mark>渐变下划线从 60% 起</mark>，模拟纸笔标注的呼吸感。
+    </p>
+  </div>
+
+  <!-- Tags -->
+  <div class="sig-block">
+    <div class="sig-block-label">标签 / 徽章 · 五种变体</div>
+    <div class="tag-row">
+      <span class="tag tag-default">DEFAULT</span>
+      <span class="tag tag-primary">Primary</span>
+      <span class="tag tag-ink">INK ACCENT · 知识卡片</span>
+      <span class="tag tag-success">已同步</span>
+      <span class="tag tag-error">失败</span>
+      <span class="tag tag-warning">待迁移</span>
+    </div>
+  </div>
+
+  <!-- Section eyebrow -->
+  <div class="sig-block">
+    <div class="sig-block-label">Section Eyebrow · 章节眉眼（editorial 关键标识）</div>
+    <div class="eyebrow-demo-row">
+      <span class="eyebrow-demo-label">A · 一句话总结</span>
+      <span class="eyebrow-demo-rule"></span>
+    </div>
+    <div class="eyebrow-demo-row">
+      <span class="eyebrow-demo-label">B · 核心观点</span>
+      <span class="eyebrow-demo-rule"></span>
+    </div>
+    <div class="eyebrow-demo-row">
+      <span class="eyebrow-demo-label">C · 行动清单</span>
+      <span class="eyebrow-demo-rule"></span>
+    </div>
+    <div class="eyebrow-demo-row">
+      <span class="eyebrow-demo-label">D · 知识卡片</span>
+      <span class="eyebrow-demo-rule"></span>
+    </div>
+  </div>
+
+  <!-- Toolbar + Sidebar -->
+  <div class="sig-block" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+    <div>
+      <div class="sig-block-label">笔记详情 · 顶部 toolbar</div>
+      <div class="toolbar-demo">
+        <button class="btn btn-utility">编辑</button>
+        <button class="btn btn-utility">导出</button>
+        <button class="btn btn-utility">保存到项目</button>
+      </div>
+      <p style="font-size: 12.5px; color: var(--r2a-ink-muted); margin-top: 14px; line-height: 1.6;">
+        utility 按钮：透明底 + hairline 边框 · 32px 高 · 6px radius · 13px 文字。常态克制，hover 时点亮。
+      </p>
+    </div>
+    <div>
+      <div class="sig-block-label">侧边栏导航 · 文字 + 色点（无图标）</div>
+      <div class="sidebar-demo">
+        <div class="sidebar-section-label">PROJECTS</div>
+        <div class="sidebar-item active">读书笔记 · 2026 Q2</div>
+        <div class="sidebar-item">产品研究片段</div>
+        <div class="sidebar-item">长文复盘</div>
+        <div class="sidebar-item">收件箱（未分类）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 06 — SPACING ========== -->
+<section class="section" id="spacing">
+  <div class="section-head">
+    <span class="section-eyebrow">06 · 间距系统</span>
+    <h2 class="section-heading">Spacing</h2>
+  </div>
+  <p class="section-intro">
+    基准 4px。结构区（按钮、卡片、组件 padding）严守 8 倍数 token；内容阅读区允许编辑性非 8 倍数（14 / 18 / 22 / 36 / 40 / 44）来制造 editorial 呼吸感。
+  </p>
+
+  <div class="spacing-row">
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 4px; height: 32px;"></div>
+      <div class="spacing-label">4px</div>
+      <div class="spacing-token">space-xxs</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 8px; height: 32px;"></div>
+      <div class="spacing-label">8px</div>
+      <div class="spacing-token">space-xs</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 12px; height: 32px;"></div>
+      <div class="spacing-label">12px</div>
+      <div class="spacing-token">space-sm</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 16px; height: 32px;"></div>
+      <div class="spacing-label">16px</div>
+      <div class="spacing-token">space-md</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 24px; height: 32px;"></div>
+      <div class="spacing-label">24px</div>
+      <div class="spacing-token">space-lg</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 32px; height: 32px;"></div>
+      <div class="spacing-label">32px</div>
+      <div class="spacing-token">space-xl</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 48px; height: 32px;"></div>
+      <div class="spacing-label">48px</div>
+      <div class="spacing-token">space-xxl</div>
+    </div>
+    <div class="spacing-item">
+      <div class="spacing-box" style="width: 64px; height: 32px;"></div>
+      <div class="spacing-label">64px</div>
+      <div class="spacing-token">space-section</div>
+    </div>
+  </div>
+
+  <div class="editorial-spacing">
+    <strong>编辑性间距（仅限内容阅读区）</strong>：在笔记详情、解析结果、长引文等内容阅读区，允许使用 <code>14px</code> · <code>18px</code> · <code>22px</code> · <code>36px</code> · <code>40px</code> · <code>44px</code> 等非 8 倍数值来制造 editorial 视觉节奏。
+    结构区（按钮、卡片、输入框、表单、侧栏 padding、组件内 padding）仍严守 8 倍数 token。
+    纯 8 倍数会让长文阅读节奏过于机械；少量编辑性间距让长文有"被精心排过版"的呼吸感。
+  </div>
+</section>
+
+<!-- ========== 07 — RADIUS ========== -->
+<section class="section" id="radius">
+  <div class="section-head">
+    <span class="section-eyebrow">07 · 圆角</span>
+    <h2 class="section-heading">Border Radius</h2>
+  </div>
+  <p class="section-intro">
+    v1.1 终版收紧后 radius-lg 从 12 改为 8、radius-xl 从 16 改为 12，对齐 Notion / Craft / Bear 的 4–8px 主区间。pill 圆角全面废弃。
+  </p>
+
+  <div class="radius-row">
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius: 3px;"></div>
+      <div class="radius-label">3px</div>
+      <div class="radius-token">radius-xs</div>
+      <div class="radius-context">复选框</div>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius: 4px;"></div>
+      <div class="radius-label">4px</div>
+      <div class="radius-token">radius-sm</div>
+      <div class="radius-context">输入框 · index card</div>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius: 6px;"></div>
+      <div class="radius-label">6px</div>
+      <div class="radius-token">radius-md</div>
+      <div class="radius-context">次按钮 · nav item</div>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius: 8px;"></div>
+      <div class="radius-label">8px</div>
+      <div class="radius-token">radius-button / lg</div>
+      <div class="radius-context">主 CTA · 笔记列表卡</div>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius: 12px;"></div>
+      <div class="radius-label">12px</div>
+      <div class="radius-token">radius-xl</div>
+      <div class="radius-context">Toast · 大容器</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 08 — ELEVATION ========== -->
+<section class="section" id="elevation">
+  <div class="section-head">
+    <span class="section-eyebrow">08 · 阴影 / 层级</span>
+    <h2 class="section-heading">Elevation</h2>
+  </div>
+  <p class="section-intro">
+    默认仅 hairline 描边，禁止 drop shadow。Soft 与 Elevated 使用多层近透明叠影，阴影色用暖色调 rgba(20, 16, 10, …)，避免在暖底上发"脏"。
+  </p>
+
+  <div class="elev-grid">
+    <div class="elev-card elev-flat">
+      <div>
+        <div class="elev-name">Flat</div>
+        <div class="elev-desc">默认卡片、行。仅 1px hairline 描边，无 shadow。绝大多数容器使用这一档。</div>
+      </div>
+      <div class="elev-level">Level 0</div>
+    </div>
+    <div class="elev-card elev-soft">
+      <div>
+        <div class="elev-name">Soft</div>
+        <div class="elev-desc">浮起卡片、toast、dropdown。多层近透明暖色叠影，最深 4px 18px。</div>
+      </div>
+      <div class="elev-level">Level 1</div>
+    </div>
+    <div class="elev-card elev-elevated">
+      <div>
+        <div class="elev-name">Elevated</div>
+        <div class="elev-desc">Modal、popover。更深的暖色叠影，最深 12px 32px，制造明显浮起感。</div>
+      </div>
+      <div class="elev-level">Level 2</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 09 — MOTION ========== -->
+<section class="section" id="motion">
+  <div class="section-head">
+    <span class="section-eyebrow">09 · 动效 token</span>
+    <h2 class="section-heading">Motion</h2>
+  </div>
+  <p class="section-intro">
+    所有 transition 必须显式声明属性，禁止 <code style="font-family: var(--r2a-font-mono); font-size: 12.5px;">transition: all</code>。禁止弹跳 / spring / overshoot 类动效——与"安静知识工具"气质相冲。超过 300ms 的过渡仅允许 modal / 抽屉。
+  </p>
+
+  <div class="motion-table">
+    <div class="motion-row">
+      <div class="motion-token">--r2a-duration-fast</div>
+      <div class="motion-value">80ms</div>
+      <div class="motion-desc">颜色、透明度、文字色微变；按钮按下态 scale 反馈。</div>
+    </div>
+    <div class="motion-row">
+      <div class="motion-token">--r2a-duration-base</div>
+      <div class="motion-value">150ms</div>
+      <div class="motion-desc"><strong style="color: var(--r2a-ink); font-weight: 500;">默认</strong> hover、按钮态变化、border 变化。</div>
+    </div>
+    <div class="motion-row">
+      <div class="motion-token">--r2a-duration-slow</div>
+      <div class="motion-value">250ms</div>
+      <div class="motion-desc">卡片位移、内容容器切换、modal 进出、主题切换。</div>
+    </div>
+    <div class="motion-row">
+      <div class="motion-token">--r2a-ease-out</div>
+      <div class="motion-value">cubic-bezier(0.4, 0, 0.2, 1)</div>
+      <div class="motion-desc"><strong style="color: var(--r2a-ink); font-weight: 500;">默认</strong> 所有 hover / 状态变化。</div>
+    </div>
+    <div class="motion-row">
+      <div class="motion-token">--r2a-ease-in-out</div>
+      <div class="motion-value">cubic-bezier(0.4, 0, 0.6, 1)</div>
+      <div class="motion-desc">双向状态（modal 进出、抽屉、主题切换）。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="footer-title">Read2Action · 界面设计规范 v1.1.2 · warm-restrained editorial</div>
+  <div class="footer-meta">1.4-0 校正版 · 预览修复 · 2026-06-11 · 配套 MD 文档为单一视觉真值</div>
+</footer>
+
+<script>
+  // Theme toggle with persistence
+  (function () {
+    const root = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
+    const STORAGE_KEY = 'r2a-preview-theme';
+
+    // Init: prefer stored choice, else honour system preference
+    let stored = null;
+    try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+    if (stored === 'light' || stored === 'dark') {
+      root.setAttribute('data-theme', stored);
+    } else {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+
+    // Update hex labels per theme
+    function updateHexLabels() {
+      const theme = root.getAttribute('data-theme');
+      document.querySelectorAll('[data-hex-light]').forEach(function (el) {
+        const v = theme === 'dark' ? el.getAttribute('data-hex-dark') : el.getAttribute('data-hex-light');
+        if (v) el.textContent = v;
+      });
+    }
+    updateHexLabels();
+
+    toggle.addEventListener('click', function () {
+      const cur = root.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+      updateHexLabels();
+    });
+  })();
+</script>
+
+</body>
+</html>

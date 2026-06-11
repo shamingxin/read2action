@@ -49,9 +49,11 @@ docs/
 - **1.2 PRD**：`docs/PRD/Read2Action_1.2_解析记录暂存与归档体验优化版_PRD.md`
 - **1.3-A 方案（✅ 已冻结）**：`docs/PRD/1.3/1.3-A_Supabase账号与数据库方案.md`
 
-**核心记录 · 1.3 设计规范（✅ 1.3-0 已冻结）**
-- **界面设计规范 v1.0**：`docs/核心记录/Read2Action_界面设计规范_v1.0.md`
-- **HTML 视觉预览**：`docs/核心记录/Read2Action_界面设计规范_v1.0_preview.html`
+**核心记录 · 界面设计规范（✅ v1.1.2 为 1.4-0 当前基准）**
+- **界面设计规范 v1.1.2（当前基准）**：`docs/核心记录/Read2Action_界面设计规范_v1_1_2.md`
+- **HTML 视觉预览 v1.1.2**：`docs/核心记录/Read2Action_界面设计规范_v1_1_2_preview.html`
+- **界面设计规范 v1.0（历史版本）**：`docs/核心记录/Read2Action_界面设计规范_v1.0.md`
+- **HTML 视觉预览 v1.0（历史版本）**：`docs/核心记录/Read2Action_界面设计规范_v1.0_preview.html`
 
 **核心记录**
 - **产品 / 路线 / 路由**：`docs/核心记录/01_项目总说明.md`
