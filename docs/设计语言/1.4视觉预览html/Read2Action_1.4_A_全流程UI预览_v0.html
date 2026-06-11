@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Read2Action · 1.4-A 全流程 UI 预览 · v1.1.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="light"] {
+    --r2a-primary: #1e4d80;
+    --r2a-primary-active: #163d68;
+    --r2a-on-primary: #ffffff;
+    --r2a-primary-bg: #e8eff7;
+    --r2a-canvas: #ffffff;
+    --r2a-canvas-soft: #f8f7f3;
+    --r2a-surface: #ffffff;
+    --r2a-hover: #f2efe7;
+    --r2a-ink: #1f1d18;
+    --r2a-ink-secondary: #4a4640;
+    --r2a-ink-muted: #6e6a62;
+    --r2a-ink-faint: #a8a39a;
+    --r2a-hairline: #ebe9e2;
+    --r2a-hairline-soft: #f2f0ea;
+    --r2a-accent-ink: #8b5a3c;
+    --r2a-accent-ink-bg: rgba(139, 90, 60, 0.10);
+    --r2a-success: #1aae39;
+    --r2a-error: #e53935;
+    --r2a-warning: #f59e0b;
+    --r2a-success-bg: #e6f9eb;
+    --r2a-error-bg: #fde8e8;
+    --r2a-warning-bg: #fef3c7;
+    --r2a-shadow-soft: 0 1px 2px rgba(20, 16, 10, 0.02), 0 4px 18px rgba(20, 16, 10, 0.04);
+    --r2a-shadow-elevated: 0 2px 4px rgba(20, 16, 10, 0.03), 0 12px 32px rgba(20, 16, 10, 0.06);
+    --preview-chrome-bg: rgba(248, 247, 243, 0.92);
+  }
+  :root[data-theme="dark"] {
+    --r2a-primary: #5a87bd;
+    --r2a-primary-active: #7aa3d0;
+    --r2a-on-primary: #f0eadc;
+    --r2a-primary-bg: #162435;
+    --r2a-canvas: #1a1814;
+    --r2a-canvas-soft: #1a1814;
+    --r2a-surface: #25221c;
+    --r2a-hover: #2f2b24;
+    --r2a-ink: #f0eadc;
+    --r2a-ink-secondary: #c8c0b0;
+    --r2a-ink-muted: #928876;
+    --r2a-ink-faint: #6e6557;
+    --r2a-hairline: #3a3429;
+    --r2a-hairline-soft: #322d24;
+    --r2a-accent-ink: #c89878;
+    --r2a-accent-ink-bg: rgba(200, 152, 120, 0.14);
+    --r2a-success: #2ecc5a;
+    --r2a-error: #f56565;
+    --r2a-warning: #fbbf24;
+    --r2a-success-bg: #0b2714;
+    --r2a-error-bg: #2e1010;
+    --r2a-warning-bg: #2a1e00;
+    --r2a-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.20), 0 4px 18px rgba(0, 0, 0, 0.30);
+    --r2a-shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.40);
+    --preview-chrome-bg: rgba(26, 24, 20, 0.92);
+  }
+  :root {
+    --r2a-duration-fast: 80ms;
+    --r2a-duration-base: 150ms;
+    --r2a-duration-slow: 250ms;
+    --r2a-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --r2a-font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', system-ui, -apple-system, sans-serif;
+    --r2a-font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+    --r2a-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+    --r2a-radius-xs: 3px;
+    --r2a-radius-sm: 4px;
+    --r2a-radius-md: 6px;
+    --r2a-radius-button: 8px;
+    --r2a-radius-lg: 8px;
+    --r2a-radius-xl: 12px;
+    --sidebar-w: 256px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--r2a-canvas-soft);
+    color: var(--r2a-ink);
+    font-family: var(--r2a-font-sans);
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  *:focus { outline: none; }
+  *:focus-visible {
+    outline: 2px solid var(--r2a-primary);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+  ::selection {
+    background: var(--r2a-accent-ink-bg);
+    color: var(--r2a-ink);
+  }
+  mark {
+    background: linear-gradient(to bottom, transparent 60%, var(--r2a-accent-ink-bg) 60%);
+    color: var(--r2a-ink);
+    font-weight: 500;
+    padding: 0 2px;
+  }
+
+  /* Preview chrome (not product UI) */
+  .preview-chrome {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: var(--preview-chrome-bg);
+    backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--r2a-hairline);
+    padding: 12px 24px;
+  }
+  .preview-chrome-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .preview-brand {
+    font-family: var(--r2a-font-serif);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .preview-brand-mark {
+    width: 24px;
+    height: 24px;
+    background: var(--r2a-ink);
+    color: var(--r2a-canvas-soft);
+    border-radius: var(--r2a-radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--r2a-font-serif);
+    font-size: 13px;
+  }
+  .preview-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-muted);
+  }
+  .preview-actions { display: flex; align-items: center; gap: 8px; }
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--r2a-hairline);
+    background: var(--r2a-surface);
+    color: var(--r2a-ink-secondary);
+    border-radius: var(--r2a-radius-md);
+    cursor: pointer;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .theme-toggle:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+  .theme-toggle svg { width: 16px; height: 16px; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  .page-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .page-tab {
+    font-family: var(--r2a-font-sans);
+    font-size: 12.5px;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: var(--r2a-radius-md);
+    background: transparent;
+    color: var(--r2a-ink-secondary);
+    cursor: pointer;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out), color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .page-tab:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+  .page-tab.active {
+    background: var(--r2a-surface);
+    border-color: var(--r2a-hairline);
+    color: var(--r2a-ink);
+    font-weight: 500;
+  }
+
+  .preview-stage {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .screen-label {
+    font-family: var(--r2a-font-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .screen-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--r2a-hairline);
+    max-width: 120px;
+  }
+  .app-frame {
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    overflow: hidden;
+    background: var(--r2a-canvas-soft);
+    min-height: 640px;
+    box-shadow: var(--r2a-shadow-soft);
+  }
+
+  /* App shell */
+  .app-shell {
+    display: flex;
+    min-height: 640px;
+  }
+  .app-sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--r2a-canvas-soft);
+    border-right: 1px solid var(--r2a-hairline);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 12px;
+  }
+  .sidebar-brand {
+    font-family: var(--r2a-font-serif);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    padding: 4px 10px 20px;
+    letter-spacing: -0.005em;
+  }
+  .sidebar-new-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 40px;
+    margin-bottom: 20px;
+    background: var(--r2a-ink);
+    color: var(--r2a-canvas-soft);
+    border: 1px solid var(--r2a-ink);
+    border-radius: var(--r2a-radius-button);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .sidebar-new-btn:hover { background: var(--r2a-ink-secondary); border-color: var(--r2a-ink-secondary); }
+  .sidebar-search {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    margin-bottom: 22px;
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-sm);
+    font-size: 13.5px;
+    color: var(--r2a-ink-faint);
+  }
+  .sidebar-group-label {
+    font-family: var(--r2a-font-serif);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--r2a-ink-muted);
+    padding: 8px 10px 6px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: var(--r2a-radius-md);
+    font-size: 13.5px;
+    color: var(--r2a-ink-secondary);
+    cursor: default;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .sidebar-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+    flex-shrink: 0;
+  }
+  .sidebar-item.active {
+    background: var(--r2a-surface);
+    color: var(--r2a-ink);
+    font-weight: 500;
+  }
+  .sidebar-item.active::before { background: var(--r2a-accent-ink); }
+  .sidebar-spacer { flex: 1; }
+  .sidebar-user {
+    padding: 12px 10px;
+    border-top: 1px solid var(--r2a-hairline);
+    margin-top: 8px;
+  }
+  .sidebar-user-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin-bottom: 6px;
+  }
+  .sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--r2a-radius-xl);
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--r2a-hairline);
+    background: var(--r2a-surface);
+    color: var(--r2a-ink-secondary);
+  }
+  .sync-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+  }
+  .sync-pill .dot.success { background: var(--r2a-success); }
+  .sync-pill .dot.warning { background: var(--r2a-warning); }
+  .sync-pill .dot.primary { background: var(--r2a-primary); }
+  .sync-pill .dot.error { background: var(--r2a-error); }
+
+  .app-main {
+    flex: 1;
+    min-width: 0;
+    background: var(--r2a-canvas-soft);
+  }
+  .app-main-inner {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 32px 40px 64px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--r2a-font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    border-radius: var(--r2a-radius-button);
+    padding: 0 18px;
+    height: 40px;
+    cursor: pointer;
+    border: none;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out), border-color var(--r2a-duration-base) var(--r2a-ease-out), transform var(--r2a-duration-fast) var(--r2a-ease-out);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--r2a-primary);
+    color: var(--r2a-on-primary);
+    border: 1px solid var(--r2a-primary);
+  }
+  .btn-primary:hover { background: var(--r2a-primary-active); border-color: var(--r2a-primary-active); }
+  .btn-secondary {
+    background: var(--r2a-surface);
+    color: var(--r2a-ink);
+    border: 1px solid var(--r2a-hairline);
+  }
+  .btn-secondary:hover { background: var(--r2a-hover); }
+  .btn-utility {
+    background: transparent;
+    color: var(--r2a-ink-secondary);
+    border: 1px solid var(--r2a-hairline);
+    height: 32px;
+    font-size: 13px;
+    padding: 0 14px;
+    border-radius: var(--r2a-radius-md);
+  }
+  .btn-utility:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--r2a-primary);
+    border: none;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .btn-ghost:hover { background: var(--r2a-primary-bg); }
+  .btn-disabled {
+    background: var(--r2a-canvas-soft);
+    color: var(--r2a-ink-faint);
+    border: 1px solid var(--r2a-hairline);
+    cursor: not-allowed;
+  }
+
+  /* Home / Input */
+  .home-header { margin-bottom: 32px; }
+  .home-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--r2a-ink);
+    margin: 0 0 14px;
+    max-width: 560px;
+  }
+  .home-subtitle {
+    font-size: 15px;
+    color: var(--r2a-ink-muted);
+    margin: 0;
+    max-width: 480px;
+  }
+  .input-card {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .input-textarea {
+    width: 100%;
+    min-height: 200px;
+    border: none;
+    background: transparent;
+    font-family: var(--r2a-font-sans);
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--r2a-ink);
+    resize: none;
+    outline: none;
+    margin-bottom: 16px;
+  }
+  .input-textarea::placeholder { color: var(--r2a-ink-faint); }
+  .input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--r2a-hairline-soft);
+  }
+  .input-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-ink-faint);
+  }
+  .feature-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .feature-card {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 20px;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .feature-card:hover { background: var(--r2a-hover); }
+  .feature-card-eyebrow {
+    font-family: var(--r2a-font-serif);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--r2a-accent-ink);
+    margin-bottom: 8px;
+  }
+  .feature-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin: 0 0 6px;
+  }
+  .feature-card-desc {
+    font-size: 12.5px;
+    color: var(--r2a-ink-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Parsing */
+  .parsing-center {
+    max-width: 560px;
+    margin: 80px auto;
+    text-align: center;
+  }
+  .parsing-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 12px;
+  }
+  .parsing-sub {
+    font-size: 14px;
+    color: var(--r2a-ink-muted);
+    margin: 0 0 40px;
+  }
+  .parsing-steps {
+    text-align: left;
+    margin-bottom: 32px;
+  }
+  .parsing-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--r2a-hairline-soft);
+  }
+  .parsing-step:last-child { border-bottom: none; }
+  .step-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--r2a-hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    color: var(--r2a-ink-faint);
+    flex-shrink: 0;
+  }
+  .step-indicator.done {
+    background: var(--r2a-primary);
+    border-color: var(--r2a-primary);
+    color: var(--r2a-on-primary);
+  }
+  .step-indicator.active {
+    border-color: var(--r2a-primary);
+    color: var(--r2a-primary);
+  }
+  .step-content { flex: 1; }
+  .step-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin-bottom: 2px;
+  }
+  .step-desc {
+    font-size: 13px;
+    color: var(--r2a-ink-muted);
+  }
+  .preview-skeleton {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 24px;
+    margin-top: 24px;
+    text-align: left;
+  }
+  .skeleton-line {
+    height: 10px;
+    background: var(--r2a-hairline-soft);
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+  .skeleton-line.w60 { width: 60%; }
+  .skeleton-line.w80 { width: 80%; }
+  .skeleton-line.w40 { width: 40%; }
+
+  /* Result */
+  .result-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+  .result-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 14px;
+    max-width: 720px;
+  }
+  .result-meta {
+    font-size: 12.5px;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: center;
+  }
+  .result-meta span::before {
+    content: '·';
+    margin-right: 16px;
+    color: var(--r2a-ink-faint);
+  }
+  .result-meta span:first-child::before { display: none; }
+  .tabs {
+    display: flex;
+    gap: 28px;
+    border-bottom: 1px solid var(--r2a-hairline);
+    margin-bottom: 44px;
+  }
+  .tab {
+    font-size: 14px;
+    color: var(--r2a-ink-muted);
+    padding-bottom: 12px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: default;
+  }
+  .tab.active {
+    color: var(--r2a-ink);
+    font-weight: 500;
+    border-bottom-color: var(--r2a-ink);
+  }
+  .section-eyebrow {
+    font-family: var(--r2a-font-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--r2a-ink-muted);
+    margin: 48px 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-eyebrow:first-of-type { margin-top: 0; }
+  .section-eyebrow::after {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--r2a-hairline);
+  }
+  .summary-lede {
+    font-family: var(--r2a-font-serif);
+    font-size: 18px;
+    line-height: 1.85;
+    color: var(--r2a-ink-secondary);
+    margin: 0;
+    max-width: 720px;
+  }
+  .ordinal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: cn;
+    max-width: 720px;
+  }
+  .ordinal-list > li {
+    counter-increment: cn;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--r2a-hairline-soft);
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    column-gap: 18px;
+    align-items: baseline;
+  }
+  .ordinal-list > li:last-child { border-bottom: none; }
+  .ordinal-list > li::before {
+    content: counter(cn, cjk-ideographic) "、";
+    font-family: var(--r2a-font-serif);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--r2a-accent-ink);
+    text-align: right;
+  }
+  .ordinal-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin-bottom: 4px;
+  }
+  .ordinal-body {
+    font-size: 13.5px;
+    color: var(--r2a-ink-secondary);
+    line-height: 1.7;
+  }
+  .checklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    max-width: 720px;
+    margin-bottom: 6px;
+  }
+  .checklist-count {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-ink-muted);
+  }
+  .checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 720px;
+  }
+  .checklist > li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px dashed var(--r2a-hairline);
+  }
+  .checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--r2a-ink-muted);
+    border-radius: var(--r2a-radius-xs);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .checkbox.checked {
+    background: var(--r2a-ink);
+    border-color: var(--r2a-ink);
+  }
+  .checkbox.checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0;
+    width: 4px;
+    height: 8px;
+    border-right: 1.5px solid var(--r2a-canvas-soft);
+    border-bottom: 1.5px solid var(--r2a-canvas-soft);
+    transform: rotate(45deg);
+  }
+  .checklist-text { font-size: 14.5px; color: var(--r2a-ink); }
+  .knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    max-width: 720px;
+  }
+  .card-b {
+    background: var(--r2a-canvas-soft);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-sm);
+    padding: 18px 20px;
+  }
+  .card-b-tag {
+    font-family: var(--r2a-font-serif);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--r2a-accent-ink);
+    margin-bottom: 10px;
+  }
+  .card-b-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+    line-height: 1.4;
+  }
+  .card-b-body {
+    font-size: 13.5px;
+    color: var(--r2a-ink-secondary);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: relative;
+    min-height: 640px;
+    background: rgba(31, 29, 24, 0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  :root[data-theme="dark"] .modal-overlay { background: rgba(0, 0, 0, 0.5); }
+  .modal {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    box-shadow: var(--r2a-shadow-elevated);
+    width: 100%;
+    max-width: 440px;
+    padding: 28px 32px;
+  }
+  .modal-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+  }
+  .modal-desc {
+    font-size: 13.5px;
+    color: var(--r2a-ink-muted);
+    margin: 0 0 24px;
+  }
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--r2a-ink-secondary);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-sm);
+    font-size: 14px;
+    color: var(--r2a-ink);
+    margin-bottom: 20px;
+  }
+  .project-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-md);
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--r2a-ink);
+    cursor: default;
+  }
+  .project-option.selected {
+    border-color: var(--r2a-primary);
+    background: var(--r2a-primary-bg);
+  }
+  .project-option::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--r2a-ink-faint);
+  }
+  .project-option.selected::before { background: var(--r2a-primary); }
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+
+  /* Projects list */
+  .page-heading {
+    font-family: var(--r2a-font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+  }
+  .page-desc {
+    font-size: 14px;
+    color: var(--r2a-ink-muted);
+    margin: 0 0 32px;
+  }
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .project-card {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 24px;
+    transition: background-color var(--r2a-duration-base) var(--r2a-ease-out), border-color var(--r2a-duration-base) var(--r2a-ease-out);
+  }
+  .project-card:hover {
+    background: var(--r2a-hover);
+    border-color: var(--r2a-ink-faint);
+  }
+  .project-card-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+  }
+  .project-card-meta {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-ink-muted);
+  }
+
+  /* Project detail / note list */
+  .quick-parse {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .quick-parse input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--r2a-ink-faint);
+    outline: none;
+  }
+  .note-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .note-table th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r2a-ink-muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--r2a-hairline);
+  }
+  .note-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--r2a-hairline-soft);
+    font-size: 14px;
+    color: var(--r2a-ink-secondary);
+  }
+  .note-table tr:hover td { background: var(--r2a-hover); }
+  .note-title-cell {
+    font-weight: 500;
+    color: var(--r2a-ink);
+  }
+  .note-date {
+    font-family: var(--r2a-font-mono);
+    font-size: 12px;
+    color: var(--r2a-ink-muted);
+  }
+
+  /* Auth */
+  .auth-shell {
+    min-height: 640px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    background: var(--r2a-canvas-soft);
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 40px 36px;
+  }
+  .auth-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 8px;
+    text-align: center;
+  }
+  .auth-sub {
+    font-size: 13px;
+    color: var(--r2a-ink-muted);
+    text-align: center;
+    margin: 0 0 32px;
+  }
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--r2a-hairline);
+  }
+  .auth-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    color: var(--r2a-ink-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+  }
+  .auth-tab.active {
+    color: var(--r2a-ink);
+    font-weight: 500;
+    border-bottom-color: var(--r2a-ink);
+  }
+  .btn-full { width: 100%; }
+  .auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--r2a-ink-muted);
+  }
+  .auth-footer a { color: var(--r2a-primary); text-decoration: none; }
+
+  /* Empty state */
+  .empty-center {
+    max-width: 400px;
+    margin: 120px auto;
+    text-align: center;
+  }
+  .empty-eyebrow {
+    font-family: var(--r2a-font-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 18px;
+  }
+  .empty-title {
+    font-family: var(--r2a-font-serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--r2a-ink);
+    margin: 0 0 14px;
+  }
+  .empty-desc {
+    font-size: 15px;
+    color: var(--r2a-ink-muted);
+    line-height: 1.75;
+    margin: 0 0 32px;
+  }
+  .btn-dark {
+    background: var(--r2a-ink);
+    color: var(--r2a-canvas-soft);
+    border: 1px solid var(--r2a-ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 24px;
+    border-radius: var(--r2a-radius-button);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-dark:hover { background: var(--r2a-ink-secondary); }
+
+  /* Toast & sync demo */
+  .toast-demo-area {
+    position: relative;
+    min-height: 640px;
+    padding: 40px;
+  }
+  .toast-stack {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 320px;
+  }
+  .toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-xl);
+    box-shadow: var(--r2a-shadow-soft);
+  }
+  .toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .toast-dot.success { background: var(--r2a-success); }
+  .toast-dot.error { background: var(--r2a-error); }
+  .toast-dot.warning { background: var(--r2a-warning); }
+  .toast-body { flex: 1; }
+  .toast-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--r2a-ink);
+    margin-bottom: 2px;
+  }
+  .toast-msg {
+    font-size: 13px;
+    color: var(--r2a-ink-muted);
+    line-height: 1.5;
+  }
+  .sync-demo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    max-width: 640px;
+    margin-top: 80px;
+  }
+  .sync-demo-card {
+    background: var(--r2a-surface);
+    border: 1px solid var(--r2a-hairline);
+    border-radius: var(--r2a-radius-lg);
+    padding: 24px;
+  }
+  .sync-demo-label {
+    font-family: var(--r2a-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--r2a-ink-muted);
+    margin-bottom: 16px;
+  }
+  .sync-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  @media (max-width: 900px) {
+    .app-shell { flex-direction: column; }
+    .app-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--r2a-hairline); }
+    .feature-row { grid-template-columns: repeat(2, 1fr); }
+    .project-grid { grid-template-columns: 1fr; }
+    .knowledge-grid { grid-template-columns: 1fr; }
+    .page-tabs { gap: 2px; }
+    .page-tab { font-size: 11.5px; padding: 5px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="preview-chrome">
+  <div class="preview-chrome-top">
+    <div class="preview-brand">
+      <span class="preview-brand-mark">读</span>
+      Read2Action · 1.4-A 全流程 UI 预览
+      <span class="preview-meta">v1.1.2 · warm-restrained editorial</span>
+    </div>
+    <div class="preview-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="切换深浅色">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="page-tabs" id="pageTabs" role="tablist">
+    <button class="page-tab active" data-screen="home" role="tab">首页 / 输入</button>
+    <button class="page-tab" data-screen="parsing" role="tab">解析中</button>
+    <button class="page-tab" data-screen="result" role="tab">结果页</button>
+    <button class="page-tab" data-screen="modal" role="tab">保存弹窗</button>
+    <button class="page-tab" data-screen="projects" role="tab">项目列表</button>
+    <button class="page-tab" data-screen="project-detail" role="tab">项目详情</button>
+    <button class="page-tab" data-screen="note-detail" role="tab">笔记详情</button>
+    <button class="page-tab" data-screen="auth" role="tab">登录 / 注册</button>
+    <button class="page-tab" data-screen="empty" role="tab">空状态</button>
+    <button class="page-tab" data-screen="toast" role="tab">Toast / 同步</button>
+  </nav>
+</header>
+
+<main class="preview-stage">
+
+  <!-- 1. Home / Input -->
+  <section class="screen active" id="screen-home" role="tabpanel">
+    <div class="screen-label">首页 / 输入页</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-group-label">项目</div>
+          <div class="sidebar-item active"><span>默认项目</span></div>
+          <div class="sidebar-item"><span>产品思考</span></div>
+          <div class="sidebar-item"><span>阅读摘录</span></div>
+          <div class="sidebar-group-label">最近</div>
+          <div class="sidebar-item"><span>深度工作的方法论</span></div>
+          <div class="sidebar-item"><span>认知负荷与笔记结构</span></div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot success"></span>已同步</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="app-main-inner">
+            <header class="home-header">
+              <h1 class="home-title">把阅读与思考，沉淀为可回看的笔记</h1>
+              <p class="home-subtitle">粘贴文本、摘录或想法，AI 帮你整理结构——长期回看才是目的。</p>
+            </header>
+            <div class="input-card">
+              <textarea class="input-textarea" readonly placeholder="粘贴你想整理的内容…&#10;&#10;可以是一段文章、会议记录、读书笔记，或尚未成形的想法。">最近在读《深度工作》第三章，作者提出「深度工作」的核心障碍不是时间不够，而是注意力被碎片化信息不断打断。我想到自己每天打开笔记工具的频率很高，但真正沉淀下来的结构化内容却很少——也许问题不在工具，而在「输入之后缺少一次安静的整理」。</textarea>
+              <div class="input-footer">
+                <span class="input-meta">1,248 字 · 约 3 分钟阅读</span>
+                <button class="btn btn-primary">开始解析</button>
+              </div>
+            </div>
+            <div class="feature-row">
+              <div class="feature-card">
+                <div class="feature-card-eyebrow">沉淀</div>
+                <div class="feature-card-title">结构化整理</div>
+                <p class="feature-card-desc">核心观点、行动清单、知识卡片，方便日后翻阅。</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-card-eyebrow">回看</div>
+                <div class="feature-card-title">项目归档</div>
+                <p class="feature-card-desc">按主题归入项目，换设备也能找回你的思考轨迹。</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-card-eyebrow">安静</div>
+                <div class="feature-card-title">无对话流</div>
+                <p class="feature-card-desc">不是聊天机器人，而是一本随时翻开的私人笔记。</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-card-eyebrow">克制</div>
+                <div class="feature-card-title">内容优先</div>
+                <p class="feature-card-desc">界面退后，让文字和思考占据视觉中心。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Parsing -->
+  <section class="screen" id="screen-parsing" role="tabpanel">
+    <div class="screen-label">解析中页</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot primary"></span>同步中</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="parsing-center">
+            <h2 class="parsing-title">正在整理你的内容</h2>
+            <p class="parsing-sub">AI 正在提取结构，请稍候——完成后可保存到项目长期回看。</p>
+            <div class="parsing-steps">
+              <div class="parsing-step">
+                <div class="step-indicator done">✓</div>
+                <div class="step-content">
+                  <div class="step-label">阅读原文</div>
+                  <div class="step-desc">识别段落结构与关键信息</div>
+                </div>
+              </div>
+              <div class="parsing-step">
+                <div class="step-indicator done">✓</div>
+                <div class="step-content">
+                  <div class="step-label">提炼观点</div>
+                  <div class="step-desc">归纳核心论点与论据关系</div>
+                </div>
+              </div>
+              <div class="parsing-step">
+                <div class="step-indicator active">3</div>
+                <div class="step-content">
+                  <div class="step-label">生成行动项</div>
+                  <div class="step-desc">将思考转化为可执行的下一步</div>
+                </div>
+              </div>
+              <div class="parsing-step">
+                <div class="step-indicator">4</div>
+                <div class="step-content">
+                  <div class="step-label">整理知识卡片</div>
+                  <div class="step-desc">归档概念与关联，便于日后检索</div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-secondary">取消解析</button>
+            <div class="preview-skeleton">
+              <div class="skeleton-line w80"></div>
+              <div class="skeleton-line w60"></div>
+              <div class="skeleton-line w80"></div>
+              <div class="skeleton-line w40"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Result -->
+  <section class="screen" id="screen-result" role="tabpanel">
+    <div class="screen-label">解析结果页</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot success"></span>已同步</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="app-main-inner">
+            <div class="result-toolbar">
+              <button class="btn btn-utility">导出</button>
+              <button class="btn btn-primary">保存到项目</button>
+            </div>
+            <h1 class="result-title">深度工作的方法论摘录</h1>
+            <div class="result-meta">
+              <span>2026-06-11 解析</span>
+              <span>1,248 字原文</span>
+              <span>默认项目</span>
+            </div>
+            <div class="tabs">
+              <div class="tab active">内容总结</div>
+              <div class="tab">原文对照</div>
+            </div>
+            <div class="section-eyebrow">一句话总结</div>
+            <p class="summary-lede">深度工作的本质，是在<mark>注意力稀缺</mark>的时代，刻意为高质量思考保留不受打扰的时间块——工具可以辅助整理，但<mark>沉淀与回看</mark>才是长期价值所在。</p>
+            <div class="section-eyebrow">核心观点</div>
+            <ol class="ordinal-list">
+              <li>
+                <div>
+                  <div class="ordinal-title">注意力碎片化是深度思考的最大敌人</div>
+                  <div class="ordinal-body">频繁切换任务会显著降低认知输出质量，即使每次打断只有几分钟。</div>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <div class="ordinal-title">输入之后的「安静整理」比输入本身更重要</div>
+                  <div class="ordinal-body">收集了大量摘录却缺少结构化回看，知识无法真正内化为自己的思考。</div>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <div class="ordinal-title">笔记工具应服务于长期沉淀，而非即时对话</div>
+                  <div class="ordinal-body">对话流适合探索，但结构化笔记更适合数月后的回顾与复用。</div>
+                </div>
+              </li>
+            </ol>
+            <div class="section-eyebrow">行动清单</div>
+            <div class="checklist-header">
+              <span></span>
+              <span class="checklist-count">1 / 4 完成</span>
+            </div>
+            <ul class="checklist">
+              <li><span class="checkbox checked"></span><span class="checklist-text">每天预留 45 分钟无打扰的深度阅读时段</span></li>
+              <li><span class="checkbox"></span><span class="checklist-text">阅读后立即做一次结构化整理，不堆积未处理的摘录</span></li>
+              <li><span class="checkbox"></span><span class="checklist-text">每周回顾一次项目笔记，标记仍值得跟进的行动项</span></li>
+              <li><span class="checkbox"></span><span class="checklist-text">关闭非必要通知，减少被动打断</span></li>
+            </ul>
+            <div class="section-eyebrow">知识卡片</div>
+            <div class="knowledge-grid">
+              <div class="card-b">
+                <div class="card-b-tag">概念</div>
+                <div class="card-b-title">深度工作（Deep Work）</div>
+                <p class="card-b-body">在无干扰状态下进行的专注认知活动，能创造高价值成果并难以被复制。</p>
+              </div>
+              <div class="card-b">
+                <div class="card-b-tag">方法</div>
+                <div class="card-b-title">时间块（Time Blocking）</div>
+                <p class="card-b-body">将一天划分为固定时段并提前分配任务，保护深度思考不被琐事侵蚀。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Save modal -->
+  <section class="screen" id="screen-modal" role="tabpanel">
+    <div class="screen-label">保存到项目弹窗</div>
+    <div class="app-frame">
+      <div class="modal-overlay">
+        <div class="modal">
+          <h2 class="modal-title">保存到项目</h2>
+          <p class="modal-desc">将本次解析结果归档到项目，方便日后回看与复用。</p>
+          <label class="form-label">笔记标题</label>
+          <input class="form-input" type="text" value="深度工作的方法论摘录" readonly>
+          <label class="form-label">选择项目</label>
+          <div class="project-option selected">默认项目</div>
+          <div class="project-option">产品思考</div>
+          <div class="project-option">阅读摘录</div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary">取消</button>
+            <button class="btn btn-primary">确认保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Projects list -->
+  <section class="screen" id="screen-projects" role="tabpanel">
+    <div class="screen-label">项目列表页</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-group-label">项目</div>
+          <div class="sidebar-item active"><span>全部项目</span></div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot success"></span>已同步</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="app-main-inner">
+            <h1 class="page-heading">我的项目</h1>
+            <p class="page-desc">按主题归档笔记，随时回看曾经的阅读与思考。</p>
+            <div class="project-grid">
+              <div class="project-card">
+                <div class="project-card-name">默认项目</div>
+                <div class="project-card-meta">12 篇笔记 · 最近更新 今天</div>
+              </div>
+              <div class="project-card">
+                <div class="project-card-name">产品思考</div>
+                <div class="project-card-meta">8 篇笔记 · 最近更新 3 天前</div>
+              </div>
+              <div class="project-card">
+                <div class="project-card-name">阅读摘录</div>
+                <div class="project-card-meta">24 篇笔记 · 最近更新 1 周前</div>
+              </div>
+              <div class="project-card">
+                <div class="project-card-name">方法论收藏</div>
+                <div class="project-card-meta">5 篇笔记 · 最近更新 2 周前</div>
+              </div>
+              <div class="project-card">
+                <div class="project-card-name">写作素材</div>
+                <div class="project-card-meta">3 篇笔记 · 最近更新 1 个月前</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Project detail -->
+  <section class="screen" id="screen-project-detail" role="tabpanel">
+    <div class="screen-label">项目详情 / 笔记列表</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-group-label">项目</div>
+          <div class="sidebar-item active"><span>默认项目</span></div>
+          <div class="sidebar-item"><span>产品思考</span></div>
+          <div class="sidebar-item"><span>阅读摘录</span></div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot success"></span>已同步</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="app-main-inner">
+            <h1 class="page-heading">默认项目</h1>
+            <p class="page-desc">12 篇笔记 · 你的日常阅读与思考沉淀</p>
+            <div class="quick-parse">
+              <input type="text" value="" placeholder="快速粘贴，开始新的解析…" readonly>
+              <button class="btn btn-primary">解析</button>
+            </div>
+            <table class="note-table">
+              <thead>
+                <tr>
+                  <th>标题</th>
+                  <th>字数</th>
+                  <th>更新于</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="note-title-cell">深度工作的方法论摘录</td>
+                  <td>1,248</td>
+                  <td class="note-date">今天 14:32</td>
+                </tr>
+                <tr>
+                  <td class="note-title-cell">认知负荷与笔记结构</td>
+                  <td>892</td>
+                  <td class="note-date">昨天</td>
+                </tr>
+                <tr>
+                  <td class="note-title-cell">注意力经济的个人应对策略</td>
+                  <td>1,560</td>
+                  <td class="note-date">6 月 8 日</td>
+                </tr>
+                <tr>
+                  <td class="note-title-cell">阅读笔记：如何阅读一本书</td>
+                  <td>2,104</td>
+                  <td class="note-date">6 月 5 日</td>
+                </tr>
+                <tr>
+                  <td class="note-title-cell">周报摘录：本周产品复盘</td>
+                  <td>640</td>
+                  <td class="note-date">6 月 3 日</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Note detail -->
+  <section class="screen" id="screen-note-detail" role="tabpanel">
+    <div class="screen-label">笔记详情页</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-group-label">默认项目</div>
+          <div class="sidebar-item active"><span>深度工作的方法论摘录</span></div>
+          <div class="sidebar-item"><span>认知负荷与笔记结构</span></div>
+          <div class="sidebar-item"><span>注意力经济的个人应对</span></div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot success"></span>已同步</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="app-main-inner">
+            <div class="result-toolbar">
+              <button class="btn btn-utility">编辑</button>
+              <button class="btn btn-utility">导出</button>
+              <button class="btn btn-utility">保存到项目</button>
+            </div>
+            <h1 class="result-title">深度工作的方法论摘录</h1>
+            <div class="result-meta">
+              <span>默认项目</span>
+              <span>保存于 2026-06-11</span>
+              <span>1,248 字原文</span>
+            </div>
+            <div class="tabs">
+              <div class="tab active">内容总结</div>
+              <div class="tab">原文对照</div>
+            </div>
+            <div class="section-eyebrow">一句话总结</div>
+            <p class="summary-lede">深度工作的本质，是在<mark>注意力稀缺</mark>的时代，刻意为高质量思考保留不受打扰的时间块。</p>
+            <div class="section-eyebrow">核心观点</div>
+            <ol class="ordinal-list">
+              <li>
+                <div>
+                  <div class="ordinal-title">注意力碎片化是深度思考的最大敌人</div>
+                  <div class="ordinal-body">频繁切换任务会显著降低认知输出质量。</div>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <div class="ordinal-title">输入之后的「安静整理」比输入本身更重要</div>
+                  <div class="ordinal-body">缺少结构化回看，知识无法真正内化。</div>
+                </div>
+              </li>
+            </ol>
+            <div class="section-eyebrow">行动清单</div>
+            <div class="checklist-header">
+              <span></span>
+              <span class="checklist-count">2 / 4 完成</span>
+            </div>
+            <ul class="checklist">
+              <li><span class="checkbox checked"></span><span class="checklist-text">每天预留 45 分钟无打扰的深度阅读时段</span></li>
+              <li><span class="checkbox checked"></span><span class="checklist-text">阅读后立即做一次结构化整理</span></li>
+              <li><span class="checkbox"></span><span class="checklist-text">每周回顾一次项目笔记</span></li>
+              <li><span class="checkbox"></span><span class="checklist-text">关闭非必要通知</span></li>
+            </ul>
+            <div class="section-eyebrow">知识卡片</div>
+            <div class="knowledge-grid">
+              <div class="card-b">
+                <div class="card-b-tag">概念</div>
+                <div class="card-b-title">深度工作（Deep Work）</div>
+                <p class="card-b-body">在无干扰状态下进行的专注认知活动。</p>
+              </div>
+              <div class="card-b">
+                <div class="card-b-tag">方法</div>
+                <div class="card-b-title">时间块（Time Blocking）</div>
+                <p class="card-b-body">将一天划分为固定时段并提前分配任务。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Auth -->
+  <section class="screen" id="screen-auth" role="tabpanel">
+    <div class="screen-label">登录 / 注册页</div>
+    <div class="app-frame">
+      <div class="auth-shell">
+        <div class="auth-card">
+          <h1 class="auth-title">欢迎回来</h1>
+          <p class="auth-sub">登录后，你的笔记将同步到云端，换设备也能继续沉淀。</p>
+          <div class="auth-tabs">
+            <div class="auth-tab active">登录</div>
+            <div class="auth-tab">注册</div>
+          </div>
+          <label class="form-label">邮箱</label>
+          <input class="form-input" type="email" value="reader@example.com" readonly>
+          <label class="form-label">密码</label>
+          <input class="form-input" type="password" value="••••••••" readonly>
+          <button class="btn btn-primary btn-full">登录</button>
+          <div class="auth-footer">还没有账号？<a href="#">注册一个</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Empty state -->
+  <section class="screen" id="screen-empty" role="tabpanel">
+    <div class="screen-label">空状态</div>
+    <div class="app-frame">
+      <div class="app-shell">
+        <aside class="app-sidebar">
+          <div class="sidebar-brand">Read2Action</div>
+          <button class="sidebar-new-btn">新建笔记</button>
+          <div class="sidebar-search">搜索笔记、项目…</div>
+          <div class="sidebar-group-label">项目</div>
+          <div class="sidebar-item active"><span>默认项目</span></div>
+          <div class="sidebar-spacer"></div>
+          <div class="sidebar-user">
+            <div class="sidebar-user-name">沙莎</div>
+            <span class="sync-pill"><span class="dot"></span>本地模式</span>
+          </div>
+        </aside>
+        <div class="app-main">
+          <div class="empty-center">
+            <div class="empty-eyebrow">尚未开始</div>
+            <h2 class="empty-title">这里还没有笔记</h2>
+            <p class="empty-desc">粘贴一段阅读摘录或想法，让 AI 帮你整理成可回看的结构化笔记。沉淀下来的思考，会在数月后依然有价值。</p>
+            <button class="btn-dark">开始第一篇笔记</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. Toast & Sync -->
+  <section class="screen" id="screen-toast" role="tabpanel">
+    <div class="screen-label">Toast / 云端同步状态</div>
+    <div class="app-frame">
+      <div class="toast-demo-area">
+        <div class="toast-stack">
+          <div class="toast">
+            <span class="toast-dot success"></span>
+            <div class="toast-body">
+              <div class="toast-title">已保存到「默认项目」</div>
+              <div class="toast-msg">深度工作的方法论摘录 · 可随时在项目页回看</div>
+            </div>
+          </div>
+          <div class="toast">
+            <span class="toast-dot error"></span>
+            <div class="toast-body">
+              <div class="toast-title">同步失败</div>
+              <div class="toast-msg">网络连接中断，<a href="#" class="btn-ghost" style="padding:0;height:auto;font-size:13px;">重试</a></div>
+            </div>
+          </div>
+          <div class="toast">
+            <span class="toast-dot warning"></span>
+            <div class="toast-body">
+              <div class="toast-title">待同步</div>
+              <div class="toast-msg">有 2 条本地更改尚未上传至云端</div>
+            </div>
+          </div>
+        </div>
+        <div class="sync-demo-grid">
+          <div class="sync-demo-card">
+            <div class="sync-demo-label">云端同步五态</div>
+            <div class="sync-row">
+              <span class="sync-pill"><span class="dot"></span>本地模式</span>
+              <span class="sync-pill"><span class="dot warning"></span>待同步</span>
+              <span class="sync-pill"><span class="dot primary"></span>同步中</span>
+              <span class="sync-pill"><span class="dot success"></span>已同步</span>
+              <span class="sync-pill"><span class="dot error"></span>失败</span>
+            </div>
+          </div>
+          <div class="sync-demo-card">
+            <div class="sync-demo-label">侧栏用户区示例</div>
+            <div style="padding: 12px 0;">
+              <div class="sidebar-user-name" style="margin-bottom:8px;">沙莎</div>
+              <span class="sync-pill"><span class="dot success"></span>已同步 · 刚刚</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var themeToggle = document.getElementById('themeToggle');
+  var tabs = document.querySelectorAll('.page-tab');
+  var screens = document.querySelectorAll('.screen');
+
+  function setTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    try { localStorage.setItem('r2a-preview-theme', theme); } catch (e) {}
+  }
+
+  themeToggle.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+
+  try {
+    var saved = localStorage.getItem('r2a-preview-theme');
+    if (saved === 'dark' || saved === 'light') setTheme(saved);
+  } catch (e) {}
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var id = tab.getAttribute('data-screen');
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      screens.forEach(function (s) { s.classList.remove('active'); });
+      tab.classList.add('active');
+      var screen = document.getElementById('screen-' + id);
+      if (screen) screen.classList.add('active');
+    });
+  });
+})();
+</script>
+</body>
+</html>
