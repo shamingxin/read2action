@@ -28,8 +28,9 @@ import {
   R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
 } from "@/lib/local-saved-notes";
 import { createClient } from "@/lib/supabase/client";
+import { isDataError, listProjects } from "@/lib/supabase/projects";
 import { cn } from "@/lib/utils";
-import type { Note } from "@/types";
+import type { Note, Project } from "@/types";
 
 function isMockDebugEnabled(): boolean {
   if (typeof window === "undefined") return false;
@@ -76,6 +77,9 @@ export function AppSidebar() {
   const router = useRouter();
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  /** 首次 auth 检查完成前为 false，避免未确认登录态时闪现 mock 项目 */
+  const [authReady, setAuthReady] = useState(false);
+  const [cloudProjects, setCloudProjects] = useState<Project[] | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
@@ -94,18 +98,54 @@ export function AppSidebar() {
   useEffect(() => {
     const supabase = createClient();
 
-    void supabase.auth.getUser().then(({ data: { user } }) => {
-      setAuthUser(user);
-    });
+    void (async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setAuthUser(user);
+      } catch (err) {
+        console.error("[AppSidebar] getUser failed:", err);
+        setAuthUser(null);
+      } finally {
+        setAuthReady(true);
+      }
+    })();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthUser(session?.user ?? null);
+      setAuthReady(true);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!authUser) {
+      setCloudProjects(null);
+      return;
+    }
+
+    let cancelled = false;
+    const supabase = createClient();
+
+    void (async () => {
+      try {
+        const result = await listProjects(supabase);
+        if (cancelled) return;
+        setCloudProjects(isDataError(result) ? [] : result);
+      } catch (err) {
+        console.error("[AppSidebar] listProjects failed:", err);
+        if (!cancelled) setCloudProjects([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser]);
 
   async function handleSignOut() {
     if (isSigningOut) return;
@@ -114,14 +154,25 @@ export function AppSidebar() {
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
+      setAuthUser(null);
+      setCloudProjects(null);
+      router.push("/");
       router.refresh();
+    } catch (err) {
+      console.error("[AppSidebar] signOut failed:", err);
+      router.push("/");
     } finally {
       setIsSigningOut(false);
     }
   }
 
   const newEntry = mockProjects.find((p) => p.id === NEW_PROJECT_ENTRY_ID);
-  const linkProjects = mockProjects.filter((p) => p.id !== NEW_PROJECT_ENTRY_ID);
+  const mockLinkProjects = mockProjects.filter(
+    (p) => p.id !== NEW_PROJECT_ENTRY_ID,
+  );
+  const isProjectsLoading =
+    !authReady || (authUser !== null && cloudProjects === null);
+  const linkProjects = authUser ? (cloudProjects ?? []) : mockLinkProjects;
 
   return (
     <aside className="sticky top-0 flex h-screen w-[260px] shrink-0 flex-col border-r border-[#E5E7EB] bg-[#F0F1F6]">
@@ -182,7 +233,13 @@ export function AppSidebar() {
                 <span className="truncate">新增项目</span>
               </button>
             ) : null}
-            {linkProjects.map((p) => {
+            {isProjectsLoading ? (
+              <div className="px-1 py-2 text-[12px] leading-relaxed text-[#939393]">
+                正在加载云端项目…
+              </div>
+            ) : null}
+            {!isProjectsLoading
+              ? linkProjects.map((p) => {
               const projectHref = `/projects/${p.id}`;
               const isProjectActive =
                 pathname === projectHref ||
@@ -264,7 +321,8 @@ export function AppSidebar() {
                   </DropdownMenu>
                 </div>
               );
-            })}
+            })
+              : null}
           </nav>
         </div>
 
