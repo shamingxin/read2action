@@ -3,25 +3,30 @@
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ position, ...props }: ToasterProps) => {
+  const safePosition = position === "top-center" || position == null
+    ? "bottom-center"
+    : position
+
   return (
     <Sonner
       theme="light"
-      offset={{ top: "28px" }}
-      mobileOffset={{ top: "24px" }}
+      position={safePosition}
+      offset={{ top: "112px", bottom: "28px" }}
+      mobileOffset={{ top: "24px", bottom: "20px" }}
       className="toaster group"
       icons={{
         success: (
-          <CircleCheckIcon className="size-4 text-[#4F46E5]" />
+          <CircleCheckIcon className="size-4 text-[var(--r2a-success)]" />
         ),
         info: (
-          <InfoIcon className="size-4 text-[#6B7280]" />
+          <InfoIcon className="size-4 text-[var(--r2a-ink-muted)]" />
         ),
         warning: (
-          <TriangleAlertIcon className="size-4 text-[#B45309]" />
+          <TriangleAlertIcon className="size-4 text-[var(--r2a-warning)]" />
         ),
         error: (
-          <OctagonXIcon className="size-4 text-[#B91C1C]" />
+          <OctagonXIcon className="size-4 text-[var(--r2a-error)]" />
         ),
         loading: (
           <Loader2Icon className="size-4 animate-spin" />
@@ -32,18 +37,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          "--border-radius": "var(--r2a-radius-xl)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
           toast:
-            "cn-toast !w-fit !max-w-[min(100vw-2rem,18rem)] justify-center !border !border-[#E5E7EB] !py-2 !px-3.5 !text-[13px] !leading-snug !shadow-sm !bg-white !text-[#363636]",
+            "cn-toast !w-fit !max-w-[min(100vw-2rem,18rem)] justify-center !border !border-[var(--r2a-hairline)] !bg-[var(--r2a-surface)] !px-3.5 !py-2 !text-[13px] !leading-snug !text-[var(--r2a-ink-secondary)] !shadow-[var(--r2a-shadow-soft)]",
           success:
-            "!border-[#E5E7EB] !bg-[#EEF2FF] !text-[#363636]",
-          info: "!border-[#E5E7EB] !bg-white !text-[#363636]",
-          warning: "!border-[#E5E7EB] !bg-[#FFFBEB] !text-[#78350F]",
-          error: "!border-[#FECACA] !bg-[#FEF2F2] !text-[#7F1D1D]",
+            "!border-[var(--r2a-hairline)] !bg-[var(--r2a-success-bg)] !text-[var(--r2a-ink-secondary)]",
+          info:
+            "!border-[var(--r2a-hairline)] !bg-[var(--r2a-surface)] !text-[var(--r2a-ink-secondary)]",
+          warning:
+            "!border-[var(--r2a-hairline)] !bg-[var(--r2a-warning-bg)] !text-[var(--r2a-ink)]",
+          error:
+            "!border-[var(--r2a-hairline)] !bg-[var(--r2a-error-bg)] !text-[var(--r2a-error)]",
         },
       }}
       {...props}

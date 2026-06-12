@@ -51,8 +51,10 @@ export function NoteDetailResolver({
 
   if (!clientReady) {
     return (
-      <div className="flex min-h-[240px] flex-1 items-center justify-center bg-[#F4F5F9] text-[14px] text-[#939393]">
-        加载笔记…
+      <div className="flex min-h-[240px] flex-1 items-center justify-center bg-[var(--r2a-canvas-soft)] px-6 text-[13px] text-[var(--r2a-ink-muted)]">
+        <div className="rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-5 py-3 shadow-[var(--r2a-shadow-soft)]">
+          加载笔记…
+        </div>
       </div>
     );
   }

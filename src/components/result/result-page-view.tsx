@@ -1,10 +1,16 @@
 "use client";
 
 import { Download, Link2, Pencil, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { SaveToProjectDialog } from "./save-to-project-dialog";
+import {
+  ActionChecklistSection,
+  KeyInsightsSection,
+  KnowledgeCardsSection,
+  NoteSectionCard,
+} from "@/components/shared/note-content-sections";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,19 +26,18 @@ import {
   findLocalSavedNoteById,
   resolveNoteSavedStatus,
 } from "@/lib/local-saved-notes";
-import type { KnowledgeCard, ParseResultPreview } from "@/types";
+import type { ParseResultPreview } from "@/types";
 
 import {
   r2aBtnIconHeader,
+  r2aBtnPrimary,
   r2aBtnSecondary,
   r2aContentPageHeaderActions,
   r2aContentPageHeaderRow,
   r2aKnowledgeAddSlotShell,
-  r2aKnowledgeMiniCardShell,
   r2aContentPageShell,
   r2aPageSectionStackGap,
   r2aPlainWhitePanel,
-  r2aSectionCardShell,
   r2aTabLabelActive,
   r2aTabLabelInactive,
   r2aTabListRow,
@@ -46,57 +51,6 @@ type TabId = "summary" | "source";
 function formatWordCount(n: number | undefined) {
   if (n == null) return "—";
   return n.toLocaleString("zh-CN");
-}
-
-function tagAccent(tag?: string) {
-  if (tag === "指标")
-    return "text-[#1F8557]";
-  return "text-[#4F46E5]";
-}
-
-function KnowledgeMiniCard({ card }: { card: KnowledgeCard }) {
-  return (
-    <div className={r2aKnowledgeMiniCardShell}>
-      {card.tag ? (
-        <span
-          className={cn(
-            "text-[11px] font-medium leading-none",
-            tagAccent(card.tag),
-          )}
-        >
-          {card.tag}
-        </span>
-      ) : null}
-      <h4 className="text-[13px] font-normal leading-tight text-[#121212]">
-        {card.title}
-      </h4>
-      <p className="text-[12px] font-normal leading-relaxed text-[#939393]">
-        {card.content}
-      </p>
-    </div>
-  );
-}
-
-function SectionCard({
-  title,
-  headerRight,
-  children,
-  className,
-}: {
-  title: string;
-  headerRight?: ReactNode;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={cn(r2aSectionCardShell, className)}>
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[15px] font-semibold text-[#121212]">{title}</h3>
-        {headerRight}
-      </div>
-      {children}
-    </section>
-  );
 }
 
 export function ResultPageView({ data }: { data?: ParseResultPreview }) {
@@ -178,14 +132,14 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   };
 
   return (
-    <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
+    <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aContentPageShell}>
         <header className={r2aContentPageHeaderRow}>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <h1 className="text-[26px] font-semibold leading-tight text-[#121212]">
+            <h1 className="font-heading text-[28px] font-semibold leading-[1.3] text-[var(--r2a-ink)]">
               {d.title}
             </h1>
-            <p className="text-[12px] font-normal leading-relaxed text-[#939393]">
+            <p className="text-[12px] font-normal leading-relaxed text-[var(--r2a-ink-muted)]">
               {metaLine}
             </p>
           </div>
@@ -195,7 +149,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
               className={r2aBtnSecondary}
               onClick={() => toast.info("编辑功能暂未开放")}
             >
-              <Pencil className="size-5 shrink-0 text-[#363636]" aria-hidden />
+              <Pencil className="size-5 shrink-0 text-current" aria-hidden />
               编辑
             </button>
             <button
@@ -203,7 +157,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
               onClick={() => toast.info("导出功能暂未开放")}
               className={r2aBtnSecondary}
             >
-              <Download className="size-5 shrink-0 text-[#363636]" aria-hidden />
+              <Download className="size-5 shrink-0 text-current" aria-hidden />
               导出
             </button>
             <button
@@ -212,7 +166,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
                 setSaveDialogResetKey((k) => k + 1);
                 setSaveDialogOpen(true);
               }}
-              className={r2aBtnSecondary}
+              className={r2aBtnPrimary}
             >
               保存到项目
             </button>
@@ -235,7 +189,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
                     }
                   }}
                 >
-                  <Link2 className="size-4 text-[#939393]" aria-hidden />
+                  <Link2 className="size-4 text-[var(--r2a-ink-muted)]" aria-hidden />
                   复制链接
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -252,7 +206,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
 
         {resultStatusHint === "temporary" ? (
           <p
-            className="mb-1 rounded-lg border border-[#E0E7FF] bg-[#EEF2FF] px-4 py-2.5 text-[13px] font-normal text-[#4338CA]"
+            className="mb-1 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-hover)] px-4 py-2.5 text-[13px] font-normal text-[var(--r2a-ink-secondary)] shadow-[var(--r2a-shadow-soft)]"
             role="status"
           >
             已自动暂存，可保存到项目归档
@@ -260,7 +214,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
         ) : null}
         {resultStatusHint === "project-saved" ? (
           <p
-            className="mb-1 rounded-lg border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-2.5 text-[13px] font-normal text-[#047857]"
+            className="mb-1 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-success-bg)] px-4 py-2.5 text-[13px] font-normal text-[var(--r2a-ink-secondary)] shadow-[var(--r2a-shadow-soft)]"
             role="status"
           >
             已保存到项目
@@ -315,67 +269,25 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
 
           {tab === "summary" ? (
             <div className={cn("flex flex-col", r2aPageSectionStackGap)}>
-              <SectionCard title="一句话总结">
-                <p className="max-w-[770px] text-[14px] font-normal leading-relaxed text-[#363636]">
+              <NoteSectionCard title="一句话总结">
+                <p className="font-heading max-w-[770px] text-[17px] font-medium leading-[1.85] text-[var(--r2a-ink)]">
                   {d.summary}
                 </p>
-              </SectionCard>
+              </NoteSectionCard>
 
-              <SectionCard title="核心观点">
-                <ul className="flex flex-col gap-3">
-                  {d.keyInsights.map((line, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2.5 text-[14px] font-normal leading-relaxed text-[#363636]"
-                    >
-                      <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-[#EEF2FF] text-[11px] font-semibold text-[#4F46E5]">
-                        {i + 1}
-                      </span>
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-              </SectionCard>
+              <KeyInsightsSection insights={d.keyInsights} />
 
-              <SectionCard
-                title="行动清单"
-                headerRight={
-                  <span className="text-[12px] font-normal text-[#939393]">
-                    {doneCount}/{d.actionItems.length} 完成
-                  </span>
-                }
-              >
-                <ul className="flex flex-col gap-2.5">
-                  {d.actionItems.map((item) => (
-                    <li key={item.id} className="flex items-start gap-2.5">
-                      <button
-                        type="button"
-                        role="checkbox"
-                        aria-checked={checks[item.id]}
-                        onClick={() => toggleCheck(item.id)}
-                        className={cn(
-                          "mt-0.5 size-4 shrink-0 rounded border border-[#E5E7EB] bg-white transition-colors",
-                          checks[item.id] && "border-[#4F46E5] bg-[#4F46E5]",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-[14px] font-normal leading-tight text-[#121212]",
-                          checks[item.id] && "text-[#939393] line-through",
-                        )}
-                      >
-                        {item.content}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </SectionCard>
+              <ActionChecklistSection
+                items={d.actionItems}
+                checks={checks}
+                doneCount={doneCount}
+                onToggle={toggleCheck}
+              />
 
-              <SectionCard title="知识卡片（自动生成）">
-                <div className="flex flex-col gap-3 lg:flex-row">
-                  {d.knowledgeCards.map((c) => (
-                    <KnowledgeMiniCard key={c.id} card={c} />
-                  ))}
+              <KnowledgeCardsSection
+                title="知识卡片（自动生成）"
+                cards={d.knowledgeCards}
+                footerSlot={
                   <button
                     type="button"
                     className={r2aKnowledgeAddSlotShell}
@@ -385,8 +297,8 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
                   >
                     +&nbsp;&nbsp;添加自定义卡片
                   </button>
-                </div>
-              </SectionCard>
+                }
+              />
             </div>
           ) : (
             <section
@@ -399,20 +311,20 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
             >
               {d.rawContent?.trim() ? (
                 <>
-                  <h2 className="text-base font-semibold text-[#121212]">
+                  <h2 className="font-heading text-base font-semibold text-[var(--r2a-ink)]">
                     原始内容
                   </h2>
-                  <p className="text-[13px] font-normal leading-normal text-[#939393]">
+                  <p className="text-[13px] font-normal leading-normal text-[var(--r2a-ink-muted)]">
                     以下内容为原始输入内容，便于与 AI 总结结果对照查看。
                   </p>
                   <div className="max-h-[min(400px,55vh)] min-h-[120px] overflow-y-auto pr-1">
-                    <p className="whitespace-pre-wrap text-[14px] font-normal leading-6 text-[#363636]">
+                    <p className="whitespace-pre-wrap text-[14px] font-normal leading-6 text-[var(--r2a-ink-secondary)]">
                       {d.rawContent}
                     </p>
                   </div>
                 </>
               ) : (
-                <p className="text-[14px] leading-relaxed text-[#939393]">
+                <p className="text-[14px] leading-relaxed text-[var(--r2a-ink-muted)]">
                   原文对照内容占位。下一阶段可在此展示解析来源全文或粘贴原文。
                 </p>
               )}

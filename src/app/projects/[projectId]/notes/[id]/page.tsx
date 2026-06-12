@@ -58,7 +58,7 @@ export default async function NoteDetailPage({ params }: PageProps) {
       })();
 
   return (
-    <main className="flex min-h-full flex-1 flex-col bg-[#F4F5F9]">
+    <main className="flex min-h-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <NoteDetailResolver
         projectId={projectId}
         projectName={project.name}

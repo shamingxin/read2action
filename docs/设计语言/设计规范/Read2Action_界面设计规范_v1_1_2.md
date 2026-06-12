@@ -1,12 +1,13 @@
 # Read2Action · 界面设计规范 v1.1.2
 
-> **文档版本**：v1.1.2（1.4-0 校正版；在 v1.1.1 基础上修复 HTML 预览排版与组件展示 bug）
-> **创建阶段**：1.4-0（视觉规范确认与工程化修订）
-> **修订日期**：2026-06-11
-> **状态**：1.4 基准规范 · 待落地 · 取代 v1.0，供 1.4「产品气质重构 + 核心体验补齐」及后续 UI 改动参考
+> **文档版本**：v1.1.2（1.4-A 笔记详情视觉母版冻结同步版）
+> **创建阶段**：1.4-A（笔记详情视觉母版冻结 + 规范正文同步）
+> **修订日期**：2026-06-12
+> **状态**：1.4 基准规范 · 设计预览阶段 · 取代 v1.0，供 1.4「产品气质重构 + 核心体验补齐」及后续 UI 改动参考
 > **配套预览**：`docs/设计语言/设计规范/Read2Action_界面设计规范_v1_1_2_preview.html`
+> **冻结母版**：`docs/设计语言/1.4视觉预览html/Read2Action_1.4_A_笔记详情视觉母版_v0_4.html`
 > **关联文件**：`Read2Action_视觉迭代方向_v2.md`（下一版视觉/交互重构方向，本文件**不包含**）
-> **设计语言**：warm-restrained editorial — 近白画布（仅一丝暖意，参考 Notion / Craft）+ 中文衬线 + 深墨蓝主色 + ink accent 装饰。温度来自字体与色彩搭配，不依赖米色画布。
+> **设计语言**：warm-restrained editorial — 更浅、更干净的阅读画布 + 中文衬线 + 深墨蓝主色 + ink accent 装饰。温度来自字体与色彩搭配，不依赖米色画布或厚重悬浮感。
 
 ---
 
@@ -20,19 +21,29 @@
 2. 修正 v1.0 中"Notion Blue + 冷调画布"造成的气质割裂问题。
 3. 给 Cursor 及后续 Agent 提供 **可执行的 token、组件与页面约束**，减少 UI 漂移。
 
+### 1.1 1.4-A 笔记详情视觉母版冻结说明
+
+`docs/设计语言/1.4视觉预览html/Read2Action_1.4_A_笔记详情视觉母版_v0_4.html` 已确认作为 **1.4-A 笔记详情页视觉母版冻结版本**。
+
+该母版定义了当前阶段的页面骨架、sidebar、笔记详情标题区、tabs、内容卡片、一句话总结、核心观点、行动清单与 Index Card 知识卡片等关键组件规则。后续首页、解析页、项目页、空状态、登录 / 注册等页面，应以该母版为视觉参照进行延展，而不是重新发明新的视觉语言。
+
+当前阶段仍是 **设计预览与规范对照阶段**：真实业务 UI 代码尚未接入本母版样式，本文件与配套 preview HTML 用于冻结设计方向、减少后续实现时的 UI 漂移。工程接入时仍需按页面小步迁移，并保护 1.3 已上线主链路。
+
+`docs/设计语言/设计规范/Read2Action_界面设计规范_v1_1_2_preview.html` 已同步该母版中的稳定组件样式，并已作为规范预览完成确认；后续以冻结母版 + preview + 本 md 正文三者对照执行。
+
 ## 2. 相对 v1.0 的核心变更（迁移摘要）
 
 | 类别 | v1.0 | v1.1 | 理由 |
 |------|------|------|------|
-| 画布底 | `#f6f5f4` 冷调浅灰 | `#f8f7f3` 近白带一丝暖意 | 修正"暖意不足、SaaS 默认底"问题；同时回避 indie productivity 烂大街米色——温度交给中文衬线、ink accent、深墨蓝主色承担 |
-| 卡片表面 | `#ffffff` 纯白 | `#ffffff` 纯白 | 与 Notion / Craft 一致：纯白卡片浮在略暖的画布上，是当代知识工具的标准做法 |
+| 画布底 | `#f6f5f4` 冷调浅灰 | `#f9f9f5` 更浅、更干净的近白阅读画布 | 修正"暖意不足、SaaS 默认底"问题；同时回避 indie productivity 烂大街米色——温度交给中文衬线、ink accent、深墨蓝主色承担 |
+| 卡片表面 | `#ffffff` 纯白 | `#ffffff` 纯白 | 纯白卡片浮在轻暖阅读画布上，但不做大白壳，也不做 Notion clone |
 | 主操作色 | `#0075de` Notion Blue | `#1e4d80` 深墨蓝 | Notion Blue 是协作工具的"无情感清晰"，与"温暖陪伴"气质冲突；深墨蓝保留专业感，去掉冷感 |
 | 主文字 | `#000000` 纯黑 | `#1f1d18` 暖近黑 | 纯黑在暖底上突兀；暖近黑更"墨水印在纸上" |
 | Hairline | `#e6e6e6` 中性灰 | `#ebe9e2` 暖灰 | 与画布同温度的边线 |
 | 字体 | 仅 Inter | Inter（界面）+ Noto Serif SC（中文标题、序号、卡片名） | 90% 内容是中文，中文衬线是最大的气质杠杆 |
 | 主按钮圆角 | `radius-pill`（9999px） | `radius-md`（8px） | Pill 是营销/消费 App 视觉血统，与"安静知识工具"气质相冲；Bear / Craft / Notion / iA Writer / Things 都用圆角矩形 |
-| 核心观点数字 | 紫色圆形 badge | 中文序号 `一、二、三` + 衬线 + ink accent 色 | "圆形 badge"是按钮的设计语言，不是知识的语言；中文衬线序号是真正的"知识沉淀"气质 |
-| Accent 色 | 多色 accent-* 列表 | 单一 `--r2a-accent-ink` 墨棕色，**严格限定**用于标题序号 / 卡片 tag / 文本标记 | 多 accent 色对应 v1.0 试图覆盖 AI 解析阶段 pill 的需求，但实际造成视觉碎片；以 ink-accent 单色统一 |
+| 核心观点数字 | 紫色圆形 badge | 圆圈数字 `① ② ③` + 衬线 + ink accent 色 | 使用文字型圆圈数字而不是 badge 组件，保留知识卡片般的标注感，同时避免"一、二、三、"造成古文目录感 |
+| Accent 色 | 多色 accent-* 列表 | 单一 `--r2a-accent-ink` 墨棕色，**严格限定**用于核心观点圆圈数字 / 卡片 tag / 文本标记 | 多 accent 色对应 v1.0 试图覆盖 AI 解析阶段 pill 的需求，但实际造成视觉碎片；以 ink-accent 单色统一 |
 
 ---
 
@@ -71,13 +82,13 @@ Read2Action 是一款 **个人知识沉淀工具**（AI 是手段，长期回看
 
 | 维度 | 目标气质 | 避免 |
 |------|----------|------|
-| 整体 | 内容优先、安静、文档感、像一本随时翻开的笔记 | 营销官网、AI 演示页、对话流 UI |
-| 画布 | 受控暖纸（不过暖，不过冷） | indie productivity 烂大街米色、冷灰 SaaS 模板 |
+| 整体 | 克制、安静、阅读感、知识沉淀、低装饰、低悬浮感 | ChatGPT clone、Notion clone、营销官网、AI 演示页、对话流 UI |
+| 画布 | 更浅、更干净的阅读画布（不过暖，不过冷） | indie productivity 烂大街米色、冷灰 SaaS 模板、黄色感过重的背景 |
 | 文字 | 暖近黑、中文衬线点睛、有"墨"感 | 纯黑、全程 Inter 无中文优化 |
-| 操作 | 单一深墨蓝主色、低装饰 | 多 accent 色竞争、彩色按钮、pill 按钮 |
+| 操作 | 单一深墨蓝主色、轻选中态、低装饰 | 多 accent 色竞争、彩色按钮、pill 按钮、厚重黑色选中块 |
 | AI | 轻 AI 感、状态可感知、不抢内容 | 渐变、紫色徽章、AI 色铺满 |
 
-**一句话**：像一本你愿意每天打开的私人笔记，不是 SaaS 工具的 chrome。
+**一句话**：像一本你愿意每天打开的私人笔记，不是 SaaS 工具的 chrome，不是 ChatGPT / Notion 的复制品，也不是营销官网。
 
 ---
 
@@ -91,7 +102,7 @@ Read2Action 是一款 **个人知识沉淀工具**（AI 是手段，长期回看
 
 ### 6.2 近白受控画布
 
-- **浅色模式**：页面底 `--r2a-canvas-soft` `#f8f7f3`（近白，仅一丝暖意），卡片 `--r2a-surface` `#ffffff`（纯白）。两者形成"卡片浮在略暖画布上"的层次，与 Notion / Craft 同款做法。
+- **浅色模式**：页面底 `--r2a-canvas-soft` `#f9f9f5`（更浅、更干净的近白阅读画布），卡片 `--r2a-surface` `#ffffff`（纯白）。两者形成"卡片浮在轻暖画布上"的层次，但避免黄色感过重。
 - **深色模式**：底 `#1a1814` 暖深褐黑（非纯黑），卡片 `#25221c` 稍亮暖深灰。
 - **温度的来源**：不是画布颜色，而是中文衬线 + ink accent + 暖近黑文字 + 暖色调阴影共同营造。
 - **不**使用：冷灰画布（如 `#f4f5f7`）、纯黑文字、indie productivity 米色（如 `#f5f0e3` 及更暖）。
@@ -101,20 +112,23 @@ Read2Action 是一款 **个人知识沉淀工具**（AI 是手段，长期回看
 - 整站默认 sans（Inter + Noto Sans SC）。
 - **仅在以下场景**使用衬线（Noto Serif SC）：
   - 笔记标题（`display-md` / `display-lg`）
+  - 一句话总结正文（18px serif / 500 / 1.85）
+  - 核心观点标题（17px serif / 600）
   - 知识卡片标题与分类 tag
-  - 核心观点序号（中文数字 `一、二、三`）
+  - 核心观点圆圈数字（`① ② ③`）
   - section label（eyebrow）的辅助 serif
-- 衬线 **不用于** 按钮、表单、导航、正文。
+- 衬线 **不用于** 按钮、表单、导航、默认正文；一句话总结与核心观点标题是笔记详情页的例外，允许使用衬线来强化阅读感和层级。
 
-### 6.4 Hairline 轻边框、无 drop shadow
+### 6.4 Hairline 轻边框、低悬浮感
 
-- 默认 1px hairline 边框，**不用** drop shadow。
-- 浮起感（modal、toast、dropdown）用多层近透明微叠影（见 §9.8）。
+- 默认 1px hairline 边框，卡片仅允许最轻量的阴影或完全 flat，禁止厚重 drop shadow。
+- 内容卡片优先使用 hairline + 统一圆角 + 统一内边距建立边界；当背景层级需要更清晰时，只允许 `--r2a-shadow-soft` 这一档极轻阴影。
+- 浮起感（modal、toast、dropdown）用多层近透明微叠影（见 §10.11），但不能把页面做成到处悬浮的卡片墙。
 
 ### 6.5 单一深墨蓝主操作色 + 单一 ink-accent 装饰色
 
 - 全站 **仅一个** 主操作色 `--r2a-primary` `#1e4d80`：登录、注册、保存、确认、focus ring、链接。
-- 全站 **仅一个** ink-accent `--r2a-accent-ink` `#8b5a3c`：用于标题中文序号、知识卡片 tag、文本标记（`<mark>`）。
+- 全站 **仅一个** ink-accent `--r2a-accent-ink` `#8b5a3c`：用于核心观点圆圈数字、知识卡片 tag、文本标记（`<mark>`）。
 - **禁止** 再引入第二、第三个品牌强调色。
 - 语义色（success/error/warning）仅用于状态 UI（Toast、内嵌校验），不参与主结构。
 
@@ -142,7 +156,7 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | `--r2a-on-primary` | `#ffffff` | 主按钮文字（浅色模式使用白色，暗色模式使用暖白） |
 | `--r2a-primary-bg` | `#e8eff7` | 主色极浅底（选中态、链接 hover bg） |
 | `--r2a-canvas` | `#ffffff` | 极少使用：仅当强对比白卡需要时（如 modal 内部） |
-| `--r2a-canvas-soft` | `#f8f7f3` | 页面底（近白带一丝暖意） |
+| `--r2a-canvas-soft` | `#f9f9f5` | 页面底（更浅、更干净的近白阅读画布） |
 | `--r2a-surface` | `#ffffff` | 卡片、面板、输入框（纯白） |
 | `--r2a-hover` | `#f2efe7` | nav item hover、按钮 hover bg |
 | `--r2a-ink` | `#1f1d18` | 主标题、强调正文 |
@@ -151,12 +165,17 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | `--r2a-ink-faint` | `#a8a39a` | 占位符、禁用文字、时间戳 |
 | `--r2a-hairline` | `#ebe9e2` | 1px 边框 |
 | `--r2a-hairline-soft` | `#f2f0ea` | section 内分隔线、dashed border |
+| `--r2a-sidebar-bg` | `#fbfbf8` | sidebar 背景（轻于早期版本，避免黄色感过重） |
+| `--r2a-sidebar-active-bg` | `#ebe9e2` | sidebar 选中态轻底色，接近 hairline，不使用黑色块 |
+| `--r2a-sidebar-active-ink` | `#1f1d18` | sidebar 选中项主文字 |
+| `--r2a-sidebar-active-muted` | `#6e6a62` | sidebar 选中项辅助文字 |
+| `--r2a-sidebar-active-dot` | `#8b5a3c` | sidebar 选中项 4px 色点 |
 
 **Ink Accent（单一装饰色）：**
 
 | Token | Hex | 用途 | 严禁 |
 |-------|-----|------|------|
-| `--r2a-accent-ink` | `#8b5a3c` | 中文序号（核心观点 `一、二、三`）、知识卡片分类 tag、文本高亮标记字色 | 主按钮、导航高亮、大面积背景、表单 |
+| `--r2a-accent-ink` | `#8b5a3c` | 核心观点圆圈数字（`① ② ③`）、知识卡片分类 tag、文本高亮标记字色 | 主按钮、导航高亮、大面积背景、表单 |
 | `--r2a-accent-ink-bg` | `rgba(139,90,60,0.10)` | 文本 `<mark>` 高亮底色 | 任何结构色用途 |
 
 ### 7.3 深色（Dark）Theme Token
@@ -179,6 +198,11 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | `--r2a-hairline-soft` | `#322d24` | 内分隔线 |
 | `--r2a-accent-ink` | `#c89878` | ink accent（提亮版） |
 | `--r2a-accent-ink-bg` | `rgba(200,152,120,0.14)` | 高亮底 |
+| `--r2a-sidebar-bg` | `#1a1814` | sidebar 背景 |
+| `--r2a-sidebar-active-bg` | `#3a3429` | sidebar 选中态轻底色 |
+| `--r2a-sidebar-active-ink` | `#f0eadc` | sidebar 选中项主文字 |
+| `--r2a-sidebar-active-muted` | `#928876` | sidebar 选中项辅助文字 |
+| `--r2a-sidebar-active-dot` | `#c89878` | sidebar 选中项 4px 色点 |
 
 ### 7.4 语义色（**仅用于语义场景**）
 
@@ -230,11 +254,11 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | Token | 字号 | 字重 | 行高 | 字间距 | 字体族 | 用途 |
 |-------|------|------|------|--------|--------|------|
 | `display-lg` | 36px | 600 | 1.3 | -0.01em | **serif** | 首页主标题、登录页主标题 |
-| `display-md` | 28px | 600 | 1.3 | -0.01em | **serif** | 笔记详情标题、区块大标题 |
-| `title` | 18px | 600 | 1.4 | -0.005em | **serif** | 知识卡片标题、对话框标题 |
+| `display-md` | 28px | 600 | 1.3 | -0.01em | **serif** | 笔记详情主标题 |
+| `title` | 17px | 600 | 1.4 | -0.005em | **serif** | 核心观点标题、知识卡片标题 |
 | `title-sm` | 16px | 500 | 1.4 | 0 | sans | 列表项标题、项目名 |
 | `body-md` | 15px | 400 | 1.75 | 0 | sans | **默认正文** |
-| `body-lg` | 18px | 400 | 1.85 | 0.005em | **serif** | 一句话总结、长段引文（增强阅读感） |
+| `summary` / `body-lg` | 18px | 500 | 1.85 | 0.005em | **serif** | 一句话总结、长段引文（增强阅读感） |
 | `body-sm` | 13.5px | 400 | 1.7 | 0 | sans | 次要正文、导航、卡片内容 |
 | `button` | 14px | 500 | 1.4 | 0 | sans | 按钮文字 |
 | `caption` | 12.5px | 400 | 1.5 | 0 | sans | 说明、时间戳、metadata |
@@ -243,9 +267,11 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 ### 8.3 原则
 
-- **Serif 仅在 §6.3 列出的场景使用**，不在正文、按钮、导航、表单出现。
+- **Serif 仅在 §6.3 列出的场景使用**，不在默认正文、按钮、导航、表单出现。
+- 主标题、模块标题、卡片标题、知识卡片标题使用衬线字体并适当加粗；标题和正文必须形成清晰层级，不允许所有文字一个语气。
 - 标题 600，正文 400，按钮 500；避免 300 细体与 700 重体。
-- 长文区域（笔记详情、解析结果正文）优先 `body-md`（15px / 1.75）；引文/总结使用 `body-lg`（serif）。
+- 长文区域（笔记详情、解析结果正文）优先 `body-md`（15px / 1.75）；一句话总结可使用 `summary` / `body-lg`（18px serif / 500 / 1.85）。
+- 核心观点标题使用 `title`（17px serif / 600），描述文字使用常规正文字体 `body-sm`（13.5px sans / 400），形成浅一级说明层级。
 - `eyebrow` 必须使用 uppercase + `letter-spacing: 0.16em`，是"editorial 气质"的关键标识。
 
 ---
@@ -286,7 +312,15 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 - 笔记详情正文宽：max **720px**（增强阅读节奏）。
 - 登录 / 注册卡片：max **400–440px**。
 
-### 9.4 编辑性间距（仅限内容阅读区）
+### 9.4 页面布局规则（1.4-A 母版）
+
+- 左侧 sidebar 固定在页面左侧，不随右侧内容滚动。
+- 左下角用户信息固定在 sidebar 底部，作为 sidebar chrome 的一部分，不参与主内容滚动。
+- 右侧主内容区独立滚动，标题、tabs、内容模块在同一阅读画布内自然向下排布。
+- 主内容区以阅读画布为主，不使用大白色整体容器包裹全部内容；只在一句话总结、核心观点、行动清单、知识卡片等对象边界明确的位置使用轻量卡片。
+- 主内容背景需要比早期版本更浅、更干净，sidebar 背景也要保持轻，不得出现黄色感过重或大面积厚重选中块。
+
+### 9.5 编辑性间距（仅限内容阅读区）
 
 在笔记详情、解析结果、长引文等**内容阅读区**，允许使用非 8 倍数的间距值来制造 editorial 视觉节奏：
 
@@ -303,7 +337,7 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 理由：纯 8 倍数间距会让长文阅读节奏过于机械；少量编辑性间距让长文有"被精心排过版"的呼吸感，这是 editorial 气质的关键。
 
-### 9.5 动效与过渡
+### 9.6 动效与过渡
 
 **Duration token**：
 
@@ -364,7 +398,11 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 - 背景 `--r2a-surface`，1px hairline，圆角 `radius-lg`（8px）。
 - 内边距 `space-lg`（24px）。
-- 默认无 shadow，hover：`--r2a-hover` bg + 边框略深。
+- 使用轻量边框、统一圆角、最轻阴影；默认可 flat，仅在需要与背景拉开时使用 `--r2a-shadow-soft`。
+- 卡片内部上下左右间距统一，不允许同一组件里出现随意 padding。
+- 卡片内部不要放过多横线，只在列表项之间保留必要的 1px 轻分隔线。
+- 不使用大面积外层白色容器包裹所有内容；内容卡片只用于对象边界明确的模块。
+- Hover：`--r2a-hover` bg + 边框略深。
 
 **B. Index card 知识卡片**（笔记详情中的「知识卡片」section）：
 
@@ -373,6 +411,7 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 - 内边距 18px 20px。
 - 顶部：分类 tag（**serif**，`--r2a-accent-ink` 色，11px）；标题（**serif**，17px / 600）；正文（sans，13.5px）。
 - Hover：边框 `--r2a-ink-faint`（轻微变深，**不到** ink-muted）、`transform: translateY(-1px)`、过渡 `--r2a-duration-slow`。
+- 标签、标题、正文层级必须清晰：tag 是小号衬线 accent，标题是 17px 衬线加粗，正文是常规正文字体与浅一级文字色。
 
 ### 10.4 标签（Tag / Badge）
 
@@ -387,10 +426,12 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 **核心观点列表**：
 
-- 序号使用 CSS `counter(... , cjk-ideographic)`（一、二、三、四、五、六...）。
-- 字体 **serif**，字号 14–15px，字重 500，色 `--r2a-accent-ink`。
-- 与正文水平间距 18px。
-- **禁止** 圆形 badge、纯数字加底色块。
+- 序号使用圆圈数字字符 `① ② ③`，不使用 `一、二、三、`。
+- 圆圈数字字体 **serif**，字号 17px，字重 500，色 `--r2a-accent-ink`。
+- 核心观点标题使用 **serif**，字号与知识卡片标题保持一致（17px / 600 / 1.4），颜色 `--r2a-ink: #1f1d18`。
+- 核心观点描述使用常规正文字体（sans），字号 13.5px，颜色使用浅一级正文色 `--r2a-ink-secondary`。
+- 数字与正文水平间距 14px，每项之间只保留 1px `--r2a-hairline-soft` 轻分隔线。
+- **禁止** 使用紫色 badge、实心圆形 badge、纯数字加底色块，也禁止回退到 `一、二、三、`。
 
 **纯数字（如行动清单完成度 `0 / 5`）**：
 
@@ -398,11 +439,12 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 ### 10.6 行动清单（Checklist）
 
-- list 容器：无背景、无边框，只用排版。
+- list 容器：paper checklist 气质，无厚重背景、无厚重边框，只用排版。
 - 每项：14px 复选框 + 14.5px 文本，padding `13px 0`，下方 **1px dashed `--r2a-hairline`**（paper checklist 质感）。
 - 复选框：14×14px，1.5px solid `--r2a-ink-muted` 边框，`radius-xs`（3px），勾选后填充 `--r2a-ink`。
 - Hover：背景 `rgba(244,241,234,0.5)` 极淡提亮。
 - 完成度 `0/5 完成` 显示在 section 右上角，mono 字体，`--r2a-ink-muted` 色。
+- checkbox、完成态、分隔线都保持克制；只保留必要分隔线，不做厚重组件化处理。
 
 ### 10.7 Section Label（eyebrow）
 
@@ -419,15 +461,21 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 ### 10.9 侧边栏导航
 
-- 背景与页面底同 `--r2a-canvas-soft`。
+- sidebar 固定在左侧，宽度以 1.4-A 母版为准（当前 240px），不随右侧内容滚动。
+- sidebar 背景使用 `--r2a-sidebar-bg`（浅色 `#fbfbf8`），比早期版本更轻，避免黄色感过重。
 - nav-item：无图标，前置 **4px 圆点**（不同项目可不同 ink-accent 衍生色，或统一 `--r2a-ink-faint`）。
-- Active：背景 `--r2a-surface`（与主内容区同色，制造"被选中=被打开"感），字重 500。
+- Active：背景 `--r2a-sidebar-active-bg`（浅色 `#ebe9e2`，接近 hairline），字重 500，文字使用 `--r2a-sidebar-active-ink`，色点使用 `--r2a-sidebar-active-dot`。选中态不使用过重黑色块，也不使用 primary 蓝底。
 - Hover：背景 `--r2a-hover`。
+- 最近笔记 active 项的标题使用 `--r2a-sidebar-active-ink` + 500，日期使用 `--r2a-sidebar-active-muted`；普通项标题使用 `--r2a-ink-secondary`，日期使用 `--r2a-ink-faint`。
+- 左下角用户信息固定在 sidebar 底部，背景延续 `--r2a-sidebar-bg`。
 
-### 10.10 Toolbar 按钮（顶栏「编辑/导出/保存到项目」）
+### 10.10 Tabs 与 Toolbar 按钮（笔记详情顶部）
 
-- 默认 utility 按钮样式（透明底 + hairline 边框）。
-- 文字 13px，hairline 6px radius。
+- Tabs 保留轻量选中态：active 文案 `--r2a-ink` + 500，inactive 文案 `--r2a-ink-muted` + 400。
+- active 下划线为 2px `--r2a-ink`，贴近文案本身；tabs 容器不额外加横向分割线。
+- 顶部按钮与标题区在同一视觉层级上，不另做浮层。
+- 右上角按钮保留深色主按钮 + 浅色次按钮组合：编辑 / 导出使用 utility（透明底 + hairline 边框），保存到项目使用深墨蓝 primary。
+- Utility 文字 13px，hairline，6px radius；Primary 文字 13px，6px radius，用于笔记详情标题区内的局部主操作。
 - **可选 progressive disclosure**：常态半隐（opacity 0.6），hover 笔记区域时恢复 full opacity。1.4 不强制实现，预留给视觉迭代 v2。
 
 ### 10.11 阴影
@@ -452,16 +500,17 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 笔记详情页是产品最核心、停留时长最长的页面，规范如下：
 
-1. **布局**：左侧栏 256px + 主内容区。主内容内 padding 32px / 64px / 96px（上 / 左右 / 下）。
-2. **顶部 toolbar**：右对齐 utility 按钮，编辑 / 导出 / 保存到项目。
-3. **标题**：`display-md`（28px serif），下方 14px 间距。
-4. **Metadata 行**：`caption`（12.5px sans），各项之间用 3px 圆点分隔，max width 与标题对齐。下方 40px 间距至 tabs。
-5. **Tabs**：「内容总结」/「原文对照」，下方 1px hairline，间距 28px，active 项底部 2px ink 色。
-6. **Section 顺序**：一句话总结 → 核心观点 → 行动清单 → 知识卡片。每个 section 间距 `space-xxl`（48px）。
-7. **一句话总结**：`body-lg`（18px serif），关键数字用 `<mark>`。
-8. **核心观点**：中文序号列表（见 §10.5），每项之间 1px hairline-soft 分隔。
-9. **行动清单**：见 §10.6。
-10. **知识卡片**：2 列网格，gap 16px，使用 §10.3 B 型卡片。
+1. **布局**：左侧 sidebar 固定（当前母版 240px）+ 右侧主内容区独立滚动。sidebar 不随内容滚动，左下角用户信息固定在 sidebar 底部。
+2. **主内容画布**：右侧以阅读画布为主，不使用大白色整体容器包裹全部内容；内容模块以轻量卡片独立出现。
+3. **顶部 toolbar**：与标题区处于同一视觉层级。编辑 / 导出为浅色 utility，保存到项目为深墨蓝 primary。
+4. **标题**：`display-md`（28px serif / 600），下方 14px 间距。
+5. **Metadata 行**：`caption`（12.5px sans），各项之间用 3px 圆点分隔，max width 与标题对齐。
+6. **Tabs**：「内容总结」/「原文对照」，间距 28px；active 项底部 2px ink 下划线贴近文案，不使用额外横向分割线。
+7. **Section 顺序**：一句话总结 → 核心观点 → 行动清单 → 知识卡片。前三个模块使用内容卡片（surface + hairline + radius-lg + 24px padding）。
+8. **一句话总结**：`summary` / `body-lg`（18px serif / 500 / 1.85），关键数字用 `<mark>`。
+9. **核心观点**：圆圈数字 `① ② ③` + 17px serif 标题 + 13.5px sans 描述（见 §10.5），每项之间 1px hairline-soft 分隔。
+10. **行动清单**：paper checklist 气质，见 §10.6。
+11. **知识卡片**：2 列网格，gap 20px，使用 §10.3 B 型卡片。
 
 ---
 
@@ -498,14 +547,14 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 ## 15. 禁止事项
 
 1. **禁止** 将 ink-accent 用于主按钮、导航高亮、大面积背景、表单。
-2. **禁止** 卡片、按钮、导航默认加 drop-shadow。
+2. **禁止** 卡片、按钮、导航默认加厚重 drop-shadow；仅允许最轻阴影或 flat hairline。
 3. **禁止** Primary / Secondary 按钮使用 `radius-pill`。
-4. **禁止** 核心观点 / 列表序号使用圆形 badge（无论何色）。
+4. **禁止** 核心观点 / 列表序号使用 badge 化底色块；核心观点必须使用文字型圆圈数字 `① ② ③`，不得使用 `一、二、三、`。
 5. **禁止** 侧边栏导航使用图标（用文字 + 色点）。
 6. **禁止** 引入第二个品牌强调色 / 主操作色。
 7. **禁止** 长文区域使用纯黑文字（必须用 `--r2a-ink`）。
-8. **禁止** 纯白卡片直接铺在暖底上（卡片必须用 `--r2a-surface`，不用 `--r2a-canvas`）。
-9. **禁止** 首页改成 ChatGPT 式对话流或官网式全屏 Hero。
+8. **禁止** 用大面积外层白色容器包裹所有主内容；卡片只用于对象边界明确的模块。
+9. **禁止** 首页或核心流程改成 ChatGPT clone、Notion clone、营销官网式全屏 Hero。
 10. **禁止** v1.0 与 v1.1 token 共存于同一页面。
 11. **禁止** Agent 跳过 HTML 预览与 §18 验收清单直接合并 UI 改动。
 12. **禁止** 使用 `transition: all`（必须显式声明属性）。
@@ -523,7 +572,7 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | `--r2a-primary` | `#0075de` | `--r2a-primary` | `#1e4d80` |
 | `--r2a-primary-active` | `#005bab` | `--r2a-primary-active` | `#163d68` |
 | `--r2a-primary-bg` | `#e8f3fd` | `--r2a-primary-bg` | `#e8eff7` |
-| `--r2a-canvas-soft` | `#f6f5f4` | `--r2a-canvas-soft` | `#f8f7f3` |
+| `--r2a-canvas-soft` | `#f6f5f4` | `--r2a-canvas-soft` | `#f9f9f5` |
 | `--r2a-surface` | `#ffffff` | `--r2a-surface` | `#ffffff` |
 | `--r2a-ink` | `#000000` | `--r2a-ink` | `#1f1d18` |
 | `--r2a-ink-secondary` | `#31302e` | `--r2a-ink-secondary` | `#4a4640` |
@@ -538,6 +587,8 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | — | — | `--r2a-duration-base` | 150ms（新增） |
 | — | — | `--r2a-duration-slow` | 250ms（新增） |
 | — | — | `--r2a-ease-out` | `cubic-bezier(0.4, 0, 0.2, 1)`（新增） |
+| — | — | `--r2a-sidebar-bg` | `#fbfbf8`（新增） |
+| — | — | `--r2a-sidebar-active-bg` | `#ebe9e2`（新增） |
 
 ---
 
@@ -550,7 +601,8 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 | v1.1 | 2026-06-11 | warm-restrained editorial 修正：深墨蓝主色、近白画布（仅一丝暖意，与 Notion / Craft 一致）、中文衬线点睛、ink-accent 单色装饰、去 pill 按钮 |
 | v1.1 终版 | 2026-06-11 | 终版收口：radius 收紧（lg 12→8、xl 16→12 对齐 Notion/Craft）、新增 duration/ease token、补 `:focus-visible`、补按下态 scale、补编辑性间距规则、Dark Action 使用边界、知识卡片 hover 克制 |
 | v1.1.1 | 2026-06-11 | 1.4-0 校正版：阶段从 1.3-G 对齐为 1.4；保护 1.3 已上线 Supabase/Auth 主链路；修正 radius-lg 与 checklist 尺寸矛盾；修正 §18 验收引用；补充字体加载 fallback 兜底 |
-| v1.1.2 | 2026-06-11 | 预览修复版：修复按钮展示区对齐、中文序号列表因多余占位元素导致正文竖排的 bug、圆角展示区对齐；不改变设计方向与 token。 |
+| v1.1.2 | 2026-06-11 | 预览修复版：修复按钮展示区对齐、旧序号列表因多余占位元素导致正文竖排的 bug、圆角展示区对齐；不改变设计方向与 token。 |
+| v1.1.2-doc-sync | 2026-06-12 | 1.4-A 笔记详情视觉母版冻结同步：记录 `Read2Action_1.4_A_笔记详情视觉母版_v0_4.html` 为冻结母版；同步 sidebar、阅读画布、内容卡片、核心观点圆圈数字、行动清单、Index Card、tabs 与按钮规则；说明真实业务 UI 尚未接入。 |
 
 ---
 
@@ -558,27 +610,30 @@ CSS 变量前缀：`--r2a-*`。文档与代码引用时使用下表 **Token 名*
 
 ### 18.1 Token 与气质
 
-- [ ] 浅色模式：页面底为近白 `#f8f7f3`（仅一丝暖意，非冷灰 `#f6f5f4`、非中度米色 `#f5f0e3`）
+- [ ] 浅色模式：页面底为更浅、更干净的近白 `#f9f9f5`（非冷灰 `#f6f5f4`、非中度米色 `#f5f0e3`）
 - [ ] 卡片表面为纯白 `#ffffff`，与画布形成"卡片浮在略暖画布上"的层次
 - [ ] 主操作色为深墨蓝 `#1e4d80`，**全站唯一**
-- [ ] Ink Accent `#8b5a3c` 仅出现在中文序号、知识卡片 tag、`<mark>`，**未** 出现在按钮、导航
+- [ ] Ink Accent `#8b5a3c` 仅出现在核心观点圆圈数字、知识卡片 tag、`<mark>`，**未** 出现在按钮、导航
 - [ ] 主文字为暖近黑 `#1f1d18`，**未** 使用 `#000000` 纯黑
+- [ ] Sidebar 背景为 `#fbfbf8`，active 背景为 `#ebe9e2`，未使用厚重黑色块或 primary 蓝底作为选中态
 
 ### 18.2 字体
 
 - [ ] Noto Serif SC 已配置加载或系统 fallback，weight 400/500/600；Google Fonts 失败时页面仍可读
-- [ ] 笔记标题、知识卡片标题、核心观点序号、section eyebrow 使用 serif
+- [ ] 笔记标题、知识卡片标题、核心观点标题与圆圈数字、section eyebrow 使用 serif
 - [ ] 正文、按钮、导航、表单使用 sans
-- [ ] 中文序号实际渲染为 `一、二、三...`（不是 `1、2、3`）
+- [ ] 核心观点实际渲染为圆圈数字 `① ② ③`（不是 `一、二、三、`，也不是 badge 组件）
 
 ### 18.3 组件
 
 - [ ] Primary / Secondary 按钮 8px 圆角，**未** 使用 pill
-- [ ] 核心观点列表 **未** 使用圆形 badge
+- [ ] 核心观点列表 **未** 使用 badge 化底色块，标题与知识卡片标题字号一致
 - [ ] 侧边栏导航 **未** 使用图标，使用文字 + 色点
 - [ ] 知识卡片使用 4px 圆角 + 暖底（index card 感）
 - [ ] 行动清单使用 dashed border 分隔
 - [ ] `<mark>` 高亮使用渐变下划线，**未** 使用纯色底块
+- [ ] Tabs 仅使用贴近文案的 2px active 下划线，未额外添加横向分割线
+- [ ] 笔记详情右上角按钮为浅色 utility + 深墨蓝 primary 组合，且与标题区处于同一视觉层级
 
 ### 18.4 主链路回归
 

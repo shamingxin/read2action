@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Read2Action · 1.4-B 首页视觉母版 · v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── v1.1.2 Token 层：延续 1.4-A 冻结母版 ── */
+:root[data-theme="light"] {
+  --r2a-primary: #1e4d80;
+  --r2a-primary-active: #163d68;
+  --r2a-on-primary: #ffffff;
+  --r2a-primary-bg: #e8eff7;
+  --r2a-canvas: #ffffff;
+  --r2a-canvas-soft: #f9f9f5;
+  --r2a-surface: #ffffff;
+  --r2a-hover: #f2efe7;
+  --r2a-ink: #1f1d18;
+  --r2a-ink-secondary: #4a4640;
+  --r2a-ink-muted: #6e6a62;
+  --r2a-ink-faint: #a8a39a;
+  --r2a-hairline: #ebe9e2;
+  --r2a-hairline-soft: #f2f0ea;
+  --r2a-accent-ink: #8b5a3c;
+  --r2a-accent-ink-bg: rgba(139, 90, 60, 0.10);
+  --r2a-success: #1aae39;
+  --r2a-success-bg: #e6f9eb;
+  --r2a-warning: #f59e0b;
+  --r2a-warning-bg: #fef3c7;
+  --r2a-error: #e53935;
+  --r2a-error-bg: #fde8e8;
+  --r2a-shadow-soft: 0 1px 2px rgba(20,16,10,0.035);
+  --r2a-sidebar-bg: #fbfbf8;
+  --r2a-sidebar-active-bg: #ebe9e2;
+  --r2a-sidebar-active-ink: #1f1d18;
+  --r2a-sidebar-active-muted: #6e6a62;
+  --r2a-sidebar-active-dot: #8b5a3c;
+}
+:root[data-theme="dark"] {
+  --r2a-primary: #5a87bd;
+  --r2a-primary-active: #7aa3d0;
+  --r2a-on-primary: #f0eadc;
+  --r2a-primary-bg: #162435;
+  --r2a-canvas: #1a1814;
+  --r2a-canvas-soft: #1a1814;
+  --r2a-surface: #25221c;
+  --r2a-hover: #2f2b24;
+  --r2a-ink: #f0eadc;
+  --r2a-ink-secondary: #c8c0b0;
+  --r2a-ink-muted: #928876;
+  --r2a-ink-faint: #6e6557;
+  --r2a-hairline: #3a3429;
+  --r2a-hairline-soft: #322d24;
+  --r2a-accent-ink: #c89878;
+  --r2a-accent-ink-bg: rgba(200, 152, 120, 0.14);
+  --r2a-success: #2ecc5a;
+  --r2a-success-bg: #0b2714;
+  --r2a-warning: #fbbf24;
+  --r2a-warning-bg: #2a1e00;
+  --r2a-error: #f56565;
+  --r2a-error-bg: #2e1010;
+  --r2a-shadow-soft: 0 1px 2px rgba(0,0,0,0.24);
+  --r2a-sidebar-bg: #1a1814;
+  --r2a-sidebar-active-bg: #3a3429;
+  --r2a-sidebar-active-ink: #f0eadc;
+  --r2a-sidebar-active-muted: #928876;
+  --r2a-sidebar-active-dot: #c89878;
+}
+:root {
+  --r2a-duration-fast: 80ms;
+  --r2a-duration-base: 150ms;
+  --r2a-duration-slow: 250ms;
+  --r2a-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --r2a-font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', system-ui, -apple-system, sans-serif;
+  --r2a-font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+  --r2a-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --r2a-radius-xs: 3px;
+  --r2a-radius-sm: 4px;
+  --r2a-radius-md: 6px;
+  --r2a-radius-button: 8px;
+  --r2a-radius-lg: 8px;
+  --r2a-radius-xl: 12px;
+  --r2a-card-padding: 24px;
+  --sidebar-w: 240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; padding: 0; }
+body {
+  background: var(--r2a-canvas-soft);
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button, textarea, input, select { font: inherit; }
+button { letter-spacing: 0; }
+*:focus { outline: none; }
+*:focus-visible {
+  outline: 2px solid var(--r2a-primary);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+::selection {
+  background: var(--r2a-accent-ink-bg);
+  color: var(--r2a-ink);
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 180;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--r2a-hairline);
+  background: var(--r2a-surface);
+  color: var(--r2a-ink-secondary);
+  border-radius: var(--r2a-radius-md);
+  cursor: pointer;
+  box-shadow: var(--r2a-shadow-soft);
+  transition:
+    background-color var(--r2a-duration-base) var(--r2a-ease-out),
+    color var(--r2a-duration-base) var(--r2a-ease-out),
+    border-color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.theme-toggle:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+.icon-moon { display: none; }
+:root[data-theme="dark"] .icon-sun { display: none; }
+:root[data-theme="dark"] .icon-moon { display: block; }
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+  background: var(--r2a-canvas-soft);
+}
+
+/* ──────────────────────────────────────────
+   Sidebar — 对齐 1.4-A：固定、文字 + 色点、低装饰
+   ────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 100;
+  width: var(--sidebar-w);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--r2a-hairline);
+  background: var(--r2a-sidebar-bg);
+}
+.sidebar-brand {
+  padding: 20px 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-brand-mark {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--r2a-ink);
+  color: var(--r2a-canvas-soft);
+  border-radius: var(--r2a-radius-sm);
+  font-family: var(--r2a-font-serif);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+.sidebar-brand-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--r2a-ink);
+}
+.sidebar-body {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 12px 74px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  overflow-y: auto;
+}
+.sidebar-new-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: var(--r2a-radius-button);
+  background: var(--r2a-ink);
+  color: var(--r2a-canvas-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    opacity var(--r2a-duration-base) var(--r2a-ease-out),
+    transform var(--r2a-duration-fast) var(--r2a-ease-out);
+}
+.sidebar-new-btn:hover { opacity: 0.85; }
+.sidebar-new-btn:active { transform: scale(0.98); }
+.sidebar-section-label {
+  font-family: var(--r2a-font-serif);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--r2a-ink-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+}
+.sidebar-nav,
+.sidebar-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: var(--r2a-radius-md);
+  color: var(--r2a-ink-secondary);
+  text-decoration: none;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    background-color var(--r2a-duration-base) var(--r2a-ease-out),
+    color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.sidebar-nav-item:hover {
+  background: var(--r2a-hover);
+  color: var(--r2a-ink);
+}
+.sidebar-nav-item.active {
+  background: var(--r2a-sidebar-active-bg);
+  color: var(--r2a-sidebar-active-ink);
+  font-weight: 500;
+}
+.nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--r2a-ink-faint);
+}
+.sidebar-nav-item.active .nav-dot { background: var(--r2a-sidebar-active-dot); }
+.nav-dot.blue { background: #4a7cb5; }
+.nav-dot.green { background: #4a9b6f; }
+.nav-dot.warm { background: var(--r2a-accent-ink); }
+.sidebar-recent-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border-radius: var(--r2a-radius-md);
+  cursor: pointer;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.sidebar-recent-item:hover { background: var(--r2a-hover); }
+.sidebar-recent-title {
+  color: var(--r2a-ink-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-recent-date {
+  color: var(--r2a-ink-faint);
+  font-size: 11px;
+}
+.sidebar-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 120;
+  width: var(--sidebar-w);
+  padding: 10px 12px;
+  border-top: 1px solid var(--r2a-hairline);
+  border-right: 1px solid var(--r2a-hairline);
+  background: var(--r2a-sidebar-bg);
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: var(--r2a-radius-md);
+}
+.sidebar-user-avatar {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--r2a-hairline);
+  border-radius: 50%;
+  background: var(--r2a-surface);
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 13px;
+  font-weight: 600;
+}
+.sidebar-user-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sidebar-user-name {
+  color: var(--r2a-ink);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.sidebar-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--r2a-ink-faint);
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.small-sync-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--r2a-success);
+}
+
+/* ──────────────────────────────────────────
+   Main
+   ────────────────────────────────────────── */
+.main-col {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  margin-left: var(--sidebar-w);
+  overflow-y: auto;
+  background: var(--r2a-canvas-soft);
+}
+.home-shell {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 48px 84px;
+}
+.top-status {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 38px;
+  padding-right: 40px;
+}
+.status-copy {
+  min-width: 0;
+}
+.page-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 12px;
+  color: var(--r2a-ink-muted);
+  font-family: var(--r2a-font-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.page-eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  flex-shrink: 0;
+  background: var(--r2a-hairline);
+}
+.home-title {
+  margin: 0 0 12px;
+  max-width: 620px;
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+}
+.home-lede {
+  max-width: 620px;
+  margin: 0;
+  color: var(--r2a-ink-secondary);
+  font-size: 14.5px;
+  line-height: 1.8;
+}
+.home-lede mark {
+  background: linear-gradient(to bottom, transparent 60%, var(--r2a-accent-ink-bg) 60%);
+  color: var(--r2a-ink);
+  font-weight: 500;
+  padding: 0;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.status-stack {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(86px, 1fr));
+  gap: 10px;
+  width: min(390px, 100%);
+  flex-shrink: 0;
+}
+.status-card {
+  min-height: 78px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  background: var(--r2a-surface);
+  box-shadow: var(--r2a-shadow-soft);
+}
+.status-value {
+  display: block;
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.status-label {
+  display: block;
+  margin-top: 5px;
+  color: var(--r2a-ink-muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.48fr) minmax(300px, 0.82fr);
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 44px;
+}
+.content-module-card {
+  background: var(--r2a-surface);
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  box-shadow: var(--r2a-shadow-soft);
+  padding: var(--r2a-card-padding);
+}
+.section-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+  color: var(--r2a-ink-muted);
+  font-family: var(--r2a-font-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.section-eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  flex-shrink: 0;
+  background: var(--r2a-hairline);
+}
+.intake-card {
+  padding: 26px 28px 24px;
+}
+.intake-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.intake-title {
+  margin: 0;
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+}
+.intake-note {
+  margin: 8px 0 0;
+  max-width: 520px;
+  color: var(--r2a-ink-muted);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.mode-pill {
+  height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-md);
+  background: transparent;
+  color: var(--r2a-ink-muted);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    background-color var(--r2a-duration-base) var(--r2a-ease-out),
+    color var(--r2a-duration-base) var(--r2a-ease-out),
+    border-color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.mode-pill:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+.mode-pill.active {
+  background: var(--r2a-primary-bg);
+  color: var(--r2a-primary);
+  border-color: transparent;
+  font-weight: 500;
+}
+.material-field {
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  background: var(--r2a-canvas-soft);
+  overflow: hidden;
+}
+.material-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--r2a-hairline-soft);
+  color: var(--r2a-ink-muted);
+  font-size: 12.5px;
+}
+.source-type {
+  font-family: var(--r2a-font-mono);
+  font-size: 11.5px;
+  color: var(--r2a-ink-muted);
+}
+.material-textarea {
+  display: block;
+  width: 100%;
+  min-height: 176px;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  color: var(--r2a-ink);
+  padding: 17px 16px 18px;
+  font-size: 15px;
+  line-height: 1.75;
+}
+.material-textarea::placeholder { color: var(--r2a-ink-faint); }
+.intake-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.option-block {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.option-label {
+  color: var(--r2a-ink-muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+.select-like {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-sm);
+  background: var(--r2a-surface);
+  color: var(--r2a-ink-secondary);
+  font-size: 13px;
+}
+.select-like::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid var(--r2a-ink-faint);
+  border-bottom: 1px solid var(--r2a-ink-faint);
+  transform: rotate(45deg) translateY(-2px);
+  flex-shrink: 0;
+}
+.intake-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 22px;
+}
+.quiet-hint {
+  color: var(--r2a-ink-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.btn-util,
+.btn-primary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r2a-radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--r2a-duration-base) var(--r2a-ease-out),
+    color var(--r2a-duration-base) var(--r2a-ease-out),
+    border-color var(--r2a-duration-base) var(--r2a-ease-out),
+    transform var(--r2a-duration-fast) var(--r2a-ease-out);
+}
+.btn-util {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--r2a-hairline);
+  background: transparent;
+  color: var(--r2a-ink-secondary);
+  font-size: 13px;
+  font-weight: 400;
+}
+.btn-util:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+.btn-primary {
+  height: 36px;
+  padding: 0 17px;
+  border: none;
+  background: var(--r2a-primary);
+  color: var(--r2a-on-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+.btn-primary:hover { background: var(--r2a-primary-active); }
+.btn-ghost {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--r2a-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+.btn-util:active,
+.btn-primary:active { transform: scale(0.98); }
+
+.side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.kb-card {
+  padding-bottom: 22px;
+}
+.kb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--r2a-hairline-soft);
+}
+.kb-row:last-child { border-bottom: none; padding-bottom: 0; }
+.kb-label {
+  color: var(--r2a-ink-secondary);
+  font-size: 13.5px;
+}
+.kb-value {
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-mono);
+  font-size: 13px;
+}
+.sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  padding: 0 10px;
+  border-radius: 99px;
+  background: var(--r2a-success-bg);
+  color: var(--r2a-success);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.sync-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.focus-card {
+  background: var(--r2a-surface);
+}
+.focus-title {
+  margin: 0 0 9px;
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.focus-body {
+  margin: 0;
+  color: var(--r2a-ink-secondary);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.empty-state {
+  border: 1px dashed var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  background: var(--r2a-canvas-soft);
+  padding: 20px;
+}
+.empty-title {
+  margin: 0 0 8px;
+  color: var(--r2a-ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+.empty-copy {
+  margin: 0 0 14px;
+  color: var(--r2a-ink-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.section-row {
+  margin-top: 0;
+  margin-bottom: 42px;
+}
+.section-heading-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+.section-title {
+  margin: 0;
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+}
+.section-caption {
+  margin: 0;
+  color: var(--r2a-ink-muted);
+  font-size: 12.5px;
+}
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.note-card,
+.project-card {
+  min-width: 0;
+  background: var(--r2a-surface);
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  box-shadow: var(--r2a-shadow-soft);
+  padding: 20px;
+  transition:
+    border-color var(--r2a-duration-slow) var(--r2a-ease-out),
+    background-color var(--r2a-duration-base) var(--r2a-ease-out),
+    transform var(--r2a-duration-slow) var(--r2a-ease-out);
+}
+.note-card:hover,
+.project-card:hover {
+  border-color: var(--r2a-ink-faint);
+  transform: translateY(-1px);
+}
+.note-meta-line,
+.project-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: var(--r2a-ink-muted);
+  font-family: var(--r2a-font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.note-title {
+  margin: 0 0 9px;
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.42;
+  letter-spacing: -0.005em;
+}
+.note-summary {
+  margin: 0;
+  color: var(--r2a-ink-secondary);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.note-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-sm);
+  background: var(--r2a-canvas-soft);
+  color: var(--r2a-ink-muted);
+  font-size: 11.5px;
+}
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.project-card {
+  padding: 18px 18px 16px;
+}
+.project-mark {
+  width: 24px;
+  height: 3px;
+  margin-bottom: 16px;
+  border-radius: 2px;
+  background: var(--r2a-accent-ink);
+}
+.project-mark.blue { background: #4a7cb5; }
+.project-mark.green { background: #4a9b6f; }
+.project-mark.faint { background: var(--r2a-ink-faint); }
+.project-title {
+  margin: 0 0 8px;
+  color: var(--r2a-ink);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.project-desc {
+  min-height: 46px;
+  margin: 0 0 16px;
+  color: var(--r2a-ink-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.project-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--r2a-ink-muted);
+  font-family: var(--r2a-font-mono);
+  font-size: 11px;
+}
+.activity-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+.activity-card {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 14px;
+  align-items: start;
+  background: var(--r2a-surface);
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  box-shadow: var(--r2a-shadow-soft);
+  padding: 18px 20px;
+}
+.activity-index {
+  color: var(--r2a-accent-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.activity-title {
+  margin: 0 0 6px;
+  color: var(--r2a-ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.activity-copy {
+  margin: 0;
+  color: var(--r2a-ink-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (max-width: 1120px) {
+  .top-status { flex-direction: column; padding-right: 40px; }
+  .status-stack { width: min(100%, 520px); }
+  .home-grid { grid-template-columns: 1fr; }
+  .side-stack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kb-card { grid-row: span 2; }
+  .recent-grid { grid-template-columns: 1fr; }
+  .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  body { overflow: auto; }
+  .app-layout { min-height: 100vh; height: auto; }
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--r2a-hairline);
+  }
+  .sidebar-body { padding-bottom: 18px; }
+  .sidebar-footer { position: relative; width: 100%; border-right: none; }
+  .main-col {
+    height: auto;
+    min-height: 100vh;
+    margin-left: 0;
+    overflow: visible;
+  }
+  .home-shell { padding: 28px 20px 64px; }
+  .theme-toggle { top: 14px; right: 14px; }
+  .home-title { font-size: 26px; }
+  .top-status { padding-right: 46px; gap: 22px; margin-bottom: 28px; }
+  .status-stack,
+  .side-stack,
+  .intake-options,
+  .project-grid,
+  .activity-list { grid-template-columns: 1fr; }
+  .intake-card { padding: 22px 20px 20px; }
+  .intake-head,
+  .intake-actions,
+  .section-heading-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mode-tabs,
+  .action-row { justify-content: flex-start; flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="切换深浅色" type="button">
+  <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+  </svg>
+  <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+</button>
+
+<div class="app-layout">
+  <aside class="sidebar" aria-label="主导航">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-mark" aria-hidden="true">读</div>
+      <span class="sidebar-brand-name">Read2Action</span>
+    </div>
+
+    <div class="sidebar-body">
+      <button class="sidebar-new-btn" type="button">开始整理</button>
+
+      <div>
+        <div class="sidebar-section-label">入口</div>
+        <nav class="sidebar-nav" aria-label="首页导航">
+          <a class="sidebar-nav-item active" href="#" aria-current="page">
+            <span class="nav-dot warm"></span>
+            首页
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot"></span>
+            全部笔记
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot blue"></span>
+            项目
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot green"></span>
+            行动清单
+          </a>
+        </nav>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">最近</div>
+        <div class="sidebar-recent-list">
+          <div class="sidebar-recent-item">
+            <div class="sidebar-recent-title">深度工作的方法论摘录</div>
+            <div class="sidebar-recent-date">今天 16:42</div>
+          </div>
+          <div class="sidebar-recent-item">
+            <div class="sidebar-recent-title">认知负荷与笔记结构</div>
+            <div class="sidebar-recent-date">昨天</div>
+          </div>
+          <div class="sidebar-recent-item">
+            <div class="sidebar-recent-title">如何建立有效的输出习惯</div>
+            <div class="sidebar-recent-date">Jun 9</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-label">项目</div>
+        <nav class="sidebar-nav" aria-label="项目导航">
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot warm"></span>
+            默认项目
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot blue"></span>
+            产品思考
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot green"></span>
+            阅读摘录
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" aria-hidden="true">沙</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">沙</div>
+          <div class="sidebar-user-meta"><span class="small-sync-dot"></span>知识库已同步</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-col">
+    <div class="home-shell">
+      <header class="top-status">
+        <div class="status-copy">
+          <p class="page-eyebrow">1.4-B · 首页视觉母版 · v0.1</p>
+          <h1 class="home-title">把今天读到的内容，整理成可回看的笔记。</h1>
+          <p class="home-lede">
+            Read2Action 是个人知识沉淀工具。粘贴文本、链接或一段还没整理的想法，系统会把它拆成<mark>摘要、核心观点、行动清单和知识卡片</mark>，沉淀到你的项目里，而不是开启一串对话。
+          </p>
+        </div>
+        <div class="status-stack" aria-label="知识库状态">
+          <div class="status-card">
+            <span class="status-value">42</span>
+            <span class="status-label">笔记沉淀</span>
+          </div>
+          <div class="status-card">
+            <span class="status-value">7</span>
+            <span class="status-label">活跃项目</span>
+          </div>
+          <div class="status-card">
+            <span class="status-value">18</span>
+            <span class="status-label">待办行动</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="home-grid">
+        <section class="content-module-card intake-card" aria-labelledby="start-organizing">
+          <p class="section-eyebrow" id="start-organizing">开始一次整理</p>
+          <div class="intake-head">
+            <div>
+              <h2 class="intake-title">整理素材，而不是发起聊天。</h2>
+              <p class="intake-note">适合贴入读书摘录、文章链接、会议记录或一段想沉淀的想法。入口保持安静，重点放在后续可回看的笔记结构。</p>
+            </div>
+            <div class="mode-tabs" role="tablist" aria-label="素材类型">
+              <button class="mode-pill active" type="button" role="tab" aria-selected="true">文本</button>
+              <button class="mode-pill" type="button" role="tab" aria-selected="false">链接</button>
+              <button class="mode-pill" type="button" role="tab" aria-selected="false">摘录</button>
+            </div>
+          </div>
+
+          <div class="material-field">
+            <div class="material-meta">
+              <span>待整理素材</span>
+              <span class="source-type">TEXT · 0 / 8,000</span>
+            </div>
+            <textarea class="material-textarea" aria-label="待整理素材" placeholder="贴入你今天想整理的内容。可以是一段文章摘录、一条链接旁边的笔记、或刚写下来的零散想法。"></textarea>
+          </div>
+
+          <div class="intake-options" aria-label="整理选项">
+            <div class="option-block">
+              <span class="option-label">保存到</span>
+              <div class="select-like">默认项目</div>
+            </div>
+            <div class="option-block">
+              <span class="option-label">整理方式</span>
+              <div class="select-like">摘要 + 行动</div>
+            </div>
+            <div class="option-block">
+              <span class="option-label">阅读深度</span>
+              <div class="select-like">标准</div>
+            </div>
+          </div>
+
+          <div class="intake-actions">
+            <div class="quiet-hint">整理完成后会进入结果页，再由你确认保存到项目。</div>
+            <div class="action-row">
+              <button class="btn-util" type="button">保存草稿</button>
+              <button class="btn-primary" type="button">开始整理</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-stack" aria-label="首页侧栏信息">
+          <section class="content-module-card kb-card" aria-labelledby="kb-status">
+            <p class="section-eyebrow" id="kb-status">知识库状态</p>
+            <div class="kb-row">
+              <span class="kb-label">云端同步</span>
+              <span class="sync-pill"><span class="sync-dot"></span>已同步</span>
+            </div>
+            <div class="kb-row">
+              <span class="kb-label">最近整理</span>
+              <span class="kb-value">16:42</span>
+            </div>
+            <div class="kb-row">
+              <span class="kb-label">本周新增</span>
+              <span class="kb-value">6 notes</span>
+            </div>
+            <div class="kb-row">
+              <span class="kb-label">待回看</span>
+              <span class="kb-value">9 items</span>
+            </div>
+          </section>
+
+          <section class="content-module-card focus-card" aria-labelledby="weekly-focus">
+            <p class="section-eyebrow" id="weekly-focus">本周主题</p>
+            <h3 class="focus-title">从阅读摘录到可执行行动</h3>
+            <p class="focus-body">最近 6 条笔记都在指向同一个问题：如何把输入转成下一步动作，而不是只留下摘要。</p>
+          </section>
+
+          <section class="empty-state" aria-labelledby="today-empty">
+            <h3 class="empty-title" id="today-empty">今天还没有新的整理。</h3>
+            <p class="empty-copy">这里会轻量显示当天的草稿、失败重试或未保存结果，不制造额外压力。</p>
+            <button class="btn-ghost" type="button">查看草稿</button>
+          </section>
+        </aside>
+      </div>
+
+      <section class="section-row" aria-labelledby="recent-notes">
+        <div class="section-heading-row">
+          <div>
+            <p class="section-eyebrow">最近整理</p>
+            <h2 class="section-title" id="recent-notes">最近笔记</h2>
+          </div>
+          <p class="section-caption">按保存时间排序，优先回到已经沉淀的内容。</p>
+        </div>
+
+        <div class="recent-grid">
+          <article class="note-card">
+            <div class="note-meta-line">今天 · 默认项目</div>
+            <h3 class="note-title">深度工作的方法论摘录</h3>
+            <p class="note-summary">把注意力保护视作认知资产管理，而不是单纯的时间管理技巧。</p>
+            <div class="note-tags">
+              <span class="tag">方法论</span>
+              <span class="tag">行动清单 4</span>
+            </div>
+          </article>
+          <article class="note-card">
+            <div class="note-meta-line">昨天 · 产品思考</div>
+            <h3 class="note-title">认知负荷与笔记结构</h3>
+            <p class="note-summary">好的结构应该降低回看成本，让观点和行动在第二次阅读时仍然清晰。</p>
+            <div class="note-tags">
+              <span class="tag">概念卡 3</span>
+              <span class="tag">待回看</span>
+            </div>
+          </article>
+          <article class="note-card">
+            <div class="note-meta-line">Jun 9 · 阅读摘录</div>
+            <h3 class="note-title">如何建立有效的输出习惯</h3>
+            <p class="note-summary">输出不是额外任务，而是帮助输入变得可检索、可复用的整理机制。</p>
+            <div class="note-tags">
+              <span class="tag">习惯</span>
+              <span class="tag">行动清单 5</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-row" aria-labelledby="project-overview">
+        <div class="section-heading-row">
+          <div>
+            <p class="section-eyebrow">知识库概览</p>
+            <h2 class="section-title" id="project-overview">项目入口</h2>
+          </div>
+          <button class="btn-util" type="button">管理项目</button>
+        </div>
+
+        <div class="project-grid">
+          <article class="project-card">
+            <div class="project-mark"></div>
+            <h3 class="project-title">默认项目</h3>
+            <p class="project-desc">日常阅读、灵感摘录与临时整理的入口。</p>
+            <div class="project-foot"><span>18 notes</span><span>今天</span></div>
+          </article>
+          <article class="project-card">
+            <div class="project-mark blue"></div>
+            <h3 class="project-title">产品思考</h3>
+            <p class="project-desc">交互、信息架构和产品判断的长期沉淀。</p>
+            <div class="project-foot"><span>11 notes</span><span>昨天</span></div>
+          </article>
+          <article class="project-card">
+            <div class="project-mark green"></div>
+            <h3 class="project-title">阅读摘录</h3>
+            <p class="project-desc">书籍、长文、播客中的可复用观点。</p>
+            <div class="project-foot"><span>9 notes</span><span>Jun 9</span></div>
+          </article>
+          <article class="project-card">
+            <div class="project-mark faint"></div>
+            <h3 class="project-title">待归档</h3>
+            <p class="project-desc">还没决定归属的笔记，适合每周清理。</p>
+            <div class="project-foot"><span>4 notes</span><span>待整理</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-row" aria-labelledby="activity-summary">
+        <div class="section-heading-row">
+          <div>
+            <p class="section-eyebrow">轻量回看</p>
+            <h2 class="section-title" id="activity-summary">需要继续处理的内容</h2>
+          </div>
+          <p class="section-caption">不打断首页主任务，只在底部安静提示。</p>
+        </div>
+
+        <div class="activity-list">
+          <article class="activity-card">
+            <div class="activity-index" aria-hidden="true">①</div>
+            <div>
+              <h3 class="activity-title">3 条行动清单超过一周未处理</h3>
+              <p class="activity-copy">主要来自「深度工作」和「输出习惯」两篇笔记，可以批量回看。</p>
+            </div>
+          </article>
+          <article class="activity-card">
+            <div class="activity-index" aria-hidden="true">②</div>
+            <div>
+              <h3 class="activity-title">2 条草稿尚未保存到项目</h3>
+              <p class="activity-copy">草稿不抢占首页，只作为整理链路的轻量尾巴保留。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function () {
+    const root = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
+    const storageKey = 'r2a-14b-home-preview-theme';
+    let stored = null;
+    try { stored = localStorage.getItem(storageKey); } catch (error) {}
+    if (stored === 'light' || stored === 'dark') {
+      root.dataset.theme = stored;
+    }
+    toggle.addEventListener('click', function () {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem(storageKey, next); } catch (error) {}
+    });
+  })();
+</script>
+</body>
+</html>

@@ -407,15 +407,15 @@ export function ParsingPageView() {
   }, [router, stopParsingTimeHint]);
 
   return (
-    <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
+    <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aPageShell1020}>
         <header className="flex min-h-[62px] items-center justify-between gap-4">
           <div className="flex flex-col gap-2">
-            <h1 className="text-[24px] font-semibold leading-tight text-[#121212]">
+            <h1 className="font-heading text-[28px] font-semibold leading-tight text-[var(--r2a-ink)]">
               正在为你解析内容…
             </h1>
             {timeHintVisible ? (
-              <p className="text-[14px] font-normal leading-tight text-[#939393]">
+              <p className="text-[13.5px] font-normal leading-tight text-[var(--r2a-ink-muted)]">
                 {formatParsingTimeHint(elapsedSeconds)}
               </p>
             ) : null}
@@ -424,9 +424,9 @@ export function ParsingPageView() {
             type="button"
             onClick={handleCancel}
             className={cn(
-              "inline-flex h-[46px] min-w-[112px] shrink-0 items-center justify-center rounded-lg",
-              "border border-[#E5E7EB] bg-white px-6 text-[16px] font-medium text-[#363636]",
-              "transition-colors hover:bg-[#F9FAFB]",
+              "inline-flex h-10 min-w-[104px] shrink-0 items-center justify-center rounded-[var(--r2a-radius-button)]",
+              "border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 text-[14px] font-medium text-[var(--r2a-ink-secondary)]",
+              "transition-[background-color,color,transform] duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)] active:scale-[0.98]",
             )}
           >
             取消解析
@@ -435,18 +435,21 @@ export function ParsingPageView() {
 
         {error ? (
           <div
-            className="mb-4 rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-[14px] text-[#991B1B]"
+            className={cn(
+              "mb-4 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-5 py-4",
+              "text-[13.5px] leading-relaxed text-[var(--r2a-ink-secondary)] shadow-[var(--r2a-shadow-soft)]",
+            )}
             role="alert"
           >
-            <p>{error}</p>
+            <p className="font-medium text-[var(--r2a-error)]">{error}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {canRetry ? (
                 <button
                   type="button"
                   onClick={handleRetry}
                   className={cn(
-                    "inline-flex min-h-[40px] items-center justify-center rounded-lg border border-[#E5E7EB] bg-white px-4 text-[14px] font-medium text-[#363636]",
-                    "hover:bg-[#FAFAFC]",
+                    "inline-flex min-h-10 items-center justify-center rounded-[var(--r2a-radius-button)] bg-[#1e4d80] px-4 text-[14px] font-medium text-white",
+                    "transition-[background-color,transform] duration-150 ease-out hover:bg-[#163d68] active:scale-[0.98]",
                   )}
                 >
                   重试
@@ -456,8 +459,8 @@ export function ParsingPageView() {
                 type="button"
                 onClick={handleGoHome}
                 className={cn(
-                  "inline-flex min-h-[40px] items-center justify-center rounded-lg border border-[#E5E7EB] bg-white px-4 text-[14px] font-medium text-[#363636]",
-                  "hover:bg-[#FAFAFC]",
+                  "inline-flex min-h-10 items-center justify-center rounded-[var(--r2a-radius-button)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 text-[14px] font-medium text-[var(--r2a-ink-secondary)]",
+                  "transition-[background-color,color,transform] duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)] active:scale-[0.98]",
                 )}
               >
                 返回首页
@@ -467,7 +470,7 @@ export function ParsingPageView() {
         ) : null}
 
         <nav
-          className="flex flex-wrap items-center gap-4"
+          className="flex flex-wrap items-center gap-4 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-5 py-4 shadow-[var(--r2a-shadow-soft)]"
           aria-label="解析进度"
         >
           {steps.map((step, index) => (
@@ -475,12 +478,13 @@ export function ParsingPageView() {
               <div className="flex items-center gap-2">
                 <div
                   className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
-                    step.state === "done" && "bg-[#4F46E5] text-white",
+                    "flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold",
+                    step.state === "done" &&
+                      "border-[#1e4d80] bg-[#1e4d80] text-white",
                     step.state === "current" &&
-                      "bg-[#4F46E5] text-white tabular-nums",
+                      "border-[#1e4d80] bg-[#1e4d80] text-white tabular-nums",
                     step.state === "upcoming" &&
-                      "bg-[#E5E8ED] text-[#939393] tabular-nums",
+                      "border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] text-[var(--r2a-ink-faint)] tabular-nums",
                   )}
                   aria-current={step.state === "current" ? "step" : undefined}
                 >
@@ -490,8 +494,8 @@ export function ParsingPageView() {
                   className={cn(
                     "whitespace-nowrap text-[12px] font-medium",
                     step.state === "upcoming"
-                      ? "text-[#939393]"
-                      : "text-[#121212]",
+                      ? "text-[var(--r2a-ink-muted)]"
+                      : "text-[var(--r2a-ink)]",
                   )}
                 >
                   {step.label}
@@ -502,8 +506,8 @@ export function ParsingPageView() {
                   className={cn(
                     "hidden h-0.5 w-8 shrink-0 rounded-[1px] sm:block",
                     steps[index].state === "done"
-                      ? "bg-[#4F46E5]"
-                      : "bg-[#E5E7EB]",
+                      ? "bg-[#1e4d80]"
+                      : "bg-[var(--r2a-hairline)]",
                   )}
                   aria-hidden
                 />
@@ -514,36 +518,36 @@ export function ParsingPageView() {
 
         <section
           className={cn(
-            "flex w-full flex-col gap-4 bg-white",
+            "flex w-full flex-col gap-4 bg-[var(--r2a-surface)]",
             r2aCardRadius,
             r2aCardBorder,
             r2aCardShadow,
-            "p-5 pb-6 pt-5 pr-6 pl-6",
+            "px-6 py-5",
           )}
           aria-label="解析预览"
         >
-          <p className="text-[11px] font-medium tracking-wide text-[#939393]">
-            ● LIVE PREVIEW
+          <p className="font-heading text-[11.5px] font-medium uppercase tracking-[0.16em] text-[var(--r2a-ink-muted)]">
+            Parsing Preview
           </p>
           <div
             className={cn(
-              "flex w-full max-w-[924px] flex-col gap-3 rounded-lg border border-[#E5E7EB] bg-[#FAFAFC]",
-              "p-3 px-4 py-4",
+              "flex w-full max-w-[924px] flex-col gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)]",
+              "px-4 py-4",
             )}
           >
-            <div className="h-2 max-w-[480px] rounded bg-[#E8EBF0]" />
-            <div className="h-2 max-w-[360px] rounded bg-[#E8EBF0]" />
+            <div className="h-2 max-w-[480px] rounded bg-[var(--r2a-hairline)]" />
+            <div className="h-2 max-w-[360px] rounded bg-[var(--r2a-hairline-soft)]" />
             <div className="flex flex-wrap gap-3">
-              <div className="h-[72px] min-w-[120px] flex-1 rounded bg-[#E8EBF0] sm:max-w-[140px]" />
-              <div className="h-[72px] min-w-[120px] flex-1 rounded bg-[#E8EBF0] sm:max-w-[140px]" />
-              <div className="h-[72px] min-w-[120px] flex-1 rounded bg-[#E8EBF0] sm:max-w-[140px]" />
+              <div className="h-[72px] min-w-[120px] flex-1 rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline-soft)] bg-[var(--r2a-surface)] sm:max-w-[140px]" />
+              <div className="h-[72px] min-w-[120px] flex-1 rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline-soft)] bg-[var(--r2a-surface)] sm:max-w-[140px]" />
+              <div className="h-[72px] min-w-[120px] flex-1 rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline-soft)] bg-[var(--r2a-surface)] sm:max-w-[140px]" />
             </div>
-            <div className="h-[6px] max-w-[180px] rounded bg-[#E8EBF0]" />
-            <div className="h-[6px] max-w-[220px] rounded bg-[#E8EBF0]" />
-            <div className="h-[6px] max-w-[260px] rounded bg-[#E8EBF0]" />
-            <div className="h-[6px] max-w-[300px] rounded bg-[#E8EBF0]" />
-            <div className="h-[6px] max-w-[340px] rounded bg-[#E8EBF0]" />
-            <div className="h-24 w-full max-w-[600px] rounded bg-[#E8EBF0]" />
+            <div className="h-[6px] max-w-[180px] rounded bg-[var(--r2a-hairline)]" />
+            <div className="h-[6px] max-w-[220px] rounded bg-[var(--r2a-hairline-soft)]" />
+            <div className="h-[6px] max-w-[260px] rounded bg-[var(--r2a-hairline-soft)]" />
+            <div className="h-[6px] max-w-[300px] rounded bg-[var(--r2a-hairline-soft)]" />
+            <div className="h-[6px] max-w-[340px] rounded bg-[var(--r2a-hairline-soft)]" />
+            <div className="h-24 w-full max-w-[600px] rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline-soft)] bg-[var(--r2a-surface)]" />
           </div>
         </section>
       </div>

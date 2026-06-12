@@ -4,15 +4,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  Folder,
-  FolderPlus,
-  MoreHorizontal,
-  PencilLine,
-  Search,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -63,7 +55,7 @@ function NavItem({
     <Link
       href={href}
       className={cn(
-        "flex min-h-9 items-center gap-2 rounded-[10px] px-1 py-2 text-[13px] font-normal text-[#363636] transition-colors hover:bg-white/60",
+        "flex min-h-[34px] items-center gap-2 rounded-[var(--r2a-radius-md)] px-2 py-2 text-[13px] font-normal text-[var(--r2a-ink-secondary)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)]",
         className,
       )}
     >
@@ -124,7 +116,7 @@ export function AppSidebar() {
 
   useEffect(() => {
     if (!authUser) {
-      setCloudProjects(null);
+      queueMicrotask(() => setCloudProjects(null));
       return;
     }
 
@@ -175,66 +167,61 @@ export function AppSidebar() {
   const linkProjects = authUser ? (cloudProjects ?? []) : mockLinkProjects;
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[260px] shrink-0 flex-col border-r border-[#E5E7EB] bg-[#F0F1F6]">
-      <div className="flex items-start gap-2.5 border-b border-[#E5E7EB] px-3 pt-5 pb-5">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[#4F46E5]">
-          <Sparkles className="size-4 text-white" aria-hidden />
+    <aside className="sticky top-0 flex h-screen w-[240px] shrink-0 flex-col border-r border-[var(--r2a-hairline)] bg-[var(--r2a-sidebar-bg)]">
+      <div className="flex items-center gap-2.5 px-4 pt-5 pb-[18px]">
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-[var(--r2a-radius-sm)] bg-[var(--r2a-ink)] font-heading text-[14px] font-semibold leading-none text-[var(--r2a-canvas-soft)]">
+          读
         </div>
-        <div className="flex min-w-0 flex-col gap-0.5">
+        <div className="flex min-w-0 flex-col">
           <Link
             href="/"
-            className="text-[15px] font-bold leading-tight tracking-tight text-[#121212]"
+            className="text-[14px] font-semibold leading-tight text-[var(--r2a-ink)]"
           >
             Read2Action
           </Link>
-          <span className="text-[11px] font-medium leading-tight text-[#939393]">
-            Knowledge Hub
-          </span>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pt-3 pb-2">
+      <div className="flex flex-1 flex-col gap-[22px] overflow-y-auto px-3 pt-3 pb-3">
         <Link
           href="/"
-          className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#4F46E5] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#4338CA]"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[var(--r2a-radius-button)] bg-[var(--r2a-ink)] px-4 text-[13.5px] font-medium text-[var(--r2a-canvas-soft)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-ink-secondary)] active:scale-[0.98]"
         >
-          <PencilLine className="size-[18px] shrink-0 text-white" aria-hidden />
-          新笔记
+          + 新笔记
         </Link>
 
         <div>
-          <div className="mb-1 px-1 text-[11px] font-semibold text-[#121212]">
+          <div className="mb-1 px-2 font-heading text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--r2a-ink-muted)]">
             搜索
           </div>
-          <div className="flex h-9 items-center gap-2 rounded-[10px] border border-[#F4F5F9] bg-white px-2.5 text-[13px] text-[#363636]">
-            <Search className="size-4 shrink-0 text-[#121212]" aria-hidden />
-            <span className="flex-1 truncate text-[#363636]">搜索</span>
-            <span className="rounded-md bg-white px-1.5 py-0.5 text-[11px] font-semibold text-[#363636]">
+          <div className="flex h-9 items-center gap-2 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2.5 text-[13px] text-[var(--r2a-ink-secondary)]">
+            <span className="flex-1 truncate">搜索</span>
+            <span className="rounded-[var(--r2a-radius-sm)] bg-[var(--r2a-canvas-soft)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--r2a-ink-muted)]">
               ⌘K
             </span>
           </div>
         </div>
 
         <div>
-          <div className="mb-1 px-1 text-[11px] font-semibold text-[#121212]">
+          <div className="mb-1 px-2 font-heading text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--r2a-ink-muted)]">
             项目
           </div>
-          <nav className="flex flex-col gap-0.5">
+          <nav className="flex flex-col gap-px">
             {newEntry ? (
               <button
                 key="add-project-entry"
                 type="button"
                 onClick={() => toast.info("新建项目功能暂未开放")}
                 className={cn(
-                  "flex h-9 w-full items-center gap-2 rounded-[10px] px-1 text-left text-[13px] font-normal leading-none text-[#363636] transition-colors hover:bg-white/60",
+                  "flex min-h-[34px] w-full items-center gap-2 rounded-[var(--r2a-radius-md)] px-2 text-left text-[13.5px] font-normal leading-none text-[var(--r2a-ink-secondary)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)]",
                 )}
               >
-                <FolderPlus className="size-4 shrink-0 text-[#121212]" aria-hidden />
+                <span className="size-1 rounded-full bg-[var(--r2a-ink-faint)]" aria-hidden />
                 <span className="truncate">新增项目</span>
               </button>
             ) : null}
             {isProjectsLoading ? (
-              <div className="px-1 py-2 text-[12px] leading-relaxed text-[#939393]">
+              <div className="mt-1 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
                 正在加载云端项目…
               </div>
             ) : null}
@@ -248,27 +235,27 @@ export function AppSidebar() {
                 <div
                   key={p.id}
                   className={cn(
-                    "group flex h-9 items-center gap-1 rounded-[10px] px-1 transition-colors",
-                    "hover:bg-white/60",
-                    isProjectActive && "bg-white/75 hover:bg-white/85",
+                    "group flex min-h-[34px] items-center gap-1 rounded-[var(--r2a-radius-md)] px-2 transition-colors duration-150 ease-out",
+                    "hover:bg-[var(--r2a-hover)]",
+                    isProjectActive && "bg-[var(--r2a-sidebar-active-bg)] hover:bg-[var(--r2a-sidebar-active-bg)]",
                   )}
                 >
                   <Link
                     href={projectHref}
                     aria-current={isProjectActive ? "page" : undefined}
                     className={cn(
-                      "flex min-h-0 min-w-0 flex-1 items-center gap-2 py-0 text-[13px] leading-none",
+                      "flex min-h-0 min-w-0 flex-1 items-center gap-2 py-0 text-[13.5px] leading-none",
                       isProjectActive
-                        ? "font-medium text-[#121212]"
-                        : "font-normal text-[#363636]",
+                        ? "font-medium text-[var(--r2a-sidebar-active-ink)]"
+                        : "font-normal text-[var(--r2a-ink-secondary)]",
                     )}
                   >
-                    <Folder
+                    <span
                       className={cn(
-                        "size-4 shrink-0",
+                        "size-1 shrink-0 rounded-full",
                         isProjectActive
-                          ? "text-[#4F46E5]"
-                          : "text-[#121212]",
+                          ? "bg-[var(--r2a-sidebar-active-dot)]"
+                          : "bg-[var(--r2a-ink-faint)] group-hover:bg-[var(--r2a-ink-muted)]",
                       )}
                       aria-hidden
                     />
@@ -293,7 +280,7 @@ export function AppSidebar() {
                           e.preventDefault();
                           e.stopPropagation();
                         }}
-                        className="inline-flex size-8 items-center justify-center rounded-[8px] text-[#939393] transition-colors hover:bg-white/80 hover:text-[#363636] data-popup-open:bg-white/80"
+                        className="inline-flex size-7 items-center justify-center rounded-[var(--r2a-radius-md)] text-[var(--r2a-ink-muted)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)] data-popup-open:bg-[var(--r2a-hover)]"
                       >
                         <MoreHorizontal className="size-4" aria-hidden />
                       </DropdownMenuTrigger>
@@ -323,19 +310,24 @@ export function AppSidebar() {
               );
             })
               : null}
+            {!isProjectsLoading && linkProjects.length === 0 ? (
+              <div className="mt-1 rounded-[var(--r2a-radius-md)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)]">
+                暂无云端项目。
+              </div>
+            ) : null}
           </nav>
         </div>
 
         <div>
-          <div className="mb-1 px-1 text-[11px] font-semibold text-[#121212]">
+          <div className="mb-1 px-2 font-heading text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--r2a-ink-muted)]">
             最近
           </div>
           {recentNotes.length === 0 ? (
-            <div className="rounded-[10px] border border-dashed border-[#D5D8E2] bg-white/60 px-3 py-2.5 text-[12px] leading-relaxed text-[#6B7280]">
-              当前还没有解析记录，从首页开始解析吧。
+            <div className="rounded-[var(--r2a-radius-md)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2.5 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
+              当前还没有解析记录。
             </div>
           ) : (
-            <nav className="flex flex-col gap-0.5">
+            <nav className="flex flex-col gap-px">
               {recentNotes.map((n) => (
                 <NavItem
                   key={n.id}
@@ -352,34 +344,34 @@ export function AppSidebar() {
         </div>
       </div>
 
-      <div className="mt-auto border-t border-[#E5E7EB] px-2 py-2">
-        <div className="flex items-center gap-3 px-2 py-2">
-          <div className="flex size-[34px] shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] bg-white">
-            <User className="size-4 text-[#121212]" aria-hidden />
+      <div className="mt-auto border-t border-[var(--r2a-hairline)] px-3 py-2">
+        <div className="flex items-center gap-2.5 rounded-[var(--r2a-radius-md)] px-2 py-2">
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] font-heading text-[13px] font-semibold text-[var(--r2a-ink)]">
+            {authUser ? "已" : "访"}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             {authUser ? (
               <>
-                <span className="truncate text-[13px] font-semibold leading-none text-[#121212]">
+                <span className="truncate text-[12.5px] font-medium leading-none text-[var(--r2a-ink)]">
                   {authUser.email ?? "已登录用户"}
                 </span>
                 <button
                   type="button"
                   onClick={() => void handleSignOut()}
                   disabled={isSigningOut}
-                  className="inline-flex w-fit text-left text-[12px] font-medium text-[#615d59] transition-colors hover:text-[#4F46E5] disabled:opacity-50"
+                  className="inline-flex w-fit text-left text-[12px] font-medium text-[var(--r2a-ink-muted)] transition-colors duration-150 ease-out hover:text-[var(--r2a-primary)] disabled:opacity-50"
                 >
                   {isSigningOut ? "退出中…" : "退出登录"}
                 </button>
               </>
             ) : (
               <>
-                <span className="truncate text-[13px] font-semibold leading-none text-[#121212]">
+                <span className="truncate text-[12.5px] font-medium leading-none text-[var(--r2a-ink)]">
                   访客
                 </span>
                 <Link
                   href="/login"
-                  className="inline-flex w-fit text-[12px] font-medium text-[#4F46E5] transition-colors hover:text-[#4338CA]"
+                  className="inline-flex w-fit text-[12px] font-medium text-[var(--r2a-primary)] transition-colors duration-150 ease-out hover:text-[var(--r2a-primary-active)]"
                 >
                   登录
                 </Link>

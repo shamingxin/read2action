@@ -44,14 +44,14 @@ export function HomeNotePanel() {
   }, [router, value]);
 
   return (
-    <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
+    <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={cn(r2aPageShell1020, "flex-1")}>
         <div className={cn(r2aHomeInnerColumn, "flex-1")}>
           <header className="flex flex-col gap-4">
-            <h1 className="text-[28px] font-semibold leading-normal text-[#121212]">
+            <h1 className="font-heading text-[32px] font-semibold leading-[1.35] text-[var(--r2a-ink)]">
               今日事，我来帮。
             </h1>
-            <p className="max-w-[384px] text-[15px] font-normal leading-normal text-[#363636]">
+            <p className="max-w-[384px] text-[15px] font-normal leading-relaxed text-[var(--r2a-ink-secondary)]">
               粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记
             </p>
           </header>
@@ -76,8 +76,8 @@ export function HomeNotePanel() {
                 placeholder="粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记"
                 className={cn(
                   "min-h-[332px] w-full resize-none border-0 bg-transparent p-0",
-                  "text-[15px] leading-relaxed text-[#121212]",
-                  "placeholder:text-[14px] placeholder:font-normal placeholder:text-[#939393]",
+                  "text-[15px] leading-relaxed text-[var(--r2a-ink)]",
+                  "placeholder:text-[14px] placeholder:font-normal placeholder:text-[var(--r2a-ink-faint)]",
                   "shadow-none focus:shadow-none focus-visible:shadow-none",
                   "outline-none outline-0 ring-0 ring-offset-0",
                   "focus:outline-none focus:outline-0 focus:ring-0 focus:ring-offset-0",
@@ -86,7 +86,7 @@ export function HomeNotePanel() {
               />
             </div>
 
-            <div className="flex min-h-[68px] shrink-0 items-center justify-between border-t border-[#E5E7EB] px-4 py-2">
+            <div className="flex min-h-[68px] shrink-0 items-center justify-between border-t border-[var(--r2a-hairline-soft)] px-4 py-2">
               <button
                 type="button"
                 className={r2aPlusCircleButton}
@@ -108,7 +108,7 @@ export function HomeNotePanel() {
                     "gap-2",
                     "w-full max-w-[228px] sm:w-[228px]",
                     !canSubmit &&
-                      "cursor-not-allowed opacity-[0.38] saturate-75 hover:bg-[#4F46E5] hover:opacity-[0.38]",
+                      "cursor-not-allowed opacity-40 saturate-75 hover:bg-[var(--r2a-ink)] hover:opacity-40",
                   )}
                 >
                   <Sparkles
@@ -127,10 +127,10 @@ export function HomeNotePanel() {
               id="home-features-heading"
               className="flex items-center gap-3 pt-6"
             >
-              <span className="text-[12px] font-normal leading-none text-[#939393]">
+              <span className="font-heading text-[12px] font-medium leading-none text-[var(--r2a-ink-muted)]">
                 你将获得
               </span>
-              <div className="h-px w-1 rounded-sm bg-[#E5E7EB]" aria-hidden />
+              <div className="h-px w-6 rounded-sm bg-[var(--r2a-hairline)]" aria-hidden />
             </div>
 
             <ul className="grid grid-cols-2 gap-4 pt-3 lg:grid-cols-4">
@@ -138,16 +138,15 @@ export function HomeNotePanel() {
                 <li
                   key={title}
                   className={cn(
-                    "flex flex-col gap-2 bg-white px-4 py-3",
+                    "flex flex-col gap-2 bg-[var(--r2a-canvas-soft)] px-4 py-3 transition-colors duration-150 ease-out hover:border-[var(--r2a-ink-faint)] hover:bg-[var(--r2a-hover)]",
                     r2aCardRadius,
                     r2aCardBorder,
-                    r2aCardShadow,
                   )}
                 >
-                  <span className="text-[14px] font-semibold leading-tight text-[#121212]">
+                  <span className="text-[14px] font-semibold leading-tight text-[var(--r2a-ink)]">
                     {title}
                   </span>
-                  <span className="text-[12px] font-normal leading-tight text-[#939393]">
+                  <span className="text-[12px] font-normal leading-tight text-[var(--r2a-ink-muted)]">
                     {description}
                   </span>
                 </li>

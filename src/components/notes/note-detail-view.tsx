@@ -2,12 +2,18 @@
 
 import Link from "next/link";
 import { Download, Link2, Pencil, Trash2 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { SaveToProjectDialog } from "@/components/result/save-to-project-dialog";
+import {
+  ActionChecklistSection,
+  KeyInsightsSection,
+  KnowledgeCardsSection,
+  NoteSectionCard,
+} from "@/components/shared/note-content-sections";
 import { resolveNoteSavedStatus } from "@/lib/local-saved-notes";
-import type { KnowledgeCard, Note } from "@/types";
+import type { Note } from "@/types";
 
 import {
   DropdownMenu,
@@ -18,14 +24,12 @@ import {
 
 import {
   r2aBtnIconHeader,
-  r2aBtnSecondary,
+  r2aBtnPrimary,
   r2aContentPageHeaderActions,
   r2aContentPageHeaderRow,
-  r2aKnowledgeMiniCardShell,
   r2aContentPageShell,
   r2aPageSectionStackGap,
   r2aPlainWhitePanel,
-  r2aSectionCardShell,
   r2aTabLabelActive,
   r2aTabLabelInactive,
   r2aTabListRow,
@@ -35,6 +39,13 @@ import {
 import { cn } from "@/lib/utils";
 
 type TabId = "summary" | "source";
+
+const noteActionButtonClass = cn(
+  "inline-flex h-8 items-center justify-center gap-1.5 rounded-[var(--r2a-radius-md)]",
+  "border border-[var(--r2a-hairline)] bg-transparent px-3 text-[13px] font-normal text-[var(--r2a-ink-secondary)]",
+  "transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)] active:scale-[0.98]",
+  "focus-visible:outline-none",
+);
 
 function formatWordCount(n: number) {
   return n.toLocaleString("zh-CN");
@@ -50,57 +61,6 @@ function formatDetailDate(iso: string) {
   } catch {
     return iso;
   }
-}
-
-function tagAccent(tag?: string) {
-  if (tag === "指标")
-    return "text-[#1F8557]";
-  return "text-[#4F46E5]";
-}
-
-function KnowledgeMiniCard({ card }: { card: KnowledgeCard }) {
-  return (
-    <div className={r2aKnowledgeMiniCardShell}>
-      {card.tag ? (
-        <span
-          className={cn(
-            "text-[11px] font-medium leading-none",
-            tagAccent(card.tag),
-          )}
-        >
-          {card.tag}
-        </span>
-      ) : null}
-      <h4 className="text-[13px] font-normal leading-tight text-[#121212]">
-        {card.title}
-      </h4>
-      <p className="text-[12px] font-normal leading-relaxed text-[#939393]">
-        {card.content}
-      </p>
-    </div>
-  );
-}
-
-function SectionCard({
-  title,
-  headerRight,
-  children,
-  className,
-}: {
-  title: string;
-  headerRight?: ReactNode;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={cn(r2aSectionCardShell, className)}>
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[15px] font-semibold text-[#121212]">{title}</h3>
-        {headerRight}
-      </div>
-      {children}
-    </section>
-  );
 }
 
 export function NoteDetailView({
@@ -124,13 +84,13 @@ export function NoteDetailView({
     [note.actionItems, checks],
   );
 
-  const metaLine = useMemo(() => {
+  const metaItems = useMemo(() => {
     const src = note.sourceName ?? "—";
     const tagPart =
       note.tags.length > 0 ? `标签：${note.tags.join(" · ")}` : "标签：—";
     const datePart = `创建时间：${formatDetailDate(note.createdAt)}`;
     const wc = `字数：${formatWordCount(note.wordCount)}`;
-    return `来源：${src}     ${tagPart}     ${datePart}     ${wc}`;
+    return [`来源：${src}`, tagPart, datePart, wc];
   }, [note]);
 
   const toggleCheck = (id: string) => {
@@ -138,21 +98,21 @@ export function NoteDetailView({
   };
 
   return (
-    <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
+    <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aContentPageShell}>
         {!isTemporaryNote ? (
           <nav
-            className="flex flex-wrap items-center gap-1 text-[13px] text-[#939393]"
+            className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-[var(--r2a-ink-muted)]"
             aria-label="面包屑"
           >
             <Link
               href={`/projects/${projectId}`}
-              className="font-medium text-[#363636] hover:text-[#121212]"
+              className="font-medium text-[var(--r2a-ink-secondary)] transition-colors duration-150 ease-out hover:text-[var(--r2a-ink)]"
             >
               {projectName}
             </Link>
-            <span className="text-[#D1D5DB]">/</span>
-            <span className="max-w-[min(100%,48rem)] truncate text-[#939393]">
+            <span className="text-[var(--r2a-ink-faint)]">/</span>
+            <span className="max-w-[min(100%,48rem)] truncate text-[var(--r2a-ink-muted)]">
               {note.title}
             </span>
           </nav>
@@ -160,30 +120,40 @@ export function NoteDetailView({
 
         <header className={r2aContentPageHeaderRow}>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <h1 className="text-[26px] font-semibold leading-tight text-[#121212]">
+            <h1 className="font-heading text-[28px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--r2a-ink)]">
               {note.title}
             </h1>
-            <p className="text-[12px] font-normal leading-relaxed text-[#939393]">
-              {metaLine}
-            </p>
+            <div className="flex flex-wrap items-center text-[12.5px] font-normal leading-relaxed text-[var(--r2a-ink-muted)]">
+              {metaItems.map((item, index) => (
+                <span key={item} className="inline-flex items-center">
+                  {index > 0 ? (
+                    <span
+                      className="mx-2 inline-block size-[3px] rounded-full bg-[var(--r2a-ink-faint)]"
+                      aria-hidden
+                    />
+                  ) : null}
+                  <span>{item}</span>
+                </span>
+              ))}
+            </div>
           </div>
           <div className={r2aContentPageHeaderActions}>
             <button
               type="button"
-              className={r2aBtnSecondary}
+              className={noteActionButtonClass}
               onClick={() => toast.info("编辑功能暂未开放")}
             >
-              <Pencil className="size-5 shrink-0 text-[#363636]" aria-hidden />
+              <Pencil className="size-4 shrink-0 text-current" aria-hidden />
               编辑
             </button>
-            <button type="button" className={r2aBtnSecondary}>
-              <Download className="size-5 shrink-0 text-[#363636]" aria-hidden />
+            <button type="button" className={noteActionButtonClass}>
+              <Download className="size-4 shrink-0 text-current" aria-hidden />
               导出
             </button>
             {isTemporaryNote ? (
               <button
                 type="button"
-                className={r2aBtnSecondary}
+                className={cn(r2aBtnPrimary, "h-8 min-w-0 px-3 text-[13px]")}
                 onClick={() => setSaveDialogOpen(true)}
               >
                 保存到项目
@@ -211,7 +181,7 @@ export function NoteDetailView({
                       }
                     }}
                   >
-                    <Link2 className="size-4 text-[#939393]" aria-hidden />
+                    <Link2 className="size-4 text-[var(--r2a-ink-muted)]" aria-hidden />
                     复制链接
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -275,103 +245,47 @@ export function NoteDetailView({
 
           {tab === "summary" ? (
             <div className={cn("flex flex-col", r2aPageSectionStackGap)}>
-              <SectionCard title="一句话总结">
-                <p className="max-w-[770px] text-[14px] font-normal leading-relaxed text-[#363636]">
+              <NoteSectionCard title="一句话总结">
+                <p className="font-heading max-w-[770px] text-[17px] font-medium leading-[1.85] text-[var(--r2a-ink)]">
                   {note.summary}
                 </p>
-              </SectionCard>
+              </NoteSectionCard>
 
-              <SectionCard title="核心观点">
-                <ul className="flex flex-col gap-3">
-                  {note.keyInsights.map((line, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2.5 text-[14px] font-normal leading-relaxed text-[#363636]"
-                    >
-                      <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-[#EEF2FF] text-[11px] font-semibold text-[#4F46E5]">
-                        {i + 1}
-                      </span>
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-              </SectionCard>
+              <KeyInsightsSection insights={note.keyInsights} />
 
-              <SectionCard
-                title="行动清单"
-                headerRight={
-                  <span className="text-[12px] font-normal text-[#939393]">
-                    {doneCount}/{note.actionItems.length} 完成
-                  </span>
+              <ActionChecklistSection
+                items={note.actionItems}
+                checks={checks}
+                doneCount={doneCount}
+                onToggle={toggleCheck}
+              />
+
+              <KnowledgeCardsSection
+                cards={note.knowledgeCards}
+                emptySlot={
+                  <p className="rounded-[var(--r2a-radius-lg)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-5 py-[18px] text-[13.5px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
+                    暂无知识卡片
+                  </p>
                 }
-              >
-                <ul className="flex flex-col gap-2.5">
-                  {note.actionItems.map((item) => (
-                    <li key={item.id} className="flex items-start gap-2.5">
-                      <button
-                        type="button"
-                        role="checkbox"
-                        aria-checked={checks[item.id]}
-                        onClick={() => toggleCheck(item.id)}
-                        className={cn(
-                          "mt-0.5 size-4 shrink-0 rounded border border-[#E5E7EB] bg-white transition-colors",
-                          checks[item.id] && "border-[#4F46E5] bg-[#4F46E5]",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-[14px] font-normal leading-tight text-[#121212]",
-                          checks[item.id] && "text-[#939393] line-through",
-                        )}
-                      >
-                        {item.content}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </SectionCard>
-
-              <SectionCard title="知识卡片">
-                {note.knowledgeCards.length > 0 ? (
-                  <div className="flex flex-col gap-3 lg:flex-row">
-                    {note.knowledgeCards.map((c) => (
-                      <KnowledgeMiniCard key={c.id} card={c} />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[14px] text-[#939393]">暂无知识卡片</p>
-                )}
-              </SectionCard>
-
-              <SectionCard title="方法论沉淀">
-                <p className="text-[14px] leading-relaxed text-[#939393]">
-                  此区域占位。后续可接入方法论卡片或自定义沉淀内容。
-                </p>
-              </SectionCard>
-
-              <SectionCard title="原文摘录">
-                <p className="whitespace-pre-wrap text-[14px] font-normal leading-relaxed text-[#363636]">
-                  {note.rawContent}
-                </p>
-              </SectionCard>
+              />
             </div>
           ) : (
             <section
               className={cn(
                 r2aPlainWhitePanel,
-                "flex w-full flex-col gap-3 p-8",
+                "flex w-full flex-col gap-4 p-8",
               )}
               aria-label="原文对照"
               role="tabpanel"
             >
-              <h2 className="text-base font-semibold text-[#121212]">
+              <h2 className="font-heading text-[13px] font-medium text-[var(--r2a-ink-muted)]">
                 原始内容
               </h2>
-              <p className="text-[13px] font-normal leading-normal text-[#939393]">
+              <p className="text-[13.5px] font-normal leading-relaxed text-[var(--r2a-ink-muted)]">
                 以下内容为原始输入内容，便于与 AI 总结结果对照查看。
               </p>
               <div className="max-h-[min(400px,55vh)] min-h-[120px] overflow-y-auto pr-1">
-                <p className="whitespace-pre-wrap text-[14px] font-normal leading-6 text-[#363636]">
+                <p className="whitespace-pre-wrap text-[14px] font-normal leading-[1.8] text-[var(--r2a-ink-secondary)]">
                   {note.rawContent}
                 </p>
               </div>

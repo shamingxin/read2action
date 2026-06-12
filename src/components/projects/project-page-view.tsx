@@ -11,13 +11,12 @@ import { ModelSelect } from "@/components/ui/model-select";
 import { seedPendingAnalyzeSession } from "@/lib/analyze-client";
 import { DEFAULT_MODEL_VALUE } from "@/lib/model-options";
 import {
-  r2aBtnPrimaryPill,
+  r2aBtnPrimary,
   r2aCardBorder,
   r2aCardRadius,
   r2aCardShadow,
   r2aPageShell1020,
   r2aPlusCircleButton,
-  r2aSurfaceShadow,
 } from "@/lib/r2a-ui-classes";
 import {
   readAllLocalSavedNotes,
@@ -103,27 +102,28 @@ export function ProjectPageView({
   }, [quickInput, project.id, router]);
 
   return (
-    <div className="flex min-h-full w-full flex-1 flex-col bg-[#F4F5F9]">
+    <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aPageShell1020}>
         <header className="flex items-center gap-3">
-          <Folder
-            className="size-8 shrink-0 text-[#121212]"
-            strokeWidth={2}
+          <span
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] text-[var(--r2a-accent-ink)] shadow-[var(--r2a-shadow-soft)]"
             aria-hidden
-          />
-          <h1 className="text-[28px] font-semibold leading-tight text-[#121212]">
+          >
+            <Folder className="size-4" strokeWidth={1.8} />
+          </span>
+          <h1 className="font-heading text-[28px] font-semibold leading-tight text-[var(--r2a-ink)]">
             {project.name}
           </h1>
         </header>
 
         <section
           className={cn(
-            "flex h-[68px] w-full items-center justify-between gap-4 rounded-[48px] border border-[#E5E7EB] bg-white px-4",
-            r2aSurfaceShadow,
+            "flex w-full flex-col gap-3 rounded-[28px] bg-[var(--r2a-surface)] px-3 py-3 md:min-h-[64px] md:flex-row md:items-center md:gap-3 md:py-2 md:pl-3 md:pr-2",
+            r2aCardBorder,
           )}
           aria-label="项目内快速解析"
         >
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-h-10 min-w-0 flex-1 items-center gap-3">
             <button
               type="button"
               className={r2aPlusCircleButton}
@@ -137,8 +137,8 @@ export function ProjectPageView({
               onChange={(e) => setQuickInput(e.target.value)}
               placeholder="粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记"
               className={cn(
-                "min-w-0 flex-1 border-0 bg-transparent text-[14px] text-[#121212]",
-                "placeholder:text-[14px] placeholder:font-normal placeholder:text-[#939393]",
+                "min-w-0 flex-1 border-0 bg-transparent text-[15px] leading-relaxed text-[var(--r2a-ink)]",
+                "placeholder:text-[14px] placeholder:font-normal placeholder:text-[var(--r2a-ink-faint)]",
                 "shadow-none focus:shadow-none focus-visible:shadow-none",
                 "outline-none outline-0 ring-0 ring-offset-0",
                 "focus:outline-none focus:outline-0 focus:ring-0 focus:ring-offset-0",
@@ -146,16 +146,21 @@ export function ProjectPageView({
               )}
             />
           </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <ModelSelect value={model} onValueChange={setModel} />
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end md:gap-2.5">
+            <ModelSelect
+              value={model}
+              onValueChange={setModel}
+              className="w-full max-w-none rounded-full shadow-none sm:w-auto sm:max-w-[168px]"
+            />
             <button
               type="button"
               aria-disabled={!canSubmit}
               onClick={handleParse}
               className={cn(
-                r2aBtnPrimaryPill,
+                r2aBtnPrimary,
+                "w-full rounded-full px-5 shadow-none sm:w-[104px]",
                 !canSubmit &&
-                  "cursor-not-allowed opacity-[0.38] saturate-75 hover:bg-[#4F46E5] hover:opacity-[0.38]",
+                  "cursor-not-allowed !bg-[var(--r2a-hover)] !text-[var(--r2a-ink-faint)] !opacity-100 saturate-75 hover:!bg-[var(--r2a-hover)]",
               )}
             >
               解析
@@ -164,33 +169,35 @@ export function ProjectPageView({
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-[16px] font-semibold text-[#121212]">解析</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-heading text-[16px] font-medium text-[var(--r2a-ink)]">
+              解析
+            </h2>
+            <div
+              className="h-px w-6 rounded-sm bg-[var(--r2a-hairline)]"
+              aria-hidden
+            />
+          </div>
 
           <div
             className={cn(
-              "overflow-hidden bg-white",
+              "overflow-hidden bg-[var(--r2a-surface)]",
               r2aCardRadius,
               r2aCardBorder,
               r2aCardShadow,
             )}
           >
-            <div className="hidden grid-cols-[minmax(0,360px)_80px_minmax(0,240px)_120px_40px] gap-6 border-b border-[#E5E7EB] px-4 py-3 text-[11px] font-normal text-[#939393] lg:grid">
-              <span>标题</span>
-              <span>类型</span>
-              <span>标签</span>
-              <span>创建时间</span>
-              <span className="text-right">操作</span>
-            </div>
-
             {mergedNotes.length === 0 ? (
-              <div className="px-4 py-10 text-center">
-                <p className="text-[14px] text-[#6B7280]">当前项目暂无解析记录</p>
-                <p className="mt-1 text-[12px] text-[#939393]">
-                  可在上方输入内容解析，或从首页开始新建内容
+              <div className="m-4 rounded-[var(--r2a-radius-lg)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-12 text-center">
+                <p className="font-heading text-[16px] font-medium text-[var(--r2a-ink)]">
+                  当前项目暂无解析记录
+                </p>
+                <p className="mx-auto mt-2 max-w-[360px] text-[13px] leading-relaxed text-[var(--r2a-ink-muted)]">
+                  在上方输入内容解析后，结构化笔记会安静地收在这里。
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-[#E5E7EB]">
+              <ul className="divide-y divide-[var(--r2a-hairline-soft)]">
                 {mergedNotes.map((note) => (
                   <li key={note.id}>
                     <div
@@ -209,38 +216,38 @@ export function ProjectPageView({
                           );
                         }
                       }}
-                      className="grid cursor-pointer grid-cols-1 gap-2 px-4 py-3.5 transition-colors hover:bg-[#FAFAFC] lg:grid-cols-[minmax(0,360px)_80px_minmax(0,240px)_120px_40px] lg:items-center lg:gap-6 lg:py-3.5"
+                      className="grid cursor-pointer grid-cols-1 gap-3 px-5 py-4 transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] lg:grid-cols-[minmax(0,1fr)_minmax(160px,240px)_120px_40px] lg:items-center lg:gap-6"
                     >
                       <div className="min-w-0 lg:pr-0">
-                        <p className="truncate text-[13px] font-normal text-[#121212]">
-                          {note.title}
-                        </p>
-                        <p className="mt-0.5 line-clamp-1 text-[12px] font-normal text-[#939393]">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                          <span className="rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-2 py-0.5 text-[11px] font-normal text-[var(--r2a-ink-muted)]">
+                            {TYPE_LABEL[note.sourceType]}
+                          </span>
+                          <p className="min-w-0 flex-1 truncate text-[14px] font-medium text-[var(--r2a-ink)]">
+                            {note.title}
+                          </p>
+                        </div>
+                        <p className="mt-1 line-clamp-1 text-[12.5px] font-normal leading-relaxed text-[var(--r2a-ink-muted)]">
                           {note.summary}
                         </p>
-                      </div>
-                      <div className="flex items-center lg:block">
-                        <span className="rounded-md bg-[#EEF2FF] px-2 py-1 text-[11px] font-normal text-[#4F46E5]">
-                          {TYPE_LABEL[note.sourceType]}
-                        </span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {note.tags.slice(0, 4).map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-md bg-[#EDF0FF] px-2 py-1 text-[11px] font-normal text-[#4F46E5]"
+                            className="rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline-soft)] bg-[var(--r2a-canvas-soft)] px-2 py-0.5 text-[11px] font-normal text-[var(--r2a-ink-secondary)]"
                           >
                             {tag}
                           </span>
                         ))}
                       </div>
-                      <div className="text-[12px] text-[#939393] lg:text-left">
+                      <div className="text-[12px] text-[var(--r2a-ink-faint)] lg:text-left">
                         {formatListDate(note.createdAt)}
                       </div>
                       <div className="flex justify-end">
                         <button
                           type="button"
-                          className="inline-flex size-8 items-center justify-center rounded-md text-[16px] text-[#939393] hover:bg-[#F3F4F6]"
+                          className="inline-flex size-8 items-center justify-center rounded-[var(--r2a-radius-md)] text-[16px] text-[var(--r2a-ink-muted)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-surface)] hover:text-[var(--r2a-ink)]"
                           aria-label="更多（占位）"
                           onClick={(e) => {
                             e.preventDefault();
@@ -257,17 +264,17 @@ export function ProjectPageView({
             )}
           </div>
 
-          <footer className="flex flex-col gap-2 text-[12px] text-[#939393] sm:flex-row sm:items-center sm:justify-between">
+          <footer className="flex flex-col gap-2 text-[12px] text-[var(--r2a-ink-muted)] sm:flex-row sm:items-center sm:justify-between">
             <span>
               {mergedNotes.length > 0
                 ? `显示 1–${mergedNotes.length} 条，共 ${mergedNotes.length} 条`
                 : "当前暂无解析记录"}
             </span>
             <div className="flex items-center gap-2">
-              <span className="rounded-md border border-[#E5E7EB] bg-white px-2 py-1 text-[#363636]">
+              <span className="rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2 py-1 text-[var(--r2a-ink)]">
                 1
               </span>
-              <span className="text-[#939393]">/</span>
+              <span className="text-[var(--r2a-ink-faint)]">/</span>
               <span>1</span>
             </div>
           </footer>

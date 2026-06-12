@@ -9,9 +9,11 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const inputClassName = cn(
-  "h-11 w-full rounded-[4px] border border-black/[0.14] bg-white px-3",
-  "text-[14px] text-[#121212] placeholder:text-[#a39e98]",
-  "outline-none transition-shadow focus:shadow-[0_0_0_2px_#4F46E5]",
+  "h-11 w-full rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3",
+  "text-[14px] text-[var(--r2a-ink)] placeholder:text-[var(--r2a-ink-faint)]",
+  "outline-none transition-[border-color,box-shadow,background-color] duration-150 ease-out",
+  "focus:border-[#1e4d80] focus:shadow-[0_0_0_2px_rgba(30,77,128,0.16)]",
+  "disabled:cursor-not-allowed disabled:bg-[var(--r2a-canvas-soft)] disabled:text-[var(--r2a-ink-faint)]",
 );
 
 type AuthFormMode = "login" | "signup";
@@ -98,10 +100,15 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   if (confirmEmailMessage) {
     return (
-      <div className="flex flex-col gap-3 text-center">
-        <p className="text-[15px] font-medium text-[#121212]">请查收验证邮件</p>
-        <p className="text-[13px] leading-relaxed text-[#615d59]">
-          我们已向 <span className="font-medium text-[#121212]">{email.trim()}</span>{" "}
+      <div className="flex flex-col gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-4 py-5 text-center">
+        <p className="font-heading text-[17px] font-medium text-[var(--r2a-ink)]">
+          请查收验证邮件
+        </p>
+        <p className="text-[13px] leading-relaxed text-[var(--r2a-ink-muted)]">
+          我们已向{" "}
+          <span className="font-medium text-[var(--r2a-ink)]">
+            {email.trim()}
+          </span>{" "}
           发送验证链接。完成验证后即可登录。
         </p>
       </div>
@@ -111,7 +118,10 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${mode}-email`} className="text-[12px] font-medium text-[#121212]">
+        <label
+          htmlFor={`${mode}-email`}
+          className="text-[12.5px] font-medium text-[var(--r2a-ink)]"
+        >
           邮箱
         </label>
         <input
@@ -129,7 +139,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor={`${mode}-password`}
-          className="text-[12px] font-medium text-[#121212]"
+          className="text-[12.5px] font-medium text-[var(--r2a-ink)]"
         >
           密码
         </label>
@@ -149,7 +159,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="signup-confirm-password"
-            className="text-[12px] font-medium text-[#121212]"
+            className="text-[12.5px] font-medium text-[var(--r2a-ink)]"
           >
             确认密码
           </label>
@@ -167,7 +177,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       ) : null}
 
       {errorMessage ? (
-        <p className="text-[13px] leading-relaxed text-[#DC2626]" role="alert">
+        <p
+          className="rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2 text-[13px] leading-relaxed text-[var(--r2a-error)]"
+          role="alert"
+        >
           {errorMessage}
         </p>
       ) : null}
@@ -175,7 +188,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <Button
         type="submit"
         size="action"
-        className="mt-1 w-full"
+        className="mt-2 w-full bg-[#1e4d80] text-white hover:bg-[#163d68]"
         disabled={isSubmitting}
       >
         {isSubmitting ? "处理中…" : isSignup ? "注册" : "登录"}

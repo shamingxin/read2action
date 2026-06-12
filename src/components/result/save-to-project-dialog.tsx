@@ -60,19 +60,33 @@ export function SaveToProjectDialog({
 
   // 登录态云端项目列表；null = 游客 / 未登录已确认
   const [cloudProjects, setCloudProjects] = useState<Project[] | null>(null);
-  // 结果页场景下，auth 检查是否仍在进行中（防止闪烁本地模式）
-  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<"idle" | "guest" | "cloud">(
+    "idle",
+  );
 
   // effect 验证后的 supabase 实例与登录标志，供 handleConfirm 复用
   const supabaseRef = useRef<SupabaseClient | null>(null);
   const isCloudUserRef = useRef(false);
 
-  // 弹窗打开时：若 detailNoteId 为空（结果页场景），先进入 checking 状态再验证登录
+  const resetDialogState = () => {
+    setCloudProjects(null);
+    setSelectedId("sha");
+    setAuthMode("idle");
+    supabaseRef.current = null;
+    isCloudUserRef.current = false;
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      resetDialogState();
+    }
+    onOpenChange(nextOpen);
+  };
+
+  // 弹窗打开时：若 detailNoteId 为空（结果页场景），验证登录并加载云端项目
   useEffect(() => {
     if (!open || detailNoteId != null) return;
 
-    // 进入加载态，防止先渲染本地模式再切换
-    setIsCheckingAuth(true);
     supabaseRef.current = null;
     isCloudUserRef.current = false;
 
@@ -85,7 +99,7 @@ export function SaveToProjectDialog({
 
       if (!user) {
         // 明确未登录 → 展示游客本地模式
-        setIsCheckingAuth(false);
+        setAuthMode("guest");
         return;
       }
 
@@ -105,24 +119,13 @@ export function SaveToProjectDialog({
           setSelectedId(result[0].id);
         }
       }
-      setIsCheckingAuth(false);
+      setAuthMode("cloud");
     })();
 
     return () => {
       cancelled = true;
     };
   }, [open, detailNoteId]);
-
-  // 弹窗关闭时重置所有状态，下次打开重新验证
-  useEffect(() => {
-    if (!open) {
-      setCloudProjects(null);
-      setSelectedId("sha");
-      setIsCheckingAuth(false);
-      supabaseRef.current = null;
-      isCloudUserRef.current = false;
-    }
-  }, [open]);
 
   const handleConfirm = async () => {
     if (isSaving) return;
@@ -144,7 +147,7 @@ export function SaveToProjectDialog({
         return;
       }
       dispatchLocalSavedNotesChanged();
-      onOpenChange(false);
+      handleOpenChange(false);
       toast.success("已保存到项目");
       router.push(`/projects/${selectedId}/notes/${detailNoteId}`);
       return;
@@ -195,7 +198,7 @@ export function SaveToProjectDialog({
           return;
         }
 
-        onOpenChange(false);
+        handleOpenChange(false);
         toast.success("已保存到项目");
       } catch (err) {
         console.error("[SaveToProjectDialog] 云端保存异常:", err);
@@ -255,30 +258,34 @@ export function SaveToProjectDialog({
       return;
     }
     dispatchLocalSavedNotesChanged();
-    onOpenChange(false);
+    handleOpenChange(false);
     toast.success("已保存到项目");
     router.push(`/projects/${selectedId}/notes/${noteId}`);
   };
 
   // 结果页场景下的展示状态
   const isResultPage = detailNoteId == null;
-  const isCloudMode = isResultPage && !isCheckingAuth && cloudProjects !== null;
+  const isCheckingAuth = isResultPage && open && authMode === "idle";
+  const isCloudMode =
+    isResultPage && authMode === "cloud" && cloudProjects !== null;
   const showEmptyCloudHint = isCloudMode && cloudProjects.length === 0;
 
   // 列表内容：loading / 云端项目 / 游客 mock
   function renderProjectList() {
     if (isResultPage && isCheckingAuth) {
       return (
-        <div className="flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-[#FAFAFC] px-3 py-3">
-          <span className="text-[13px] text-[#939393]">正在加载云端项目…</span>
+        <div className="flex items-center gap-2 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
+          <span className="text-[13px] text-[var(--r2a-ink-muted)]">
+            正在加载云端项目…
+          </span>
         </div>
       );
     }
     if (showEmptyCloudHint) {
       return (
-        <div className="flex items-center gap-3 rounded-lg border border-[#4F46E5] bg-[#EEF2FF] px-3 py-2.5">
-          <span className="size-4 shrink-0 rounded-full border-2 border-[#4F46E5] bg-white" />
-          <span className="text-[14px] font-medium text-[#4F46E5]">
+        <div className="flex items-center gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
+          <span className="size-1.5 shrink-0 rounded-full bg-[var(--r2a-ink-faint)]" />
+          <span className="text-[14px] font-medium text-[var(--r2a-ink)]">
             默认项目（保存时自动创建）
           </span>
         </div>
@@ -291,10 +298,10 @@ export function SaveToProjectDialog({
         <label
           key={p.id}
           className={cn(
-            "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors",
+            "flex cursor-pointer items-center gap-3 rounded-[var(--r2a-radius-lg)] border px-3 py-2.5 transition-colors duration-150 ease-out",
             checked
-              ? "border-[#4F46E5] bg-[#EEF2FF]"
-              : "border-[#E5E7EB] bg-white hover:bg-[#FAFAFC]",
+              ? "border-[var(--r2a-accent-ink)] bg-[var(--r2a-accent-ink-bg)]"
+              : "border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] hover:border-[var(--r2a-ink-faint)] hover:bg-[var(--r2a-hover)]",
           )}
         >
           <input
@@ -303,9 +310,9 @@ export function SaveToProjectDialog({
             value={p.id}
             checked={checked}
             onChange={() => setSelectedId(p.id)}
-            className="size-4 accent-[#4F46E5]"
+            className="size-4 accent-[var(--r2a-accent-ink)]"
           />
-          <span className="text-[14px] font-medium text-[#121212]">
+          <span className="text-[14px] font-medium text-[var(--r2a-ink)]">
             {p.name}
           </span>
         </label>
@@ -316,15 +323,15 @@ export function SaveToProjectDialog({
   const isActionDisabled = isSaving || (isResultPage && isCheckingAuth);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="!flex max-h-[min(560px,90vh)] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[440px]"
         showCloseButton
       >
-        <div className="shrink-0 overflow-x-auto px-5 pt-5 pb-3 pr-12">
+        <div className="shrink-0 px-6 pt-6 pb-4 pr-12">
           <DialogHeader>
             <DialogTitle>保存到项目</DialogTitle>
-            <DialogDescription className="whitespace-nowrap">
+            <DialogDescription>
               {isCloudMode
                 ? "将当前解析结果保存到你的云端账号。"
                 : "将当前解析结果保存在本浏览器（刷新后仍可见）。"}
@@ -333,14 +340,14 @@ export function SaveToProjectDialog({
         </div>
 
         <div
-          className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-5 py-2 pb-3"
+          className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-6 py-2 pb-4"
           role="radiogroup"
           aria-label="选择项目"
         >
           {renderProjectList()}
         </div>
 
-        <DialogFooter className="!mx-0 !mb-0 mt-0 shrink-0 flex-row flex-wrap justify-end gap-3 border-t border-[#E5E7EB] bg-[#FAFAFC] px-5 py-4 sm:justify-end">
+        <DialogFooter className="!mx-0 !mb-0 mt-0 shrink-0 flex-row flex-wrap justify-end gap-3 border-t border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-4 sm:justify-end">
           <DialogClose
             render={
               <Button

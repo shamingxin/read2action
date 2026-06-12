@@ -12,14 +12,14 @@ export function AppLayoutShell({ children }: { children: React.ReactNode }) {
 
   if (isAuthRoute) {
     return (
-      <div className="min-h-screen w-full bg-[#f6f5f4] text-[#171717]">
+      <div className="min-h-screen w-full bg-[var(--r2a-canvas-soft)] text-[var(--r2a-ink)]">
         {children}
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-[#F7F7FB] text-[#171717]">
+    <div className="flex min-h-screen w-full bg-[var(--r2a-canvas-soft)] text-[var(--r2a-ink)]">
       <AppSidebar />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
     </div>

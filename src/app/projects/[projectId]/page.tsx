@@ -52,7 +52,7 @@ export default async function ProjectDirectoryPage({
   }
 
   return (
-    <main className="flex min-h-full flex-1 flex-col bg-[#F4F5F9]">
+    <main className="flex min-h-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <ProjectPageView project={project} notes={notes} />
     </main>
   );

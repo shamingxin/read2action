@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Read2Action · 1.4-A 笔记详情视觉母版 · v0.4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* ── v1.1.2 Token 层 ── */
+:root[data-theme="light"] {
+  --r2a-primary:          #1e4d80;
+  --r2a-primary-active:   #163d68;
+  --r2a-on-primary:       #ffffff;
+  --r2a-primary-bg:       #e8eff7;
+  --r2a-canvas:           #ffffff;
+  --r2a-canvas-soft:      #f9f9f5;
+  --r2a-surface:          #ffffff;
+  --r2a-hover:            #f2efe7;
+  --r2a-ink:              #1f1d18;
+  --r2a-ink-secondary:    #4a4640;
+  --r2a-ink-muted:        #6e6a62;
+  --r2a-ink-faint:        #a8a39a;
+  --r2a-hairline:         #ebe9e2;
+  --r2a-hairline-soft:    #f2f0ea;
+  --r2a-accent-ink:       #8b5a3c;
+  --r2a-accent-ink-bg:    rgba(139, 90, 60, 0.10);
+  --r2a-success:          #1aae39;
+  --r2a-success-bg:       #e6f9eb;
+  --r2a-shadow-soft:      0 1px 2px rgba(20,16,10,0.035);
+  --r2a-sidebar-bg:       #fbfbf8;
+  --r2a-sidebar-active-bg:#ebe9e2;
+  --r2a-sidebar-active-ink:#1f1d18;
+  --r2a-sidebar-active-muted:#6e6a62;
+  --r2a-sidebar-active-dot:#8b5a3c;
+}
+:root[data-theme="dark"] {
+  --r2a-primary:          #5a87bd;
+  --r2a-primary-active:   #7aa3d0;
+  --r2a-on-primary:       #f0eadc;
+  --r2a-primary-bg:       #162435;
+  --r2a-canvas:           #1a1814;
+  --r2a-canvas-soft:      #1a1814;
+  --r2a-surface:          #25221c;
+  --r2a-hover:            #2f2b24;
+  --r2a-ink:              #f0eadc;
+  --r2a-ink-secondary:    #c8c0b0;
+  --r2a-ink-muted:        #928876;
+  --r2a-ink-faint:        #6e6557;
+  --r2a-hairline:         #3a3429;
+  --r2a-hairline-soft:    #322d24;
+  --r2a-accent-ink:       #c89878;
+  --r2a-accent-ink-bg:    rgba(200, 152, 120, 0.14);
+  --r2a-success:          #2ecc5a;
+  --r2a-success-bg:       #0b2714;
+  --r2a-shadow-soft:      0 1px 2px rgba(0,0,0,0.24);
+  --r2a-sidebar-bg:       #1a1814;
+  --r2a-sidebar-active-bg:#3a3429;
+  --r2a-sidebar-active-ink:#f0eadc;
+  --r2a-sidebar-active-muted:#928876;
+  --r2a-sidebar-active-dot:#c89878;
+}
+:root {
+  --r2a-duration-fast:    80ms;
+  --r2a-duration-base:    150ms;
+  --r2a-duration-slow:    250ms;
+  --r2a-ease-out:         cubic-bezier(0.4, 0, 0.2, 1);
+  --r2a-font-sans:        'Inter', 'Noto Sans SC', 'PingFang SC', system-ui, -apple-system, sans-serif;
+  --r2a-font-serif:       'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+  --r2a-font-mono:        'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --r2a-radius-xs:        3px;
+  --r2a-radius-sm:        4px;
+  --r2a-radius-md:        6px;
+  --r2a-radius-button:    8px;
+  --r2a-radius-lg:        8px;
+  --r2a-radius-xl:        12px;
+  --sidebar-w:            240px;
+  --r2a-card-padding:     24px;
+  --r2a-index-card-padding: 18px 20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; padding: 0; }
+body {
+  background: var(--r2a-canvas-soft);
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+*:focus { outline: none; }
+*:focus-visible {
+  outline: 2px solid var(--r2a-primary);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 160;
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--r2a-hairline); background: var(--r2a-surface);
+  color: var(--r2a-ink-secondary); border-radius: var(--r2a-radius-md); cursor: pointer;
+  box-shadow: var(--r2a-shadow-soft);
+}
+.theme-toggle:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+.icon-moon { display: none; }
+:root[data-theme="dark"] .icon-sun { display: none; }
+:root[data-theme="dark"] .icon-moon { display: block; }
+
+/* ── App shell ── */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  background: var(--r2a-canvas);
+}
+
+/* ──────────────────────────────────────────
+   SIDEBAR — 全新重做，无图标系统
+   ────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  width: var(--sidebar-w);
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--r2a-hairline);
+  background: var(--r2a-sidebar-bg);
+  min-height: 100vh;
+}
+
+/* 品牌区 */
+.sidebar-brand {
+  padding: 20px 16px 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-brand-mark {
+  width: 28px; height: 28px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--r2a-ink);
+  color: var(--r2a-canvas-soft);
+  border-radius: var(--r2a-radius-sm);
+  font-family: var(--r2a-font-serif);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.sidebar-brand-name {
+  font-size: 14px; font-weight: 600;
+  color: var(--r2a-ink);
+  letter-spacing: -0.01em;
+}
+
+/* 侧栏主体 */
+.sidebar-body {
+  flex: 1;
+  padding: 14px 12px 74px;
+  display: flex; flex-direction: column;
+  gap: 22px;
+  overflow-y: auto;
+}
+
+/* 新建笔记主按钮 — Dark Action */
+.sidebar-new-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 40px; width: 100%;
+  background: var(--r2a-ink);
+  color: var(--r2a-canvas-soft);
+  border: none; border-radius: var(--r2a-radius-button);
+  font-family: var(--r2a-font-sans);
+  font-size: 13.5px; font-weight: 500; cursor: pointer;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out),
+              opacity var(--r2a-duration-base) var(--r2a-ease-out);
+  letter-spacing: 0;
+}
+.sidebar-new-btn:hover { opacity: 0.85; }
+.sidebar-new-btn:active { transform: scale(0.98); }
+
+/* Section label */
+.sidebar-section-label {
+  font-family: var(--r2a-font-serif);
+  font-size: 11px; font-weight: 500;
+  color: var(--r2a-ink-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+}
+
+/* 导航项 — 文字 + 4px 色点，无图标 */
+.sidebar-nav {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 34px; padding: 7px 10px;
+  border-radius: var(--r2a-radius-md);
+  font-size: 13.5px; color: var(--r2a-ink-secondary);
+  text-decoration: none; cursor: pointer;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out),
+              color var(--r2a-duration-base) var(--r2a-ease-out);
+  position: relative;
+}
+.sidebar-nav-item:hover {
+  background: var(--r2a-hover);
+  color: var(--r2a-ink);
+}
+.sidebar-nav-item.active {
+  background: var(--r2a-sidebar-active-bg);
+  color: var(--r2a-sidebar-active-ink);
+  font-weight: 500;
+}
+
+/* 4px 色点 */
+.nav-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--r2a-ink-faint);
+}
+.sidebar-nav-item.active .nav-dot {
+  background: var(--r2a-sidebar-active-dot);
+}
+.sidebar-nav-item:hover .nav-dot {
+  background: var(--r2a-ink-muted);
+}
+/* 色点变体 */
+.nav-dot.blue { background: #4a7cb5; }
+.nav-dot.warm { background: var(--r2a-accent-ink); }
+.nav-dot.green { background: #4a9b6f; }
+
+/* 最近笔记列表项 */
+.sidebar-recent-item {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 7px 10px;
+  border-radius: var(--r2a-radius-md);
+  cursor: pointer;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.sidebar-recent-item:hover { background: var(--r2a-hover); }
+.sidebar-recent-item.active {
+  background: var(--r2a-sidebar-active-bg);
+}
+.sidebar-recent-title {
+  font-size: 13px; color: var(--r2a-ink-secondary);
+  line-height: 1.4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sidebar-recent-item.active .sidebar-recent-title {
+  color: var(--r2a-sidebar-active-ink); font-weight: 500;
+}
+.sidebar-recent-date {
+  font-size: 11px; color: var(--r2a-ink-faint);
+}
+.sidebar-recent-item.active .sidebar-recent-date {
+  color: var(--r2a-sidebar-active-muted);
+}
+
+/* 侧栏底部 */
+.sidebar-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 120;
+  width: var(--sidebar-w);
+  background: var(--r2a-sidebar-bg);
+  border-top: 1px solid var(--r2a-hairline);
+  border-right: 1px solid var(--r2a-hairline);
+  padding: 10px 12px;
+}
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: var(--r2a-radius-md);
+}
+.sidebar-user-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--r2a-surface);
+  border: 1px solid var(--r2a-hairline);
+  color: var(--r2a-ink);
+  font-family: var(--r2a-font-serif);
+  font-size: 13px; font-weight: 600;
+  line-height: 1;
+}
+.sidebar-user-info {
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 1px;
+}
+.sidebar-user-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--r2a-ink);
+  line-height: 1.35;
+}
+.sidebar-user-meta {
+  font-size: 11px;
+  color: var(--r2a-ink-faint);
+  line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+
+/* ──────────────────────────────────────────
+   主内容区
+   ────────────────────────────────────────── */
+.main-col {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  margin-left: var(--sidebar-w);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--r2a-canvas);
+}
+
+/* 内容容器：整体居中，内部保持同一左边界 */
+.note-shell {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 48px 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: 12.5px;
+  color: var(--r2a-ink-muted);
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 6px;
+}
+.breadcrumb a {
+  color: var(--r2a-ink-muted);
+  text-decoration: none;
+  transition: color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.breadcrumb a:hover { color: var(--r2a-ink-secondary); }
+.breadcrumb-sep {
+  color: var(--r2a-ink-faint);
+  font-size: 11px;
+}
+.breadcrumb-current { color: var(--r2a-ink-secondary); }
+
+
+/* ── 笔记标题与操作区 ── */
+.note-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 34px;
+}
+.note-heading-copy {
+  min-width: 0;
+  flex: 1;
+}
+.note-actions {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+/* Utility 按钮：透明底 + hairline */
+.btn-util {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  height: 32px; padding: 0 14px;
+  background: transparent;
+  color: var(--r2a-ink-secondary);
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-md);
+  font-family: var(--r2a-font-sans);
+  font-size: 13px; font-weight: 400; cursor: pointer;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out),
+              color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.btn-util:hover { background: var(--r2a-hover); color: var(--r2a-ink); }
+.btn-util:active { transform: scale(0.98); }
+
+/* Primary 按钮 */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 32px; padding: 0 16px;
+  background: var(--r2a-primary);
+  color: var(--r2a-on-primary);
+  border: none; border-radius: var(--r2a-radius-md);
+  font-family: var(--r2a-font-sans);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.btn-primary:hover { background: var(--r2a-primary-active); }
+.btn-primary:active { transform: scale(0.98); }
+
+/* 状态 pill */
+.sync-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px; height: 22px;
+  border-radius: 99px;
+  background: var(--r2a-success-bg);
+  font-size: 11px; color: var(--r2a-success);
+  flex-shrink: 0;
+}
+.sync-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--r2a-success);
+}
+
+
+/* ── 笔记标题区 ── */
+.note-title {
+  font-family: var(--r2a-font-serif);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--r2a-ink);
+  margin: 0 0 12px;
+}
+
+/* 元信息行 */
+.note-meta {
+  display: flex; align-items: center; gap: 0;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--r2a-ink-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+.meta-dot {
+  display: inline-block;
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--r2a-ink-faint);
+  margin: 0 8px; flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* Tabs */
+.note-tabs {
+  display: flex; gap: 28px;
+  border-bottom: none;
+  margin-bottom: 24px;
+}
+.note-tab-btn {
+  display: inline-flex; flex-direction: column; align-items: stretch; gap: 3px;
+  background: none; border: none; padding: 0 0 0; cursor: pointer;
+  font-family: var(--r2a-font-sans);
+}
+.note-tab-label {
+  font-size: 13.5px; padding-bottom: 2px;
+  transition: color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.note-tab-label.active {
+  font-weight: 500; color: var(--r2a-ink);
+}
+.note-tab-label.inactive {
+  font-weight: 400; color: var(--r2a-ink-muted);
+}
+.note-tab-bar {
+  height: 2px; border-radius: 1px;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.note-tab-bar.on { background: var(--r2a-ink); }
+.note-tab-bar.off { background: transparent; }
+
+
+/* ──────────────────────────────────────────
+   内容区 — editorial 阅读流
+   ────────────────────────────────────────── */
+.content-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.content-module-card {
+  width: 100%;
+  background: var(--r2a-surface);
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-lg);
+  box-shadow: none;
+  padding: var(--r2a-card-padding);
+}
+
+/* Section eyebrow 标签 */
+.section-eyebrow {
+  font-family: var(--r2a-font-serif);
+  font-size: 11.5px; font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--r2a-ink-muted);
+  margin: 0 0 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.section-eyebrow::after {
+  content: '';
+  display: block;
+  width: 24px; height: 1px;
+  background: var(--r2a-hairline);
+  flex-shrink: 0;
+}
+
+/* Section 间距 */
+.section-block {
+  margin-bottom: 0;
+}
+.section-block:last-child {
+  margin-bottom: 0;
+}
+
+/* ── 一句话总结 ── */
+.summary-text {
+  font-family: var(--r2a-font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.85;
+  letter-spacing: 0.005em;
+  color: var(--r2a-ink);
+  margin: 0;
+}
+/* 文本标记 — 渐变下划线，不用纯色底 */
+.summary-text mark {
+  background: linear-gradient(to bottom, transparent 60%, var(--r2a-accent-ink-bg) 60%);
+  color: var(--r2a-ink);
+  font-weight: inherit;
+  padding: 0;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ── 核心观点 ── */
+/* 圆圈序号：与模块标题共享左侧阅读起点 */
+.insight-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  counter-reset: insight-counter;
+}
+.insight-item {
+  counter-increment: insight-counter;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  column-gap: 14px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--r2a-hairline-soft);
+}
+.insight-item:last-child { border-bottom: none; }
+.insight-num {
+  font-family: var(--r2a-font-serif);
+  font-size: 17px; font-weight: 500;
+  color: var(--r2a-accent-ink);
+  text-align: left;
+  line-height: 1.4;
+}
+.insight-text { min-width: 0; }
+.insight-title {
+  display: block;
+  font-family: var(--r2a-font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--r2a-ink);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  margin-bottom: 8px;
+}
+.insight-body {
+  display: block;
+  font-family: var(--r2a-font-sans);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--r2a-ink-secondary);
+  line-height: 1.7;
+}
+
+/* ── 行动清单 ── */
+.checklist-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.checklist-header .section-eyebrow {
+  margin-bottom: 0;
+}
+.checklist-count {
+  font-family: var(--r2a-font-mono);
+  font-size: 12px;
+  color: var(--r2a-ink-muted);
+}
+.checklist {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+}
+.check-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px dashed var(--r2a-hairline);
+  transition: background-color var(--r2a-duration-fast) var(--r2a-ease-out);
+  border-radius: 3px;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: rgba(244, 241, 234, 0.5); }
+:root[data-theme="dark"] .check-item:hover { background: rgba(47, 43, 36, 0.5); }
+
+/* 复选框 */
+.checkbox {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--r2a-ink-muted);
+  border-radius: var(--r2a-radius-xs);
+  background: transparent;
+  display: inline-block;
+  position: relative;
+  transition: background-color var(--r2a-duration-fast) var(--r2a-ease-out),
+              border-color var(--r2a-duration-fast) var(--r2a-ease-out);
+}
+.checkbox.checked {
+  background: var(--r2a-ink);
+  border-color: var(--r2a-ink);
+}
+.checkbox.checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border-right: 1.5px solid var(--r2a-canvas-soft);
+  border-bottom: 1.5px solid var(--r2a-canvas-soft);
+  transform: rotate(45deg);
+}
+.check-text {
+  font-family: var(--r2a-font-sans);
+  font-size: 14.5px; font-weight: 400; color: var(--r2a-ink); line-height: 1.6;
+}
+.check-text.done {
+  color: var(--r2a-ink-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--r2a-ink-faint);
+}
+.check-item.is-done .check-text {
+  color: var(--r2a-ink-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--r2a-ink-faint);
+}
+
+/* ── 知识卡片 ── */
+/* §10.3-B: index card 质感，背景 canvas-soft，小圆角 */
+.knowledge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.knowledge-card {
+  background: var(--r2a-canvas-soft);
+  border: 1px solid var(--r2a-hairline);
+  border-radius: var(--r2a-radius-sm);
+  box-shadow: none;
+  padding: var(--r2a-index-card-padding);
+  cursor: pointer;
+  transition: border-color var(--r2a-duration-slow) var(--r2a-ease-out),
+              transform var(--r2a-duration-slow) var(--r2a-ease-out);
+}
+.knowledge-card:hover {
+  border-color: var(--r2a-ink-faint);
+  transform: translateY(-1px);
+}
+.knowledge-tag {
+  font-family: var(--r2a-font-serif);
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--r2a-accent-ink);
+  display: block;
+  margin-bottom: 10px;
+}
+.knowledge-title {
+  font-family: var(--r2a-font-serif);
+  font-size: 17px; font-weight: 600;
+  color: var(--r2a-ink);
+  margin: 0 0 8px;
+  letter-spacing: -0.005em;
+  line-height: 1.4;
+}
+.knowledge-body {
+  font-family: var(--r2a-font-sans);
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--r2a-ink-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 添加卡片占位 */
+.knowledge-add {
+  border: 1px dashed var(--r2a-hairline);
+  border-radius: var(--r2a-radius-sm);
+  box-shadow: none;
+  padding: var(--r2a-index-card-padding);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--r2a-ink-faint);
+  cursor: pointer;
+  min-height: 100px;
+  transition: background-color var(--r2a-duration-base) var(--r2a-ease-out),
+              color var(--r2a-duration-base) var(--r2a-ease-out);
+}
+.knowledge-add:hover { background: var(--r2a-hover); color: var(--r2a-ink-muted); }
+
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="切换深浅色" type="button">
+  <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+  </svg>
+  <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+</button>
+
+<!-- App -->
+<div class="app-layout">
+
+  <!-- ── 侧边栏（全新重做） ── -->
+  <aside class="sidebar" aria-label="主导航">
+
+    <!-- 品牌区 -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-mark" aria-hidden="true">读</div>
+      <span class="sidebar-brand-name">Read2Action</span>
+    </div>
+
+    <!-- 主体 -->
+    <div class="sidebar-body">
+
+      <!-- 新建笔记 -->
+      <button class="sidebar-new-btn" type="button">
+        + 新建笔记
+      </button>
+
+      <!-- 项目列表 -->
+      <div>
+        <div class="sidebar-section-label">项目</div>
+        <nav class="sidebar-nav" aria-label="项目导航">
+          <a class="sidebar-nav-item" href="#" aria-label="全部笔记">
+            <span class="nav-dot"></span>
+            全部笔记
+          </a>
+          <a class="sidebar-nav-item active" href="#" aria-current="page">
+            <span class="nav-dot warm"></span>
+            默认项目
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot blue"></span>
+            产品思考
+          </a>
+          <a class="sidebar-nav-item" href="#">
+            <span class="nav-dot green"></span>
+            阅读摘录
+          </a>
+        </nav>
+      </div>
+
+      <!-- 最近笔记 -->
+      <div>
+        <div class="sidebar-section-label">最近</div>
+        <div style="display:flex;flex-direction:column;gap:1px;">
+          <div class="sidebar-recent-item active">
+            <div class="sidebar-recent-title">深度工作的方法论摘录</div>
+            <div class="sidebar-recent-date">今天</div>
+          </div>
+          <div class="sidebar-recent-item">
+            <div class="sidebar-recent-title">认知负荷与笔记结构</div>
+            <div class="sidebar-recent-date">昨天</div>
+          </div>
+          <div class="sidebar-recent-item">
+            <div class="sidebar-recent-title">如何建立有效的输出习惯</div>
+            <div class="sidebar-recent-date">Jun 9</div>
+          </div>
+          <div class="sidebar-recent-item">
+            <div class="sidebar-recent-title">学习曲线与知识留存率</div>
+            <div class="sidebar-recent-date">Jun 7</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 底部：用户登录信息 -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" aria-hidden="true">沙</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">沙</div>
+          <div class="sidebar-user-meta">已登录 · 个人知识库</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── 主内容区 ── -->
+  <main class="main-col">
+    <div class="note-shell">
+
+      <!-- 面包屑 -->
+      <nav class="breadcrumb" aria-label="位置">
+        <a href="#">默认项目</a>
+        <span class="breadcrumb-sep" aria-hidden="true">/</span>
+        <span class="breadcrumb-current">深度工作的方法论摘录</span>
+      </nav>
+
+      <!-- 标题信息与操作 -->
+      <div class="note-heading-row">
+        <div class="note-heading-copy">
+          <h1 class="note-title">深度工作的方法论摘录</h1>
+          <div class="note-meta" aria-label="笔记信息">
+            <span>来源：用户输入</span>
+            <span class="meta-dot" aria-hidden="true"></span>
+            <span>2026/06/11</span>
+            <span class="meta-dot" aria-hidden="true"></span>
+            <span>1,248 字</span>
+            <span class="meta-dot" aria-hidden="true"></span>
+            <span>阅读 · 方法论</span>
+            <span class="meta-dot" aria-hidden="true"></span>
+            <span class="sync-pill" aria-label="已同步">
+              <span class="sync-dot"></span>
+              已同步
+            </span>
+          </div>
+        </div>
+        <div class="note-actions" role="toolbar" aria-label="笔记操作">
+          <button class="btn-util" type="button">编辑</button>
+          <button class="btn-util" type="button">导出</button>
+          <button class="btn-primary" type="button">保存到项目</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="note-tabs" role="tablist">
+        <button class="note-tab-btn" role="tab" aria-selected="true" type="button">
+          <span class="note-tab-label active">内容总结</span>
+          <span class="note-tab-bar on" aria-hidden="true"></span>
+        </button>
+        <button class="note-tab-btn" role="tab" aria-selected="false" type="button">
+          <span class="note-tab-label inactive">原文对照</span>
+          <span class="note-tab-bar off" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <!-- 内容模块：上方内容用轻量纸卡，知识卡片保留内部小卡结构 -->
+      <div class="content-flow">
+
+        <!-- Section 1: 一句话总结 -->
+        <section class="section-block content-module-card" aria-labelledby="section-summary">
+          <p class="section-eyebrow" id="section-summary" aria-label="一句话总结">一句话总结</p>
+          <p class="summary-text">
+            深度工作的本质，是在<mark>注意力稀缺</mark>的时代，
+            刻意为高质量思考保留不受打扰的时间块——
+            这不是时间管理技巧，而是一种认知资产的保护策略。
+          </p>
+        </section>
+
+        <!-- Section 2: 核心观点 -->
+        <section class="section-block content-module-card" aria-labelledby="section-insights">
+          <p class="section-eyebrow" id="section-insights" aria-label="核心观点">核心观点</p>
+          <ol class="insight-list" aria-label="核心观点列表">
+            <li class="insight-item">
+              <span class="insight-num" aria-hidden="true">①</span>
+              <span class="insight-text">
+                <span class="insight-title">注意力碎片化是深度思考最大的敌人</span>
+                <span class="insight-body">每次打断后重新进入深度状态需要平均 23 分钟</span>
+              </span>
+            </li>
+            <li class="insight-item">
+              <span class="insight-num" aria-hidden="true">②</span>
+              <span class="insight-text">
+                <span class="insight-title">输入之后的「安静整理」比输入本身更重要</span>
+                <span class="insight-body">笔记工具应服务于沉淀，而非即时对话</span>
+              </span>
+            </li>
+            <li class="insight-item">
+              <span class="insight-num" aria-hidden="true">③</span>
+              <span class="insight-text">
+                <span class="insight-title">长期主义视角下，高质量的少量笔记远优于低质量的大量笔记</span>
+                <span class="insight-body">深度优先于广度</span>
+              </span>
+            </li>
+          </ol>
+        </section>
+
+        <!-- Section 3: 行动清单 -->
+        <section class="section-block content-module-card" aria-labelledby="section-actions">
+          <div class="checklist-header">
+            <p class="section-eyebrow" id="section-actions" aria-label="行动清单">行动清单</p>
+            <span class="checklist-count" aria-label="完成进度">1 / 4 完成</span>
+          </div>
+          <ul class="checklist" aria-label="行动清单">
+            <li class="check-item is-done">
+              <span class="checkbox checked" aria-hidden="true"></span>
+              <span class="check-text done">每天预留 45 分钟无打扰的深度阅读时段</span>
+            </li>
+            <li class="check-item">
+              <span class="checkbox" aria-hidden="true"></span>
+              <span class="check-text">阅读后立即做一次结构化整理，写下三个核心观点</span>
+            </li>
+            <li class="check-item">
+              <span class="checkbox" aria-hidden="true"></span>
+              <span class="check-text">每周回顾一次项目笔记，标注哪些观点已被实践验证</span>
+            </li>
+            <li class="check-item">
+              <span class="checkbox" aria-hidden="true"></span>
+              <span class="check-text">将「深度工作」相关笔记整理成一个独立项目归档</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Section 4: 知识卡片 -->
+        <section aria-labelledby="section-cards">
+          <p class="section-eyebrow" id="section-cards" aria-label="知识卡片">知识卡片</p>
+          <div class="knowledge-grid">
+            <article class="knowledge-card">
+              <span class="knowledge-tag">概念</span>
+              <h3 class="knowledge-title">深度工作（Deep Work）</h3>
+              <p class="knowledge-body">在无干扰状态下进行的专注认知活动，能够产生真正有价值的输出。</p>
+            </article>
+            <article class="knowledge-card">
+              <span class="knowledge-tag">指标</span>
+              <h3 class="knowledge-title">专注恢复时长</h3>
+              <p class="knowledge-body">被打断后重新进入深度状态平均需要 23 分钟。频繁切换代价极高。</p>
+            </article>
+            <article class="knowledge-card">
+              <span class="knowledge-tag">方法</span>
+              <h3 class="knowledge-title">时间块工作法</h3>
+              <p class="knowledge-body">将一天中最高效的时段预留给深度工作，拒绝碎片化安排。</p>
+            </article>
+            <div class="knowledge-add" role="button" tabindex="0" aria-label="添加知识卡片">
+              + 添加自定义卡片
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /content-flow -->
+    </div><!-- /note-shell -->
+  </main>
+
+</div><!-- /app-layout -->
+
+<script>
+  const toggle = document.getElementById('themeToggle');
+  const root = document.documentElement;
+  toggle.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  });
+</script>
+</body>
+</html>
