@@ -38,6 +38,7 @@ import type { Project } from "@/types";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialAuthMode?: "idle" | "guest" | "cloud";
   /** 详情页传入：按 localStorage 中的 noteId 升级暂存记录 */
   noteId?: string;
 };
@@ -52,6 +53,7 @@ function newNoteId(): string {
 export function SaveToProjectDialog({
   open,
   onOpenChange,
+  initialAuthMode = "idle",
   noteId: detailNoteId,
 }: Props) {
   const router = useRouter();
@@ -61,7 +63,7 @@ export function SaveToProjectDialog({
   // 登录态云端项目列表；null = 游客 / 未登录已确认
   const [cloudProjects, setCloudProjects] = useState<Project[] | null>(null);
   const [authMode, setAuthMode] = useState<"idle" | "guest" | "cloud">(
-    "idle",
+    initialAuthMode,
   );
 
   // effect 验证后的 supabase 实例与登录标志，供 handleConfirm 复用
@@ -71,7 +73,7 @@ export function SaveToProjectDialog({
   const resetDialogState = () => {
     setCloudProjects(null);
     setSelectedId("sha");
-    setAuthMode("idle");
+    setAuthMode(initialAuthMode);
     supabaseRef.current = null;
     isCloudUserRef.current = false;
   };
@@ -83,15 +85,25 @@ export function SaveToProjectDialog({
     onOpenChange(nextOpen);
   };
 
-  // 弹窗打开时：若 detailNoteId 为空（结果页场景），验证登录并加载云端项目
+  const handleGoLogin = () => {
+    handleOpenChange(false);
+    router.push("/login");
+  };
+
+  // 弹窗打开时验证登录；结果页登录态加载云端项目，未登录只展示登录引导
   useEffect(() => {
-    if (!open || detailNoteId != null) return;
+    if (!open) return;
 
     supabaseRef.current = null;
     isCloudUserRef.current = false;
 
     let cancelled = false;
     void (async () => {
+      if (initialAuthMode === "guest") {
+        setAuthMode("guest");
+        return;
+      }
+
       const supabase = createClient();
       const user = await getCurrentUser(supabase);
 
@@ -106,6 +118,11 @@ export function SaveToProjectDialog({
       // 已登录 → 保存实例与标志
       supabaseRef.current = supabase;
       isCloudUserRef.current = true;
+
+      if (detailNoteId != null) {
+        setAuthMode("cloud");
+        return;
+      }
 
       const result = await listProjects(supabase);
       if (cancelled) return;
@@ -125,16 +142,21 @@ export function SaveToProjectDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, detailNoteId]);
+  }, [open, detailNoteId, initialAuthMode]);
 
   const handleConfirm = async () => {
     if (isSaving) return;
+
+    if (authMode === "guest") {
+      handleGoLogin();
+      return;
+    }
 
     // ── 分支 1：未归档详情页（noteId 传入）→ 原 localStorage 逻辑，完全不动 ──
     if (detailNoteId != null) {
       const existing = findLocalSavedNoteById(detailNoteId);
       if (!existing) {
-        toast.error("未找到暂存记录，请重新解析后再保存。");
+        toast.error("未找到暂存笔记，请重新整理后再保存。");
         return;
       }
       if (resolveNoteSavedStatus(existing) !== "temporary") {
@@ -160,7 +182,7 @@ export function SaveToProjectDialog({
       try {
         const preview = readLastAnalyzeResultFromSession();
         if (!preview) {
-          toast.error("未找到本次解析结果，请重新解析后再保存。");
+          toast.error("未找到本次笔记，请重新整理后再保存。");
           return;
         }
 
@@ -188,7 +210,7 @@ export function SaveToProjectDialog({
           sourceContext: "global",
         });
         if (!built) {
-          toast.error("解析结果不完整，无法保存。");
+          toast.error("本次笔记不完整，无法保存。");
           return;
         }
 
@@ -216,7 +238,7 @@ export function SaveToProjectDialog({
     // ── 分支 2-B：游客（未登录）→ 原 localStorage 逻辑，完全不动 ──
     const preview = readLastAnalyzeResultFromSession();
     if (!preview) {
-      toast.error("未找到本次解析结果，请重新解析后再保存。");
+      toast.error("未找到本次笔记，请重新整理后再保存。");
       return;
     }
     const sessionNoteId = readLastAnalyzeNoteIdFromSession();
@@ -235,7 +257,7 @@ export function SaveToProjectDialog({
       sourceContext: "global",
     });
     if (!built) {
-      toast.error("解析结果不完整，无法保存。");
+      toast.error("本次笔记不完整，无法保存。");
       return;
     }
 
@@ -265,21 +287,27 @@ export function SaveToProjectDialog({
 
   // 结果页场景下的展示状态
   const isResultPage = detailNoteId == null;
-  const isCheckingAuth = isResultPage && open && authMode === "idle";
+  const isCheckingAuth = open && authMode === "idle";
+  const isLoadingCloudProjects =
+    isResultPage && authMode === "cloud" && cloudProjects === null;
   const isCloudMode =
     isResultPage && authMode === "cloud" && cloudProjects !== null;
   const showEmptyCloudHint = isCloudMode && cloudProjects.length === 0;
+  const isGuestMode = authMode === "guest";
 
   // 列表内容：loading / 云端项目 / 游客 mock
   function renderProjectList() {
-    if (isResultPage && isCheckingAuth) {
+    if (isCheckingAuth || isLoadingCloudProjects) {
       return (
         <div className="flex items-center gap-2 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
           <span className="text-[13px] text-[var(--r2a-ink-muted)]">
-            正在加载云端项目…
+            {isCheckingAuth ? "正在确认登录状态…" : "正在加载云端项目…"}
           </span>
         </div>
       );
+    }
+    if (isGuestMode) {
+      return null;
     }
     if (showEmptyCloudHint) {
       return (
@@ -320,7 +348,7 @@ export function SaveToProjectDialog({
     });
   }
 
-  const isActionDisabled = isSaving || (isResultPage && isCheckingAuth);
+  const isActionDisabled = isSaving || isCheckingAuth || isLoadingCloudProjects;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -330,22 +358,26 @@ export function SaveToProjectDialog({
       >
         <div className="shrink-0 px-6 pt-6 pb-4 pr-12">
           <DialogHeader>
-            <DialogTitle>保存到项目</DialogTitle>
+            <DialogTitle>{isGuestMode ? "请先登录" : "保存到项目"}</DialogTitle>
             <DialogDescription>
-              {isCloudMode
-                ? "将当前解析结果保存到你的云端账号。"
-                : "将当前解析结果保存在本浏览器（刷新后仍可见）。"}
+              {isGuestMode
+                ? "登录后可以创建项目，并把整理结果保存到项目中，方便长期回看和多设备同步。当前结果已保存在最近里。"
+                : isCloudMode
+                  ? "将当前笔记保存到项目，并同步到你的云端账号。"
+                  : "将当前笔记保存到项目。"}
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <div
-          className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-6 py-2 pb-4"
-          role="radiogroup"
-          aria-label="选择项目"
-        >
-          {renderProjectList()}
-        </div>
+        {!isGuestMode ? (
+          <div
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-6 py-2 pb-4"
+            role="radiogroup"
+            aria-label="选择项目"
+          >
+            {renderProjectList()}
+          </div>
+        ) : null}
 
         <DialogFooter className="!mx-0 !mb-0 mt-0 shrink-0 flex-row flex-wrap justify-end gap-3 border-t border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-4 sm:justify-end">
           <DialogClose
@@ -359,18 +391,30 @@ export function SaveToProjectDialog({
               />
             }
           >
-            取消
+            {isGuestMode ? "稍后再说" : "取消"}
           </DialogClose>
-          <Button
-            type="button"
-            variant="default"
-            size="action"
-            className="min-w-[88px]"
-            onClick={handleConfirm}
-            disabled={isActionDisabled}
-          >
-            {isSaving ? "保存中…" : "保存"}
-          </Button>
+          {isGuestMode ? (
+            <Button
+              type="button"
+              variant="default"
+              size="action"
+              className="min-w-[104px]"
+              onClick={handleGoLogin}
+            >
+              登录 / 注册
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="default"
+              size="action"
+              className="min-w-[88px]"
+              onClick={handleConfirm}
+              disabled={isActionDisabled}
+            >
+              {isSaving ? "保存中…" : "保存到项目"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

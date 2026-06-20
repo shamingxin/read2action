@@ -44,8 +44,8 @@ import { cn } from "@/lib/utils";
 const STEP_LABELS = [
   "读取内容",
   "提炼要点",
-  "结构化处理",
-  "生成结果",
+  "整理脉络",
+  "生成笔记",
 ] as const;
 
 type StepState = "done" | "current" | "upcoming";
@@ -254,7 +254,7 @@ export function ParsingPageView() {
         const msg =
           e instanceof AnalyzeClientError
             ? e.message
-            : "解析失败，请稍后重试。";
+            : "整理失败，请稍后重试。";
         queueMicrotask(() => {
           if (commitRef.current !== myCommit) return;
           pauseParsingTimeHint();
@@ -285,7 +285,7 @@ export function ParsingPageView() {
         queueMicrotask(() => {
           if (commitRef.current !== myCommit) return;
           setCanRetry(false);
-          setError("未找到待解析内容，请返回首页重新输入。");
+          setError("未找到待整理内容，请返回首页重新输入。");
         });
         return;
       }
@@ -412,7 +412,7 @@ export function ParsingPageView() {
         <header className="flex min-h-[62px] items-center justify-between gap-4">
           <div className="flex flex-col gap-2">
             <h1 className="font-heading text-[28px] font-semibold leading-tight text-[var(--r2a-ink)]">
-              正在为你解析内容…
+              正在为你整理内容…
             </h1>
             {timeHintVisible ? (
               <p className="text-[13.5px] font-normal leading-tight text-[var(--r2a-ink-muted)]">
@@ -429,7 +429,7 @@ export function ParsingPageView() {
               "transition-[background-color,color,transform] duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)] active:scale-[0.98]",
             )}
           >
-            取消解析
+            取消整理
           </button>
         </header>
 
@@ -471,7 +471,7 @@ export function ParsingPageView() {
 
         <nav
           className="flex flex-wrap items-center gap-4 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-5 py-4 shadow-[var(--r2a-shadow-soft)]"
-          aria-label="解析进度"
+          aria-label="整理进度"
         >
           {steps.map((step, index) => (
             <div key={step.id} className="contents">
@@ -518,17 +518,14 @@ export function ParsingPageView() {
 
         <section
           className={cn(
-            "flex w-full flex-col gap-4 bg-[var(--r2a-surface)]",
+            "flex w-full flex-col bg-[var(--r2a-surface)]",
             r2aCardRadius,
             r2aCardBorder,
             r2aCardShadow,
             "px-6 py-5",
           )}
-          aria-label="解析预览"
+          aria-label="整理预览"
         >
-          <p className="font-heading text-[11.5px] font-medium uppercase tracking-[0.16em] text-[var(--r2a-ink-muted)]">
-            Parsing Preview
-          </p>
           <div
             className={cn(
               "flex w-full max-w-[924px] flex-col gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)]",

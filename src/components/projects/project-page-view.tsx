@@ -2,21 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Folder, Plus } from "lucide-react";
+import { Folder } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Note, Project, SourceType } from "@/types";
 
-import { ModelSelect } from "@/components/ui/model-select";
 import { seedPendingAnalyzeSession } from "@/lib/analyze-client";
-import { DEFAULT_MODEL_VALUE } from "@/lib/model-options";
 import {
   r2aBtnPrimary,
   r2aCardBorder,
   r2aCardRadius,
   r2aCardShadow,
   r2aPageShell1020,
-  r2aPlusCircleButton,
 } from "@/lib/r2a-ui-classes";
 import {
   readAllLocalSavedNotes,
@@ -70,7 +67,6 @@ export function ProjectPageView({
 }) {
   const router = useRouter();
   const [quickInput, setQuickInput] = useState("");
-  const [model, setModel] = useState<string>(DEFAULT_MODEL_VALUE);
   const [mergedNotes, setMergedNotes] = useState<Note[]>(() =>
     sortNotesByUpdatedDesc(notes),
   );
@@ -94,7 +90,7 @@ export function ProjectPageView({
 
   const handleParse = useCallback(() => {
     if (!quickInput.trim()) {
-      toast.info("请输入内容后再解析");
+      toast.info("请输入内容后再整理");
       return;
     }
     seedPendingAnalyzeSession(quickInput, { projectId: project.id });
@@ -121,21 +117,14 @@ export function ProjectPageView({
             "flex w-full flex-col gap-3 rounded-[28px] bg-[var(--r2a-surface)] px-3 py-3 md:min-h-[64px] md:flex-row md:items-center md:gap-3 md:py-2 md:pl-3 md:pr-2",
             r2aCardBorder,
           )}
-          aria-label="项目内快速解析"
+          aria-label="项目内快速整理"
         >
-          <div className="flex min-h-10 min-w-0 flex-1 items-center gap-3">
-            <button
-              type="button"
-              className={r2aPlusCircleButton}
-              aria-label="更多输入方式（占位）"
-            >
-              <Plus className="size-4" strokeWidth={1.8} aria-hidden />
-            </button>
+          <div className="flex min-h-10 min-w-0 flex-1 items-center">
             <input
               type="text"
               value={quickInput}
               onChange={(e) => setQuickInput(e.target.value)}
-              placeholder="粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记"
+              placeholder="今天想整理点什么？"
               className={cn(
                 "min-w-0 flex-1 border-0 bg-transparent text-[15px] leading-relaxed text-[var(--r2a-ink)]",
                 "placeholder:text-[14px] placeholder:font-normal placeholder:text-[var(--r2a-ink-faint)]",
@@ -147,23 +136,19 @@ export function ProjectPageView({
             />
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end md:gap-2.5">
-            <ModelSelect
-              value={model}
-              onValueChange={setModel}
-              className="w-full max-w-none rounded-full shadow-none sm:w-auto sm:max-w-[168px]"
-            />
             <button
               type="button"
               aria-disabled={!canSubmit}
+              disabled={!canSubmit}
               onClick={handleParse}
               className={cn(
                 r2aBtnPrimary,
-                "w-full rounded-full px-5 shadow-none sm:w-[104px]",
+                "w-full rounded-full px-5 shadow-none sm:w-[128px]",
                 !canSubmit &&
                   "cursor-not-allowed !bg-[var(--r2a-hover)] !text-[var(--r2a-ink-faint)] !opacity-100 saturate-75 hover:!bg-[var(--r2a-hover)]",
               )}
             >
-              解析
+              开始整理
             </button>
           </div>
         </section>
@@ -171,7 +156,7 @@ export function ProjectPageView({
         <section className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <h2 className="font-heading text-[16px] font-medium text-[var(--r2a-ink)]">
-              解析
+              笔记
             </h2>
             <div
               className="h-px w-6 rounded-sm bg-[var(--r2a-hairline)]"
@@ -190,10 +175,10 @@ export function ProjectPageView({
             {mergedNotes.length === 0 ? (
               <div className="m-4 rounded-[var(--r2a-radius-lg)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-12 text-center">
                 <p className="font-heading text-[16px] font-medium text-[var(--r2a-ink)]">
-                  当前项目暂无解析记录
+                  当前项目暂无笔记
                 </p>
                 <p className="mx-auto mt-2 max-w-[360px] text-[13px] leading-relaxed text-[var(--r2a-ink-muted)]">
-                  在上方输入内容解析后，结构化笔记会安静地收在这里。
+                  在上方输入内容整理后，笔记会安静地收在这里。
                 </p>
               </div>
             ) : (
@@ -268,7 +253,7 @@ export function ProjectPageView({
             <span>
               {mergedNotes.length > 0
                 ? `显示 1–${mergedNotes.length} 条，共 ${mergedNotes.length} 条`
-                : "当前暂无解析记录"}
+                : "当前暂无笔记"}
             </span>
             <div className="flex items-center gap-2">
               <span className="rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2 py-1 text-[var(--r2a-ink)]">

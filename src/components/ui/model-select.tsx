@@ -42,7 +42,7 @@ export function ModelSelect({
     return (
       <span
         id={id}
-        aria-label={ariaLabel ?? "模型"}
+        aria-label={ariaLabel ?? "整理方式"}
         className={cn(triggerClass, "cursor-default", className)}
       >
         <span className="min-w-0 truncate">{MODEL_OPTIONS[0].label}</span>
@@ -55,7 +55,7 @@ export function ModelSelect({
       <DropdownMenuTrigger
         type="button"
         id={id}
-        aria-label={ariaLabel ?? "模型"}
+        aria-label={ariaLabel ?? "整理方式"}
         className={cn(triggerClass, className)}
       >
         <span className="min-w-0 truncate">{label}</span>

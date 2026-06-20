@@ -29,6 +29,12 @@ export class AnalyzeClientError extends Error {
 
 const DEFAULT_ANALYZE_TIMEOUT_MS = 30_000;
 
+function normalizeAnalyzeErrorMessage(message: string): string {
+  return message
+    .replaceAll("解析结果", "整理结果")
+    .replaceAll("解析", "整理");
+}
+
 /**
  * 从 sessionStorage 移除待解析正文。
  * 调用时机（与 `/parsing` 一致）：解析成功、已写入 `lastAnalyzeResult` 且准备 `push("/result")` **之前**清 pending；或用户点「取消解析」「返回首页」。不在 effect cleanup / fetch 发起前 / Abort 路径中调用。
@@ -227,7 +233,7 @@ export async function postAnalyze(
       if (userSig?.aborted) throw e;
       throw new AnalyzeClientError(
         "MODEL_TIMEOUT",
-        "解析超时，请稍后重试。",
+        "整理超时，请稍后重试。",
       );
     }
     throw new AnalyzeClientError(
@@ -266,8 +272,8 @@ export async function postAnalyze(
     const code = typeof err.code === "string" ? err.code : "INTERNAL_ERROR";
     const message =
       typeof err.message === "string" && err.message.trim()
-        ? err.message
-        : "解析失败，请稍后重试。";
+        ? normalizeAnalyzeErrorMessage(err.message)
+        : "整理失败，请稍后重试。";
     throw new AnalyzeClientError(code, message);
   }
 

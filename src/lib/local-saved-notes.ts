@@ -120,7 +120,7 @@ export function upgradeTemporaryNoteToSaved(
   }
   const existing = findLocalSavedNoteById(noteId);
   if (!existing) {
-    return { ok: false, reason: "未找到暂存记录，请重新解析后再保存。" };
+    return { ok: false, reason: "未找到暂存笔记，请重新整理后再保存。" };
   }
   const savedAtIso = new Date().toISOString();
   const upgraded: Note = {

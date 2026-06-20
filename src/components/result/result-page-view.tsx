@@ -26,6 +26,8 @@ import {
   findLocalSavedNoteById,
   resolveNoteSavedStatus,
 } from "@/lib/local-saved-notes";
+import { createClient } from "@/lib/supabase/client";
+import { getCurrentUser } from "@/lib/supabase/session";
 import type { ParseResultPreview } from "@/types";
 
 import {
@@ -47,6 +49,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type TabId = "summary" | "source";
+type ResultAuthMode = "idle" | "guest" | "cloud";
 
 function formatWordCount(n: number | undefined) {
   if (n == null) return "—";
@@ -58,6 +61,8 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   const [resultStatusHint, setResultStatusHint] = useState<
     "temporary" | "project-saved" | null
   >(null);
+  const [resultAuthMode, setResultAuthMode] =
+    useState<ResultAuthMode>("idle");
 
   useEffect(() => {
     if (data) {
@@ -91,6 +96,22 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
       setResultStatusHint(null);
     });
   }, [d]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const user = await getCurrentUser(createClient());
+        if (!cancelled) setResultAuthMode(user ? "cloud" : "guest");
+      } catch (err) {
+        console.error("[ResultPageView] getCurrentUser failed:", err);
+        if (!cancelled) setResultAuthMode("guest");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [tab, setTab] = useState<TabId>("summary");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -204,12 +225,14 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
           </div>
         </header>
 
-        {resultStatusHint === "temporary" ? (
+        {resultStatusHint === "temporary" && resultAuthMode !== "idle" ? (
           <p
             className="mb-1 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-hover)] px-4 py-2.5 text-[13px] font-normal text-[var(--r2a-ink-secondary)] shadow-[var(--r2a-shadow-soft)]"
             role="status"
           >
-            已自动暂存，可保存到项目归档
+            {resultAuthMode === "cloud"
+              ? "当前结果可保存到项目，便于后续回看和沉淀。"
+              : "未登录状态下，内容只会保存在当前浏览器。"}
           </p>
         ) : null}
         {resultStatusHint === "project-saved" ? (
@@ -217,12 +240,12 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
             className="mb-1 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-success-bg)] px-4 py-2.5 text-[13px] font-normal text-[var(--r2a-ink-secondary)] shadow-[var(--r2a-shadow-soft)]"
             role="status"
           >
-            已保存到项目
+            当前结果已保存到项目，便于后续回看和沉淀。
           </p>
         ) : null}
 
         <div className={cn("flex flex-col", r2aPageSectionStackGap)}>
-          <div className={r2aTabListRow} role="tablist" aria-label="解析结果视图">
+          <div className={r2aTabListRow} role="tablist" aria-label="笔记视图">
             <button
               type="button"
               role="tab"
@@ -325,7 +348,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
                 </>
               ) : (
                 <p className="text-[14px] leading-relaxed text-[var(--r2a-ink-muted)]">
-                  原文对照内容占位。下一阶段可在此展示解析来源全文或粘贴原文。
+                  原文对照内容占位。下一阶段可在此展示整理来源全文或粘贴原文。
                 </p>
               )}
             </section>
@@ -336,6 +359,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
           key={saveDialogResetKey}
           open={saveDialogOpen}
           onOpenChange={setSaveDialogOpen}
+          initialAuthMode={resultAuthMode}
         />
       </div>
     </div>

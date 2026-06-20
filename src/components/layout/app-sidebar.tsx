@@ -159,12 +159,10 @@ export function AppSidebar() {
   }
 
   const newEntry = mockProjects.find((p) => p.id === NEW_PROJECT_ENTRY_ID);
-  const mockLinkProjects = mockProjects.filter(
-    (p) => p.id !== NEW_PROJECT_ENTRY_ID,
-  );
   const isProjectsLoading =
     !authReady || (authUser !== null && cloudProjects === null);
-  const linkProjects = authUser ? (cloudProjects ?? []) : mockLinkProjects;
+  const isGuestReady = authReady && authUser === null;
+  const linkProjects = authUser ? (cloudProjects ?? []) : [];
 
   return (
     <aside className="sticky top-0 flex h-screen w-[240px] shrink-0 flex-col border-r border-[var(--r2a-hairline)] bg-[var(--r2a-sidebar-bg)]">
@@ -191,14 +189,20 @@ export function AppSidebar() {
         </Link>
 
         <div>
-          <div className="mb-1 px-2 font-heading text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--r2a-ink-muted)]">
+          <label
+            htmlFor="sidebar-search"
+            className="sr-only"
+          >
             搜索
-          </div>
+          </label>
           <div className="flex h-9 items-center gap-2 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2.5 text-[13px] text-[var(--r2a-ink-secondary)]">
-            <span className="flex-1 truncate">搜索</span>
-            <span className="rounded-[var(--r2a-radius-sm)] bg-[var(--r2a-canvas-soft)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--r2a-ink-muted)]">
-              ⌘K
-            </span>
+            <input
+              id="sidebar-search"
+              type="text"
+              readOnly
+              placeholder="搜索 ⌘K"
+              className="min-w-0 flex-1 cursor-default border-0 bg-transparent p-0 text-[13px] text-[var(--r2a-ink-secondary)] placeholder:text-[var(--r2a-ink-secondary)] outline-none"
+            />
           </div>
         </div>
 
@@ -207,7 +211,7 @@ export function AppSidebar() {
             项目
           </div>
           <nav className="flex flex-col gap-px">
-            {newEntry ? (
+            {authUser && newEntry ? (
               <button
                 key="add-project-entry"
                 type="button"
@@ -217,7 +221,7 @@ export function AppSidebar() {
                 )}
               >
                 <span className="size-1 rounded-full bg-[var(--r2a-ink-faint)]" aria-hidden />
-                <span className="truncate">新增项目</span>
+                <span className="truncate">新建项目</span>
               </button>
             ) : null}
             {isProjectsLoading ? (
@@ -225,7 +229,32 @@ export function AppSidebar() {
                 正在加载云端项目…
               </div>
             ) : null}
-            {!isProjectsLoading
+            {isGuestReady ? (
+              <div className="mt-1 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-3 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
+                <p className="font-medium text-[var(--r2a-ink-secondary)]">
+                  登录后可创建项目，并在不同设备间同步你的整理结果。
+                </p>
+                <p className="mt-1">
+                  当前未登录，内容仅保存在本浏览器。
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="font-medium text-[var(--r2a-primary)] transition-colors duration-150 ease-out hover:text-[var(--r2a-primary-active)]"
+                  >
+                    登录
+                  </Link>
+                  <span aria-hidden>·</span>
+                  <Link
+                    href="/signup"
+                    className="font-medium text-[var(--r2a-primary)] transition-colors duration-150 ease-out hover:text-[var(--r2a-primary-active)]"
+                  >
+                    注册
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+            {!isProjectsLoading && authUser
               ? linkProjects.map((p) => {
               const projectHref = `/projects/${p.id}`;
               const isProjectActive =
@@ -310,7 +339,7 @@ export function AppSidebar() {
               );
             })
               : null}
-            {!isProjectsLoading && linkProjects.length === 0 ? (
+            {!isProjectsLoading && authUser && linkProjects.length === 0 ? (
               <div className="mt-1 rounded-[var(--r2a-radius-md)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)]">
                 暂无云端项目。
               </div>
@@ -324,7 +353,10 @@ export function AppSidebar() {
           </div>
           {recentNotes.length === 0 ? (
             <div className="rounded-[var(--r2a-radius-md)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2.5 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
-              当前还没有解析记录。
+              <p className="font-medium text-[var(--r2a-ink-secondary)]">
+                还没有整理记录
+              </p>
+              <p className="mt-1">粘贴一段内容，开始整理你的思考。</p>
             </div>
           ) : (
             <nav className="flex flex-col gap-px">

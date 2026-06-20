@@ -2,12 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-import { ModelSelect } from "@/components/ui/model-select";
 import { seedPendingAnalyzeSession } from "@/lib/analyze-client";
-import { DEFAULT_MODEL_VALUE } from "@/lib/model-options";
 import {
   r2aBtnPrimary,
   r2aCardBorder,
@@ -15,28 +12,26 @@ import {
   r2aCardShadow,
   r2aHomeInnerColumn,
   r2aPageShell1020,
-  r2aPlusCircleButton,
 } from "@/lib/r2a-ui-classes";
 import { cn } from "@/lib/utils";
 
 /** 与 Figma「Frame 3 / FeatureGrid」文案一致 */
 const featureItems = [
-  { title: "一句话总结", description: "快速把握核心要点" },
-  { title: "核心观点提炼", description: "提炼关键信息与洞见" },
-  { title: "行动清单", description: "明确下一步行动" },
-  { title: "知识卡片", description: "结构化沉淀知识" },
+  { title: "一句话总结", description: "30 秒看懂这段说了什么" },
+  { title: "核心观点", description: "先结论后理由，帮你抓住重点" },
+  { title: "行动清单", description: "可以试的、可以做的，轻轻放在一边" },
+  { title: "知识卡片", description: "单独成块，方便以后翻和回顾" },
 ] as const;
 
 export function HomeNotePanel() {
   const router = useRouter();
   const [value, setValue] = useState("");
-  const [model, setModel] = useState<string>(DEFAULT_MODEL_VALUE);
 
   const canSubmit = value.trim().length > 0;
 
   const handleStart = useCallback(() => {
     if (!value.trim()) {
-      toast.info("请输入内容后再解析");
+      toast.info("请输入内容后再整理");
       return;
     }
     seedPendingAnalyzeSession(value);
@@ -49,10 +44,10 @@ export function HomeNotePanel() {
         <div className={cn(r2aHomeInnerColumn, "flex-1")}>
           <header className="flex flex-col gap-4">
             <h1 className="font-heading text-[32px] font-semibold leading-[1.35] text-[var(--r2a-ink)]">
-              今日事，我来帮。
+              你的思考，值得被整理
             </h1>
-            <p className="max-w-[384px] text-[15px] font-normal leading-relaxed text-[var(--r2a-ink-secondary)]">
-              粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记
+            <p className="max-w-none text-[15px] font-normal leading-relaxed text-[var(--r2a-ink-secondary)] md:whitespace-nowrap">
+              粘贴一段文字，或随手记下一个想法，我会帮你整理成清晰的笔记。
             </p>
           </header>
 
@@ -66,14 +61,14 @@ export function HomeNotePanel() {
             aria-label="新笔记输入"
           >
             <label htmlFor="note-input" className="sr-only">
-              笔记内容
+              今天想整理点什么？
             </label>
             <div className="flex flex-col px-5 pt-5">
               <textarea
                 id="note-input"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder="粘贴文本、链接或你的想法，让 AI 帮你整理成结构化笔记"
+                placeholder="今天想整理点什么？"
                 className={cn(
                   "min-h-[332px] w-full resize-none border-0 bg-transparent p-0",
                   "text-[15px] leading-relaxed text-[var(--r2a-ink)]",
@@ -86,39 +81,21 @@ export function HomeNotePanel() {
               />
             </div>
 
-            <div className="flex min-h-[68px] shrink-0 items-center justify-between border-t border-[var(--r2a-hairline-soft)] px-4 py-2">
-              <button
-                type="button"
-                className={r2aPlusCircleButton}
-                aria-label="更多输入方式（占位）"
-                onClick={() => toast.info("添加附件功能暂未开放")}
-              >
-                <Plus className="size-4" strokeWidth={1.8} aria-hidden />
-              </button>
-
-              <div className="flex min-w-0 flex-1 items-center justify-end gap-3 pl-3">
-                <ModelSelect value={model} onValueChange={setModel} />
-
+            <div className="flex min-h-[68px] shrink-0 items-center justify-end px-4 py-2">
                 <button
                   type="button"
                   aria-disabled={!canSubmit}
+                  disabled={!canSubmit}
                   onClick={handleStart}
                   className={cn(
                     r2aBtnPrimary,
-                    "gap-2",
                     "w-full max-w-[228px] sm:w-[228px]",
                     !canSubmit &&
                       "cursor-not-allowed opacity-40 saturate-75 hover:bg-[var(--r2a-ink)] hover:opacity-40",
                   )}
                 >
-                  <Sparkles
-                    className="size-[18px] shrink-0 text-current"
-                    strokeWidth={1.75}
-                    aria-hidden
-                  />
-                  开始解析
+                  开始整理
                 </button>
-              </div>
             </div>
           </section>
 
@@ -138,7 +115,7 @@ export function HomeNotePanel() {
                 <li
                   key={title}
                   className={cn(
-                    "flex flex-col gap-2 bg-[var(--r2a-canvas-soft)] px-4 py-3 transition-colors duration-150 ease-out hover:border-[var(--r2a-ink-faint)] hover:bg-[var(--r2a-hover)]",
+                    "flex flex-col gap-2 bg-[var(--r2a-canvas-soft)] px-4 py-3",
                     r2aCardRadius,
                     r2aCardBorder,
                   )}

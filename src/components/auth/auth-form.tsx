@@ -178,7 +178,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       {errorMessage ? (
         <p
-          className="rounded-[var(--r2a-radius-sm)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2 text-[13px] leading-relaxed text-[var(--r2a-error)]"
+          className="text-[13px] leading-relaxed text-[var(--r2a-error)]"
           role="alert"
         >
           {errorMessage}
