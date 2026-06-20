@@ -273,7 +273,7 @@ export function SaveToProjectDialog({
         toast.error(
           err instanceof Error
             ? `保存失败：${err.message}`
-            : "保存时发生未知错误，请重试。",
+            : "保存失败，请稍后重试。",
         );
       } finally {
         setIsSaving(false);
@@ -361,7 +361,7 @@ export function SaveToProjectDialog({
       return (
         <div className="flex items-center justify-between gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
           <span className="text-[13px] text-[var(--r2a-ink-muted)]">
-            项目加载失败，请稍后重试
+            项目加载失败，请稍后重试。
           </span>
           <Button
             type="button"

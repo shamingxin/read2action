@@ -252,7 +252,7 @@ export async function postAnalyze(
   } catch {
     throw new AnalyzeClientError(
       "INTERNAL_ERROR",
-      "响应格式异常，请重试。",
+      "整理失败，请稍后重试。",
     );
   }
 

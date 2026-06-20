@@ -92,7 +92,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       router.push("/");
       router.refresh();
     } catch {
-      setErrorMessage("网络异常，请稍后重试");
+      setErrorMessage("网络异常，请稍后重试。");
     } finally {
       setIsSubmitting(false);
     }

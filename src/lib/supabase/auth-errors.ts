@@ -1,7 +1,7 @@
 import type { AuthError } from "@supabase/supabase-js";
 
 export function getAuthErrorMessage(error: AuthError | null): string {
-  if (!error) return "操作失败，请稍后重试";
+  if (!error) return "操作失败，请稍后重试。";
 
   const message = error.message.toLowerCase();
 
@@ -27,5 +27,5 @@ export function getAuthErrorMessage(error: AuthError | null): string {
     return "操作过于频繁，请稍后再试";
   }
 
-  return "操作失败，请稍后重试";
+  return "操作失败，请稍后重试。";
 }

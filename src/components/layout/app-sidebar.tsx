@@ -448,7 +448,7 @@ export function AppSidebar() {
           {recentNotes.length === 0 ? (
             <div className="rounded-[var(--r2a-radius-md)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2.5 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
               <p className="font-medium text-[var(--r2a-ink-secondary)]">
-                还没有笔记
+                暂无笔记
               </p>
               <p className="mt-1">粘贴一段内容，开始整理你的思考。</p>
             </div>
