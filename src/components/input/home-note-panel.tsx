@@ -17,10 +17,10 @@ import { cn } from "@/lib/utils";
 
 /** 与 Figma「Frame 3 / FeatureGrid」文案一致 */
 const featureItems = [
-  { title: "一句话总结", description: "30 秒看懂这段说了什么" },
-  { title: "核心观点", description: "先结论后理由，帮你抓住重点" },
-  { title: "行动清单", description: "可以试的、可以做的，轻轻放在一边" },
-  { title: "知识卡片", description: "单独成块，方便以后翻和回顾" },
+  { title: "核心观点", description: "提炼内容里的关键判断，帮你快速抓住重点。" },
+  { title: "行动清单", description: "把值得执行的想法整理成清晰的下一步。" },
+  { title: "知识卡片", description: "沉淀可复用的概念、方法和启发。" },
+  { title: "保存到项目", description: "把整理结果归档到项目里，方便后续回看。" },
 ] as const;
 
 export function HomeNotePanel() {
