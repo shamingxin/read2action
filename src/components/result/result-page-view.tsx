@@ -67,8 +67,32 @@ function readResultStatusHint(): ResultStatusHint {
   return null;
 }
 
+function ResultPageLoadingState() {
+  return (
+    <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
+      <div className={r2aContentPageShell}>
+        <section
+          className={cn(
+            r2aPlainWhitePanel,
+            "flex min-h-[220px] flex-col justify-center gap-3 px-6 py-8",
+          )}
+          role="status"
+          aria-live="polite"
+        >
+          <p className="font-heading text-[20px] font-semibold leading-tight text-[var(--r2a-ink)]">
+            正在整理结果
+          </p>
+          <p className="max-w-[520px] text-[13.5px] leading-relaxed text-[var(--r2a-ink-muted)]">
+            正在读取本次整理内容，请稍候。
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export function ResultPageView({ data }: { data?: ParseResultPreview }) {
-  const [d, setD] = useState<ParseResultPreview>(() => data ?? mockParseResult);
+  const [d, setD] = useState<ParseResultPreview | null>(() => data ?? null);
   const [resultStatusHint, setResultStatusHint] =
     useState<ResultStatusHint>(readResultStatusHint);
   const [resultAuthMode, setResultAuthMode] =
@@ -80,10 +104,11 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
       return;
     }
     const fromSession = readLastAnalyzeResultFromSession();
-    if (fromSession) queueMicrotask(() => setD(fromSession));
+    queueMicrotask(() => setD(fromSession ?? mockParseResult));
   }, [data]);
 
   useEffect(() => {
+    if (!d) return;
     queueMicrotask(() => setResultStatusHint(readResultStatusHint()));
   }, [d]);
 
@@ -109,11 +134,12 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   const saveDialogConfirmRequestedRef = useRef(false);
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
-      (data ?? mockParseResult).actionItems.map((a) => [a.id, a.isDone]),
+      (data?.actionItems ?? []).map((a) => [a.id, a.isDone]),
     ),
   );
 
   useEffect(() => {
+    if (!d) return;
     queueMicrotask(() => {
       setChecks(
         Object.fromEntries(d.actionItems.map((a) => [a.id, a.isDone])),
@@ -121,23 +147,26 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
     });
   }, [d]);
 
+  const viewData = d ?? mockParseResult;
+
   const doneCount = useMemo(
-    () => d.actionItems.filter((a) => checks[a.id]).length,
-    [d.actionItems, checks],
+    () => viewData.actionItems.filter((a) => checks[a.id]).length,
+    [viewData.actionItems, checks],
   );
 
   const metaLine = useMemo(() => {
-    const src = d.sourceName ?? d.sourceLabel.replace(/^来源[：:]\s*/, "");
+    const src =
+      viewData.sourceName ?? viewData.sourceLabel.replace(/^来源[：:]\s*/, "");
     const tagPart =
-      d.tags && d.tags.length
-        ? `标签：${d.tags.join(" · ")}`
+      viewData.tags && viewData.tags.length
+        ? `标签：${viewData.tags.join(" · ")}`
         : "标签：—";
-    const datePart = d.createdAtDisplay
-      ? `创建时间：${d.createdAtDisplay}`
+    const datePart = viewData.createdAtDisplay
+      ? `创建时间：${viewData.createdAtDisplay}`
       : "创建时间：—";
-    const wc = `字数：${formatWordCount(d.wordCount)}`;
+    const wc = `字数：${formatWordCount(viewData.wordCount)}`;
     return `来源：${src}     ${tagPart}     ${datePart}     ${wc}`;
-  }, [d]);
+  }, [viewData]);
 
   const toggleCheck = (id: string) => {
     setChecks((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -185,13 +214,17 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
     });
   };
 
+  if (!d) {
+    return <ResultPageLoadingState />;
+  }
+
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aContentPageShell}>
         <header className={r2aContentPageHeaderRow}>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <h1 className="font-heading text-[28px] font-semibold leading-[1.3] text-[var(--r2a-ink)]">
-              {d.title}
+              {viewData.title}
             </h1>
             <p className="text-[12px] font-normal leading-relaxed text-[var(--r2a-ink-muted)]">
               {metaLine}
@@ -320,14 +353,14 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
             <div className={cn("flex flex-col", r2aPageSectionStackGap)}>
               <NoteSectionCard title="一句话总结">
                 <p className="font-heading max-w-[770px] text-[17px] font-medium leading-[1.85] text-[var(--r2a-ink)]">
-                  {d.summary}
+                  {viewData.summary}
                 </p>
               </NoteSectionCard>
 
-              <KeyInsightsSection insights={d.keyInsights} />
+              <KeyInsightsSection insights={viewData.keyInsights} />
 
               <ActionChecklistSection
-                items={d.actionItems}
+                items={viewData.actionItems}
                 checks={checks}
                 doneCount={doneCount}
                 onToggle={toggleCheck}
@@ -335,7 +368,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
 
               <KnowledgeCardsSection
                 title="知识卡片（自动生成）"
-                cards={d.knowledgeCards}
+                cards={viewData.knowledgeCards}
                 footerSlot={
                   <button
                     type="button"
@@ -358,14 +391,14 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
               aria-label="原文对照"
               role="tabpanel"
             >
-              {d.rawContent?.trim() ? (
+              {viewData.rawContent?.trim() ? (
                 <>
                   <h2 className="font-heading text-base font-semibold text-[var(--r2a-ink)]">
                     原始内容
                   </h2>
                   <div className="max-h-[min(400px,55vh)] min-h-[120px] overflow-y-auto pr-1">
                     <p className="whitespace-pre-wrap text-[14px] font-normal leading-6 text-[var(--r2a-ink-secondary)]">
-                      {d.rawContent}
+                      {viewData.rawContent}
                     </p>
                   </div>
                 </>
