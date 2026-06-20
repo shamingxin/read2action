@@ -415,11 +415,6 @@ export function AppSidebar() {
                     </div>
                     <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem
-                        onClick={() => toast.info("分享功能暂未开放")}
-                      >
-                        分享
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
                         onClick={() =>
                           toast.info("重命名项目功能暂未开放")
                         }
