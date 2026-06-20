@@ -12,7 +12,10 @@ import {
   KnowledgeCardsSection,
   NoteSectionCard,
 } from "@/components/shared/note-content-sections";
-import { resolveNoteSavedStatus } from "@/lib/local-saved-notes";
+import {
+  R2A_TEMPORARY_PROJECT_ID,
+  resolveNoteSavedStatus,
+} from "@/lib/local-saved-notes";
 import type { Note } from "@/types";
 
 import {
@@ -78,6 +81,7 @@ export function NoteDetailView({
     Object.fromEntries(note.actionItems.map((a) => [a.id, a.isDone])),
   );
   const isTemporaryNote = resolveNoteSavedStatus(note) === "temporary";
+  const shouldShowProjectBreadcrumb = projectId !== R2A_TEMPORARY_PROJECT_ID;
 
   const doneCount = useMemo(
     () => note.actionItems.filter((a) => checks[a.id]).length,
@@ -100,7 +104,7 @@ export function NoteDetailView({
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aContentPageShell}>
-        {!isTemporaryNote ? (
+        {shouldShowProjectBreadcrumb ? (
           <nav
             className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-[var(--r2a-ink-muted)]"
             aria-label="面包屑"
@@ -281,9 +285,6 @@ export function NoteDetailView({
               <h2 className="font-heading text-[13px] font-medium text-[var(--r2a-ink-muted)]">
                 原始内容
               </h2>
-              <p className="text-[13.5px] font-normal leading-relaxed text-[var(--r2a-ink-muted)]">
-                以下内容为原始输入内容，便于与 AI 总结结果对照查看。
-              </p>
               <div className="max-h-[min(400px,55vh)] min-h-[120px] overflow-y-auto pr-1">
                 <p className="whitespace-pre-wrap text-[14px] font-normal leading-[1.8] text-[var(--r2a-ink-secondary)]">
                   {note.rawContent}

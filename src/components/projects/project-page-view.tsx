@@ -114,7 +114,7 @@ export function ProjectPageView({
 
         <section
           className={cn(
-            "flex w-full flex-col gap-3 rounded-[28px] bg-[var(--r2a-surface)] px-3 py-3 md:min-h-[64px] md:flex-row md:items-center md:gap-3 md:py-2 md:pl-3 md:pr-2",
+            "flex w-full flex-col gap-3 rounded-full bg-[var(--r2a-surface)] px-5 py-3 md:min-h-[64px] md:flex-row md:items-center md:gap-3 md:py-2",
             r2aCardBorder,
           )}
           aria-label="项目内快速整理"
@@ -174,11 +174,8 @@ export function ProjectPageView({
           >
             {mergedNotes.length === 0 ? (
               <div className="m-4 rounded-[var(--r2a-radius-lg)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-12 text-center">
-                <p className="font-heading text-[16px] font-medium text-[var(--r2a-ink)]">
+                <p className="text-[15px] font-medium text-[var(--r2a-ink-muted)]">
                   当前项目暂无笔记
-                </p>
-                <p className="mx-auto mt-2 max-w-[360px] text-[13px] leading-relaxed text-[var(--r2a-ink-muted)]">
-                  在上方输入内容整理后，笔记会安静地收在这里。
                 </p>
               </div>
             ) : (
@@ -249,20 +246,20 @@ export function ProjectPageView({
             )}
           </div>
 
-          <footer className="flex flex-col gap-2 text-[12px] text-[var(--r2a-ink-muted)] sm:flex-row sm:items-center sm:justify-between">
-            <span>
-              {mergedNotes.length > 0
-                ? `显示 1–${mergedNotes.length} 条，共 ${mergedNotes.length} 条`
-                : "当前暂无笔记"}
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2 py-1 text-[var(--r2a-ink)]">
-                1
+          {mergedNotes.length > 0 ? (
+            <footer className="flex flex-col gap-2 text-[12px] text-[var(--r2a-ink-muted)] sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                {`显示 1–${mergedNotes.length} 条，共 ${mergedNotes.length} 条`}
               </span>
-              <span className="text-[var(--r2a-ink-faint)]">/</span>
-              <span>1</span>
-            </div>
-          </footer>
+              <div className="flex items-center gap-2">
+                <span className="rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2 py-1 text-[var(--r2a-ink)]">
+                  1
+                </span>
+                <span className="text-[var(--r2a-ink-faint)]">/</span>
+                <span>1</span>
+              </div>
+            </footer>
+          ) : null}
         </section>
       </div>
     </div>

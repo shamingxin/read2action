@@ -1,7 +1,7 @@
 "use client";
 
 import { Download, Link2, Pencil, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { SaveToProjectDialog } from "./save-to-project-dialog";
@@ -50,17 +50,27 @@ import { cn } from "@/lib/utils";
 
 type TabId = "summary" | "source";
 type ResultAuthMode = "idle" | "guest" | "cloud";
+type ResultStatusHint = "temporary" | "project-saved" | null;
 
 function formatWordCount(n: number | undefined) {
   if (n == null) return "—";
   return n.toLocaleString("zh-CN");
 }
 
+function readResultStatusHint(): ResultStatusHint {
+  const noteId = readLastAnalyzeNoteIdFromSession();
+  if (!noteId) return null;
+  const note = findLocalSavedNoteById(noteId);
+  if (note == null) return null;
+  if (resolveNoteSavedStatus(note) === "temporary") return "temporary";
+  if (note.sourceContext === "project") return "project-saved";
+  return null;
+}
+
 export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   const [d, setD] = useState<ParseResultPreview>(() => data ?? mockParseResult);
-  const [resultStatusHint, setResultStatusHint] = useState<
-    "temporary" | "project-saved" | null
-  >(null);
+  const [resultStatusHint, setResultStatusHint] =
+    useState<ResultStatusHint>(readResultStatusHint);
   const [resultAuthMode, setResultAuthMode] =
     useState<ResultAuthMode>("idle");
 
@@ -74,27 +84,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   }, [data]);
 
   useEffect(() => {
-    const noteId = readLastAnalyzeNoteIdFromSession();
-    if (!noteId) {
-      queueMicrotask(() => setResultStatusHint(null));
-      return;
-    }
-    const note = findLocalSavedNoteById(noteId);
-    queueMicrotask(() => {
-      if (note == null) {
-        setResultStatusHint(null);
-        return;
-      }
-      if (resolveNoteSavedStatus(note) === "temporary") {
-        setResultStatusHint("temporary");
-        return;
-      }
-      if (note.sourceContext === "project") {
-        setResultStatusHint("project-saved");
-        return;
-      }
-      setResultStatusHint(null);
-    });
+    queueMicrotask(() => setResultStatusHint(readResultStatusHint()));
   }, [d]);
 
   useEffect(() => {
@@ -116,6 +106,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
   const [tab, setTab] = useState<TabId>("summary");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogResetKey, setSaveDialogResetKey] = useState(0);
+  const saveDialogConfirmRequestedRef = useRef(false);
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
       (data ?? mockParseResult).actionItems.map((a) => [a.id, a.isDone]),
@@ -152,6 +143,48 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
     setChecks((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  useEffect(() => {
+    if (!saveDialogOpen) return;
+
+    const syncLastDialogButtonClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest("button");
+      if (!button?.closest('[role="dialog"]')) return;
+      saveDialogConfirmRequestedRef.current =
+        button.textContent?.trim() === "保存到项目";
+    };
+
+    document.addEventListener("click", syncLastDialogButtonClick, true);
+    return () => {
+      document.removeEventListener("click", syncLastDialogButtonClick, true);
+    };
+  }, [saveDialogOpen]);
+
+  const handleSaveDialogOpenChange = (open: boolean) => {
+    if (open) {
+      saveDialogConfirmRequestedRef.current = false;
+      setSaveDialogOpen(true);
+      return;
+    }
+
+    setSaveDialogOpen(false);
+    queueMicrotask(() => {
+      const nextStatus = readResultStatusHint();
+      if (
+        nextStatus === "project-saved" ||
+        (saveDialogConfirmRequestedRef.current &&
+          resultAuthMode === "cloud" &&
+          resultStatusHint === "temporary")
+      ) {
+        setResultStatusHint("project-saved");
+      } else {
+        setResultStatusHint(nextStatus);
+      }
+      saveDialogConfirmRequestedRef.current = false;
+    });
+  };
+
   return (
     <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aContentPageShell}>
@@ -181,16 +214,18 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
               <Download className="size-5 shrink-0 text-current" aria-hidden />
               导出
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSaveDialogResetKey((k) => k + 1);
-                setSaveDialogOpen(true);
-              }}
-              className={r2aBtnPrimary}
-            >
-              保存到项目
-            </button>
+            {resultStatusHint !== "project-saved" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSaveDialogResetKey((k) => k + 1);
+                  setSaveDialogOpen(true);
+                }}
+                className={r2aBtnPrimary}
+              >
+                保存到项目
+              </button>
+            ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger
                 type="button"
@@ -235,15 +270,6 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
               : "未登录状态下，内容只会保存在当前浏览器。"}
           </p>
         ) : null}
-        {resultStatusHint === "project-saved" ? (
-          <p
-            className="mb-1 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-success-bg)] px-4 py-2.5 text-[13px] font-normal text-[var(--r2a-ink-secondary)] shadow-[var(--r2a-shadow-soft)]"
-            role="status"
-          >
-            当前结果已保存到项目，便于后续回看和沉淀。
-          </p>
-        ) : null}
-
         <div className={cn("flex flex-col", r2aPageSectionStackGap)}>
           <div className={r2aTabListRow} role="tablist" aria-label="笔记视图">
             <button
@@ -337,9 +363,6 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
                   <h2 className="font-heading text-base font-semibold text-[var(--r2a-ink)]">
                     原始内容
                   </h2>
-                  <p className="text-[13px] font-normal leading-normal text-[var(--r2a-ink-muted)]">
-                    以下内容为原始输入内容，便于与 AI 总结结果对照查看。
-                  </p>
                   <div className="max-h-[min(400px,55vh)] min-h-[120px] overflow-y-auto pr-1">
                     <p className="whitespace-pre-wrap text-[14px] font-normal leading-6 text-[var(--r2a-ink-secondary)]">
                       {d.rawContent}
@@ -358,7 +381,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
         <SaveToProjectDialog
           key={saveDialogResetKey}
           open={saveDialogOpen}
-          onOpenChange={setSaveDialogOpen}
+          onOpenChange={handleSaveDialogOpenChange}
           initialAuthMode={resultAuthMode}
         />
       </div>
