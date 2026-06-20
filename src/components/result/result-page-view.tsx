@@ -24,6 +24,7 @@ import {
 } from "@/lib/analyze-client";
 import {
   findLocalSavedNoteById,
+  readAllLocalSavedNotes,
   resolveNoteSavedStatus,
 } from "@/lib/local-saved-notes";
 import { createClient } from "@/lib/supabase/client";
@@ -57,14 +58,44 @@ function formatWordCount(n: number | undefined) {
   return n.toLocaleString("zh-CN");
 }
 
-function readResultStatusHint(): ResultStatusHint {
-  const noteId = readLastAnalyzeNoteIdFromSession();
-  if (!noteId) return null;
-  const note = findLocalSavedNoteById(noteId);
+function matchesCurrentResult(
+  note: ReturnType<typeof readAllLocalSavedNotes>[number],
+  result: ParseResultPreview,
+): boolean {
+  const resultTitle = result.title.trim();
+  const resultSummary = result.summary.trim();
+  return (
+    resultTitle.length > 0 &&
+    resultSummary.length > 0 &&
+    note.title.trim() === resultTitle &&
+    note.summary.trim() === resultSummary
+  );
+}
+
+function noteToResultStatusHint(
+  note: ReturnType<typeof readAllLocalSavedNotes>[number] | undefined,
+): ResultStatusHint {
   if (note == null) return null;
-  if (resolveNoteSavedStatus(note) === "temporary") return "temporary";
-  if (note.sourceContext === "project") return "project-saved";
-  return null;
+  return resolveNoteSavedStatus(note) === "temporary"
+    ? "temporary"
+    : "project-saved";
+}
+
+function readResultStatusHint(result?: ParseResultPreview | null): ResultStatusHint {
+  const noteId = readLastAnalyzeNoteIdFromSession();
+  if (noteId) {
+    const fromSessionNote = noteToResultStatusHint(findLocalSavedNoteById(noteId));
+    if (fromSessionNote != null) return fromSessionNote;
+  }
+
+  if (!result) return null;
+  const matchingNote = readAllLocalSavedNotes()
+    .filter((note) => matchesCurrentResult(note, result))
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )[0];
+  return noteToResultStatusHint(matchingNote);
 }
 
 function ResultPageLoadingState() {
@@ -109,7 +140,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
 
   useEffect(() => {
     if (!d) return;
-    queueMicrotask(() => setResultStatusHint(readResultStatusHint()));
+    queueMicrotask(() => setResultStatusHint(readResultStatusHint(d)));
   }, [d]);
 
   useEffect(() => {
@@ -199,7 +230,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
 
     setSaveDialogOpen(false);
     queueMicrotask(() => {
-      const nextStatus = readResultStatusHint();
+      const nextStatus = readResultStatusHint(d);
       if (
         nextStatus === "project-saved" ||
         (saveDialogConfirmRequestedRef.current &&

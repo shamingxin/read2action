@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Download, Link2, Pencil, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { SaveToProjectDialog } from "@/components/result/save-to-project-dialog";
@@ -13,6 +13,8 @@ import {
   NoteSectionCard,
 } from "@/components/shared/note-content-sections";
 import {
+  findLocalSavedNoteById,
+  R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
   R2A_TEMPORARY_PROJECT_ID,
   resolveNoteSavedStatus,
 } from "@/lib/local-saved-notes";
@@ -77,11 +79,42 @@ export function NoteDetailView({
 }) {
   const [tab, setTab] = useState<TabId>("summary");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [localSavedStatus, setLocalSavedStatus] = useState<{
+    noteId: string;
+    status: ReturnType<typeof resolveNoteSavedStatus>;
+  } | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(note.actionItems.map((a) => [a.id, a.isDone])),
   );
-  const isTemporaryNote = resolveNoteSavedStatus(note) === "temporary";
+  const savedStatus =
+    localSavedStatus?.noteId === note.id
+      ? localSavedStatus.status
+      : resolveNoteSavedStatus(note);
+  const isTemporaryNote = savedStatus === "temporary";
   const shouldShowProjectBreadcrumb = projectId !== R2A_TEMPORARY_PROJECT_ID;
+
+  useEffect(() => {
+    const syncSavedStatus = () => {
+      const localNote = findLocalSavedNoteById(note.id);
+      if (localNote) {
+        setLocalSavedStatus({
+          noteId: note.id,
+          status: resolveNoteSavedStatus(localNote),
+        });
+      }
+    };
+
+    window.addEventListener(
+      R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
+      syncSavedStatus,
+    );
+    return () => {
+      window.removeEventListener(
+        R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
+        syncSavedStatus,
+      );
+    };
+  }, [note.id]);
 
   const doneCount = useMemo(
     () => note.actionItems.filter((a) => checks[a.id]).length,

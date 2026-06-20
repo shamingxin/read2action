@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { mockProjects } from "@/data/projects.mock";
 import {
   readLastAnalyzeNoteIdFromSession,
   readLastAnalyzeResultFromSession,
@@ -31,7 +30,6 @@ import { buildNoteFromLastAnalyze } from "@/lib/note-from-last-analyze";
 import { createClient } from "@/lib/supabase/client";
 import { insertNote, isDataError } from "@/lib/supabase/notes";
 import { ensureDefaultProject, listProjects } from "@/lib/supabase/projects";
-import { getCurrentUser } from "@/lib/supabase/session";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types";
 
@@ -42,6 +40,8 @@ type Props = {
   /** 详情页传入：按 localStorage 中的 noteId 升级暂存记录 */
   noteId?: string;
 };
+
+const PROJECT_LOAD_TIMEOUT_MS = 9000;
 
 function newNoteId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -62,6 +62,8 @@ export function SaveToProjectDialog({
 
   // 登录态云端项目列表；null = 游客 / 未登录已确认
   const [cloudProjects, setCloudProjects] = useState<Project[] | null>(null);
+  const [projectLoadError, setProjectLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [authMode, setAuthMode] = useState<"idle" | "guest" | "cloud">(
     initialAuthMode,
   );
@@ -72,6 +74,7 @@ export function SaveToProjectDialog({
 
   const resetDialogState = () => {
     setCloudProjects(null);
+    setProjectLoadError(false);
     setSelectedId("sha");
     setAuthMode(initialAuthMode);
     supabaseRef.current = null;
@@ -90,6 +93,13 @@ export function SaveToProjectDialog({
     router.push("/login");
   };
 
+  const handleRetryLoadProjects = () => {
+    setProjectLoadError(false);
+    setCloudProjects(null);
+    setAuthMode("cloud");
+    setLoadAttempt((attempt) => attempt + 1);
+  };
+
   // 弹窗打开时验证登录；结果页登录态加载云端项目，未登录只展示登录引导
   useEffect(() => {
     if (!open) return;
@@ -98,51 +108,63 @@ export function SaveToProjectDialog({
     isCloudUserRef.current = false;
 
     let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     void (async () => {
-      if (initialAuthMode === "guest") {
-        setAuthMode("guest");
-        return;
-      }
+      try {
+        setCloudProjects(null);
+        setProjectLoadError(false);
 
-      const supabase = createClient();
-      const user = await getCurrentUser(supabase);
+        if (initialAuthMode === "guest") {
+          setAuthMode("guest");
+          return;
+        }
 
-      if (cancelled) return;
-
-      if (!user) {
-        // 明确未登录 → 展示游客本地模式
-        setAuthMode("guest");
-        return;
-      }
-
-      // 已登录 → 保存实例与标志
-      supabaseRef.current = supabase;
-      isCloudUserRef.current = true;
-
-      if (detailNoteId != null) {
         setAuthMode("cloud");
-        return;
-      }
+        const supabase = createClient();
+        const timeout = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error("project_load_timeout"));
+          }, PROJECT_LOAD_TIMEOUT_MS);
+        });
+        const result = await Promise.race([listProjects(supabase), timeout]);
+        if (cancelled) return;
 
-      const result = await listProjects(supabase);
-      if (cancelled) return;
+        if (isDataError(result)) {
+          if (result.code === "not_authenticated") {
+            setAuthMode("guest");
+          } else {
+            setProjectLoadError(true);
+            setAuthMode("cloud");
+          }
+          return;
+        }
 
-      if (isDataError(result)) {
-        // 拉列表失败（如权限问题）→ 仍进入云端模式，显示空占位
-        setCloudProjects([]);
-      } else {
+        supabaseRef.current = supabase;
+        isCloudUserRef.current = true;
         setCloudProjects(result);
         if (result.length > 0) {
           setSelectedId(result[0].id);
         }
+        setAuthMode("cloud");
+      } catch (err) {
+        if (cancelled) return;
+        console.error("[SaveToProjectDialog] 项目加载失败:", err);
+        setProjectLoadError(true);
+        setAuthMode("cloud");
+      } finally {
+        if (timeoutId != null) {
+          clearTimeout(timeoutId);
+        }
       }
-      setAuthMode("cloud");
     })();
 
     return () => {
       cancelled = true;
+      if (timeoutId != null) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [open, detailNoteId, initialAuthMode]);
+  }, [open, detailNoteId, initialAuthMode, loadAttempt]);
 
   const handleConfirm = async () => {
     if (isSaving) return;
@@ -220,6 +242,30 @@ export function SaveToProjectDialog({
           return;
         }
 
+        const sessionNoteId = readLastAnalyzeNoteIdFromSession();
+        const existing =
+          sessionNoteId != null
+            ? findLocalSavedNoteById(sessionNoteId)
+            : undefined;
+        if (existing && resolveNoteSavedStatus(existing) === "temporary") {
+          const localResult = upgradeTemporaryNoteToSaved(
+            sessionNoteId!,
+            targetProjectId,
+            {
+              title: built.title,
+              summary: built.summary,
+              rawContent: built.rawContent,
+              keyInsights: built.keyInsights,
+              actionItems: built.actionItems,
+              knowledgeCards: built.knowledgeCards,
+              tags: built.tags,
+              wordCount: built.wordCount,
+              sourceName: built.sourceName,
+            },
+          );
+          if (localResult.ok) dispatchLocalSavedNotesChanged();
+        }
+
         handleOpenChange(false);
         toast.success("已保存到项目");
       } catch (err) {
@@ -286,12 +332,14 @@ export function SaveToProjectDialog({
   };
 
   // 结果页场景下的展示状态
-  const isResultPage = detailNoteId == null;
   const isCheckingAuth = open && authMode === "idle";
   const isLoadingCloudProjects =
-    isResultPage && authMode === "cloud" && cloudProjects === null;
+    authMode === "cloud" && cloudProjects === null && !projectLoadError;
   const isCloudMode =
-    isResultPage && authMode === "cloud" && cloudProjects !== null;
+    authMode === "cloud" &&
+    cloudProjects !== null &&
+    !projectLoadError;
+  const showProjectLoadError = authMode === "cloud" && projectLoadError;
   const showEmptyCloudHint = isCloudMode && cloudProjects.length === 0;
   const isGuestMode = authMode === "guest";
 
@@ -309,6 +357,23 @@ export function SaveToProjectDialog({
     if (isGuestMode) {
       return null;
     }
+    if (showProjectLoadError) {
+      return (
+        <div className="flex items-center justify-between gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
+          <span className="text-[13px] text-[var(--r2a-ink-muted)]">
+            项目加载失败，请稍后重试
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleRetryLoadProjects}
+          >
+            重试
+          </Button>
+        </div>
+      );
+    }
     if (showEmptyCloudHint) {
       return (
         <div className="flex items-center gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
@@ -319,8 +384,8 @@ export function SaveToProjectDialog({
         </div>
       );
     }
-    const list = isCloudMode ? cloudProjects : mockProjects;
-    return list.map((p) => {
+    if (!isCloudMode) return null;
+    return cloudProjects.map((p) => {
       const checked = selectedId === p.id;
       return (
         <label
@@ -348,7 +413,9 @@ export function SaveToProjectDialog({
     });
   }
 
-  const isActionDisabled = isSaving || isCheckingAuth || isLoadingCloudProjects;
+  const isCancelDisabled = isSaving || isCheckingAuth || isLoadingCloudProjects;
+  const isSaveDisabled =
+    isSaving || isCheckingAuth || isLoadingCloudProjects || showProjectLoadError;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -387,7 +454,7 @@ export function SaveToProjectDialog({
                 variant="outline"
                 size="action-outline"
                 className="min-w-[88px]"
-                disabled={isActionDisabled}
+                disabled={isCancelDisabled}
               />
             }
           >
@@ -410,7 +477,7 @@ export function SaveToProjectDialog({
               size="action"
               className="min-w-[88px]"
               onClick={handleConfirm}
-              disabled={isActionDisabled}
+              disabled={isSaveDisabled}
             >
               {isSaving ? "保存中…" : "保存到项目"}
             </Button>
