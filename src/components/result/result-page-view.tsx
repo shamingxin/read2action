@@ -58,6 +58,10 @@ function formatWordCount(n: number | undefined) {
   return n.toLocaleString("zh-CN");
 }
 
+function formatMetadataDate(date: string) {
+  return date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$1/$2/$3");
+}
+
 function matchesCurrentResult(
   note: ReturnType<typeof readAllLocalSavedNotes>[number],
   result: ParseResultPreview,
@@ -111,7 +115,7 @@ function ResultPageLoadingState() {
           aria-live="polite"
         >
           <p className="font-heading text-[20px] font-semibold leading-tight text-[var(--r2a-ink)]">
-            正在整理结果
+            正在整理笔记
           </p>
           <p className="max-w-[520px] text-[13.5px] leading-relaxed text-[var(--r2a-ink-muted)]">
             正在读取本次整理内容，请稍候。
@@ -193,7 +197,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
         ? `标签：${viewData.tags.join(" · ")}`
         : "标签：—";
     const datePart = viewData.createdAtDisplay
-      ? `创建时间：${viewData.createdAtDisplay}`
+      ? `创建时间：${formatMetadataDate(viewData.createdAtDisplay)}`
       : "创建时间：—";
     const wc = `字数：${formatWordCount(viewData.wordCount)}`;
     return `来源：${src}     ${tagPart}     ${datePart}     ${wc}`;
@@ -330,7 +334,7 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
             role="status"
           >
             {resultAuthMode === "cloud"
-              ? "当前结果可保存到项目，便于后续回看和沉淀。"
+              ? "当前笔记可保存到项目，便于后续回看和沉淀。"
               : "未登录状态下，内容只会保存在当前浏览器。"}
           </p>
         ) : null}

@@ -314,7 +314,7 @@ export function AppSidebar() {
             {isGuestReady ? (
               <div className="mt-1 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-3 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
                 <p className="font-medium text-[var(--r2a-ink-secondary)]">
-                  登录后可新建项目，并在不同设备间同步你的整理结果。
+                  登录后可新建项目，并在不同设备间同步你的笔记。
                 </p>
                 <p className="mt-1">
                   当前未登录，内容仅保存在本浏览器。

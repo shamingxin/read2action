@@ -20,7 +20,7 @@ const featureItems = [
   { title: "核心观点", description: "提炼内容里的关键判断，帮你快速抓住重点。" },
   { title: "行动清单", description: "把值得执行的想法整理成清晰的下一步。" },
   { title: "知识卡片", description: "沉淀可复用的概念、方法和启发。" },
-  { title: "保存到项目", description: "把整理结果归档到项目里，方便后续回看。" },
+  { title: "保存到项目", description: "把整理好的笔记归档到项目里，方便后续回看。" },
 ] as const;
 
 export function HomeNotePanel() {

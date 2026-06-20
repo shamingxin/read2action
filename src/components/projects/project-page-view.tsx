@@ -31,10 +31,10 @@ const TYPE_LABEL: Record<SourceType, string> = {
 
 function formatListDate(iso: string) {
   try {
-    return new Date(iso).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
+    return new Date(iso).toLocaleDateString("zh-CN", {
       year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
   } catch {
     return iso;
