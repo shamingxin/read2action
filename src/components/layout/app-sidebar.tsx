@@ -289,24 +289,6 @@ export function AppSidebar() {
         </Link>
 
         <div>
-          <label
-            htmlFor="sidebar-search"
-            className="sr-only"
-          >
-            搜索
-          </label>
-          <div className="flex h-9 items-center gap-2 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-2.5 text-[13px] text-[var(--r2a-ink-secondary)]">
-            <input
-              id="sidebar-search"
-              type="text"
-              readOnly
-              placeholder="搜索 ⌘K"
-              className="min-w-0 flex-1 cursor-default border-0 bg-transparent p-0 text-[13px] text-[var(--r2a-ink-secondary)] placeholder:text-[var(--r2a-ink-secondary)] outline-none"
-            />
-          </div>
-        </div>
-
-        <div>
           <div className="mb-1 px-2 font-heading text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--r2a-ink-muted)]">
             项目
           </div>
