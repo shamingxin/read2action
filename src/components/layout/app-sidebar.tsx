@@ -47,6 +47,10 @@ function mergeRecentNotes(includeMock: boolean): Note[] {
     .slice(0, 4);
 }
 
+function isProjectPathname(pathname: string, projectHref: string): boolean {
+  return pathname === projectHref || pathname.startsWith(`${projectHref}/`);
+}
+
 function NavItem({
   href,
   children,
@@ -82,6 +86,10 @@ export function AppSidebar() {
   const [projectName, setProjectName] = useState("");
   const [createProjectError, setCreateProjectError] = useState("");
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [pendingProject, setPendingProject] = useState<{
+    href: string;
+    fromPathname: string;
+  } | null>(null);
 
   useEffect(() => {
     const includeMock = isMockDebugEnabled();
@@ -147,6 +155,21 @@ export function AppSidebar() {
       cancelled = true;
     };
   }, [authUser]);
+
+  useEffect(() => {
+    if (pendingProject && pathname !== pendingProject.fromPathname) {
+      const timeoutId = window.setTimeout(() => {
+        setPendingProject((current) =>
+          current?.href === pendingProject.href &&
+          current.fromPathname === pendingProject.fromPathname
+            ? null
+            : current,
+        );
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [pathname, pendingProject]);
 
   async function handleSignOut() {
     if (isSigningOut) return;
@@ -230,6 +253,15 @@ export function AppSidebar() {
     !authReady || (authUser !== null && cloudProjects === null);
   const isGuestReady = authReady && authUser === null;
   const linkProjects = authUser ? (cloudProjects ?? []) : [];
+  const currentProjectHref =
+    linkProjects
+      .map((project) => `/projects/${project.id}`)
+      .find((projectHref) => isProjectPathname(pathname, projectHref)) ?? null;
+  const pendingProjectHref =
+    pendingProject && pathname === pendingProject.fromPathname
+      ? pendingProject.href
+      : null;
+  const activeProjectHref = currentProjectHref ?? pendingProjectHref;
 
   return (
     <>
@@ -325,9 +357,8 @@ export function AppSidebar() {
             {!isProjectsLoading && authUser
               ? linkProjects.map((p) => {
               const projectHref = `/projects/${p.id}`;
-              const isProjectActive =
-                pathname === projectHref ||
-                pathname.startsWith(`${projectHref}/`);
+              const isCurrentProject = currentProjectHref === projectHref;
+              const isProjectActive = activeProjectHref === projectHref;
               return (
                 <div
                   key={p.id}
@@ -339,7 +370,25 @@ export function AppSidebar() {
                 >
                   <Link
                     href={projectHref}
-                    aria-current={isProjectActive ? "page" : undefined}
+                    aria-current={isCurrentProject ? "page" : undefined}
+                    onClick={(event) => {
+                      if (
+                        event.defaultPrevented ||
+                        event.button !== 0 ||
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey
+                      ) {
+                        return;
+                      }
+                      if (!isCurrentProject) {
+                        setPendingProject({
+                          href: projectHref,
+                          fromPathname: pathname,
+                        });
+                      }
+                    }}
                     className={cn(
                       "flex min-h-0 min-w-0 flex-1 items-center gap-2 py-0 text-[13.5px] leading-none",
                       isProjectActive
