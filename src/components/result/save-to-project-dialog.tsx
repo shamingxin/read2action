@@ -182,7 +182,7 @@ export function SaveToProjectDialog({
         return;
       }
       if (resolveNoteSavedStatus(existing) !== "temporary") {
-        toast.error("该记录已保存，无需重复操作。");
+        toast.error("该笔记已保存，无需重复操作。");
         return;
       }
       const result = upgradeTemporaryNoteToSaved(detailNoteId, selectedId, {});
@@ -216,7 +216,7 @@ export function SaveToProjectDialog({
         } else {
           const ensured = await ensureDefaultProject(supabase);
           if (isDataError(ensured)) {
-            toast.error(`创建默认项目失败：${ensured.message}`);
+            toast.error(`新建默认项目失败：${ensured.message}`);
             return;
           }
           targetProjectId = ensured.id;
@@ -379,7 +379,7 @@ export function SaveToProjectDialog({
         <div className="flex items-center gap-3 rounded-[var(--r2a-radius-lg)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-4 py-3 shadow-[var(--r2a-shadow-soft)]">
           <span className="size-1.5 shrink-0 rounded-full bg-[var(--r2a-ink-faint)]" />
           <span className="text-[14px] font-medium text-[var(--r2a-ink)]">
-            默认项目（保存时自动创建）
+            默认项目（保存时自动新建）
           </span>
         </div>
       );
@@ -428,7 +428,7 @@ export function SaveToProjectDialog({
             <DialogTitle>{isGuestMode ? "请先登录" : "保存到项目"}</DialogTitle>
             <DialogDescription>
               {isGuestMode
-                ? "登录后可以创建项目，并把整理结果保存到项目中，方便长期回看和多设备同步。当前结果已保存在最近里。"
+                ? "登录后可以新建项目，并把当前笔记保存到项目中，方便长期回看和多设备同步。当前笔记已保存在最近里。"
                 : isCloudMode
                   ? "将当前笔记保存到项目，并同步到你的云端账号。"
                   : "将当前笔记保存到项目。"}

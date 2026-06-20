@@ -213,7 +213,7 @@ export function AppSidebar() {
       return;
     }
     if (!authUser) {
-      setCreateProjectError("请先登录后再创建项目。");
+      setCreateProjectError("请先登录后再新建项目。");
       return;
     }
 
@@ -224,7 +224,7 @@ export function AppSidebar() {
       const result = await createProject(supabase, { name });
 
       if (isDataError(result)) {
-        setCreateProjectError(`创建失败：${result.message}`);
+        setCreateProjectError(`新建失败：${result.message}`);
         return;
       }
 
@@ -241,8 +241,8 @@ export function AppSidebar() {
       console.error("[AppSidebar] createProject failed:", err);
       setCreateProjectError(
         err instanceof Error
-          ? `创建失败：${err.message}`
-          : "创建失败，请稍后重试。",
+          ? `新建失败：${err.message}`
+          : "新建失败，请稍后重试。",
       );
     } finally {
       setIsCreatingProject(false);
@@ -314,7 +314,7 @@ export function AppSidebar() {
             {isGuestReady ? (
               <div className="mt-1 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-3 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
                 <p className="font-medium text-[var(--r2a-ink-secondary)]">
-                  登录后可创建项目，并在不同设备间同步你的整理结果。
+                  登录后可新建项目，并在不同设备间同步你的整理结果。
                 </p>
                 <p className="mt-1">
                   当前未登录，内容仅保存在本浏览器。
@@ -448,7 +448,7 @@ export function AppSidebar() {
           {recentNotes.length === 0 ? (
             <div className="rounded-[var(--r2a-radius-md)] border border-dashed border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 py-2.5 text-[12px] leading-relaxed text-[var(--r2a-ink-muted)] shadow-[var(--r2a-shadow-soft)]">
               <p className="font-medium text-[var(--r2a-ink-secondary)]">
-                还没有整理记录
+                还没有笔记
               </p>
               <p className="mt-1">粘贴一段内容，开始整理你的思考。</p>
             </div>
@@ -571,7 +571,7 @@ export function AppSidebar() {
                 className="min-w-[104px]"
                 disabled={isCreatingProject}
               >
-                {isCreatingProject ? "创建中..." : "创建项目"}
+                {isCreatingProject ? "新建中..." : "新建项目"}
               </Button>
             </DialogFooter>
           </form>

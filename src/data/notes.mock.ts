@@ -107,10 +107,10 @@ export const mockNotes: Note[] = [
   {
     id: "note-meeting-q3",
     projectId: "project-one",
-    title: "Meeting Notes: Q3 Product Roadmap Alignment",
+    title: "会议笔记：Q3 产品路线图对齐",
     sourceType: "note",
     summary: "Q3 聚焦留存与协作，暂缓国际化扩张。",
-    rawContent: "会议记录：各方对 Q3 OKR 的对齐与风险项。",
+    rawContent: "会议笔记：各方对 Q3 OKR 的对齐与风险项。",
     keyInsights: ["留存优先于拉新", "协作场景需端到端闭环"],
     actionItems: [
       { id: "a6", content: "输出 Q3 里程碑草案", isDone: false },
@@ -165,7 +165,7 @@ export const mockNotes: Note[] = [
   {
     id: "note-enterprise-interview",
     projectId: "industrial",
-    title: "用户访谈记录：企业版核心需求",
+    title: "用户访谈笔记：企业版核心需求",
     sourceType: "user_note",
     summary: "企业客户关注审计、权限粒度与私有化部署选项。",
     rawContent: "访谈速记：安全合规、SSO、细粒度角色与审计日志。",

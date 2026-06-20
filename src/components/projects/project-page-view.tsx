@@ -22,11 +22,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const TYPE_LABEL: Record<SourceType, string> = {
-  article: "Article",
-  video: "Video",
-  note: "Note",
-  user_note: "Note",
-  other: "Other",
+  article: "文章",
+  video: "视频",
+  note: "笔记",
+  user_note: "笔记",
+  other: "其他",
 };
 
 function formatListDate(iso: string) {
