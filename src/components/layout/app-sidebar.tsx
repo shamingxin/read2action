@@ -13,14 +13,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { mockNotes } from "@/data/notes.mock";
-import { mockProjects } from "@/data/projects.mock";
 import {
   readAllLocalSavedNotes,
   R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
 } from "@/lib/local-saved-notes";
 import { createClient } from "@/lib/supabase/client";
-import { isDataError, listProjects } from "@/lib/supabase/projects";
+import { createProject, isDataError, listProjects } from "@/lib/supabase/projects";
 import { cn } from "@/lib/utils";
 import type { Note, Project } from "@/types";
 
@@ -39,8 +46,6 @@ function mergeRecentNotes(includeMock: boolean): Note[] {
     )
     .slice(0, 4);
 }
-
-const NEW_PROJECT_ENTRY_ID = "new";
 
 function NavItem({
   href,
@@ -73,6 +78,10 @@ export function AppSidebar() {
   const [authReady, setAuthReady] = useState(false);
   const [cloudProjects, setCloudProjects] = useState<Project[] | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [createProjectError, setCreateProjectError] = useState("");
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
 
   useEffect(() => {
     const includeMock = isMockDebugEnabled();
@@ -158,13 +167,72 @@ export function AppSidebar() {
     }
   }
 
-  const newEntry = mockProjects.find((p) => p.id === NEW_PROJECT_ENTRY_ID);
+  function resetCreateProjectDialog() {
+    setProjectName("");
+    setCreateProjectError("");
+  }
+
+  function handleCreateProjectOpenChange(nextOpen: boolean) {
+    if (isCreatingProject && !nextOpen) return;
+    if (!nextOpen) resetCreateProjectDialog();
+    setIsCreateProjectOpen(nextOpen);
+  }
+
+  async function handleCreateProjectSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    if (isCreatingProject) return;
+
+    const name = projectName.trim();
+    if (!name) {
+      setCreateProjectError("请输入项目名称。");
+      return;
+    }
+    if (!authUser) {
+      setCreateProjectError("请先登录后再创建项目。");
+      return;
+    }
+
+    setIsCreatingProject(true);
+    setCreateProjectError("");
+    try {
+      const supabase = createClient();
+      const result = await createProject(supabase, { name });
+
+      if (isDataError(result)) {
+        setCreateProjectError(`创建失败：${result.message}`);
+        return;
+      }
+
+      setCloudProjects((current) => {
+        const rest = (current ?? []).filter((p) => p.id !== result.id);
+        return [result, ...rest];
+      });
+      resetCreateProjectDialog();
+      setIsCreateProjectOpen(false);
+      toast.success("项目已创建");
+      router.push(`/projects/${result.id}`);
+      router.refresh();
+    } catch (err) {
+      console.error("[AppSidebar] createProject failed:", err);
+      setCreateProjectError(
+        err instanceof Error
+          ? `创建失败：${err.message}`
+          : "创建失败，请稍后重试。",
+      );
+    } finally {
+      setIsCreatingProject(false);
+    }
+  }
+
   const isProjectsLoading =
     !authReady || (authUser !== null && cloudProjects === null);
   const isGuestReady = authReady && authUser === null;
   const linkProjects = authUser ? (cloudProjects ?? []) : [];
 
   return (
+    <>
     <aside className="sticky top-0 flex h-screen w-[240px] shrink-0 flex-col border-r border-[var(--r2a-hairline)] bg-[var(--r2a-sidebar-bg)]">
       <div className="flex items-center gap-2.5 px-4 pt-5 pb-[18px]">
         <div className="flex size-7 shrink-0 items-center justify-center rounded-[var(--r2a-radius-sm)] bg-[var(--r2a-ink)] font-heading text-[14px] font-semibold leading-none text-[var(--r2a-canvas-soft)]">
@@ -211,17 +279,17 @@ export function AppSidebar() {
             项目
           </div>
           <nav className="flex flex-col gap-px">
-            {authUser && newEntry ? (
+            {authUser ? (
               <button
-                key="add-project-entry"
                 type="button"
-                onClick={() => toast.info("新建项目功能暂未开放")}
-                className={cn(
-                  "flex min-h-[34px] w-full items-center gap-2 rounded-[var(--r2a-radius-md)] px-2 text-left text-[13.5px] font-normal leading-none text-[var(--r2a-ink-secondary)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)]",
-                )}
+                onClick={() => setIsCreateProjectOpen(true)}
+                className="group flex min-h-[34px] w-full items-center gap-2 rounded-[var(--r2a-radius-md)] px-2 text-left text-[13.5px] font-normal leading-none text-[var(--r2a-ink-secondary)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] hover:text-[var(--r2a-ink)]"
               >
-                <span className="size-1 rounded-full bg-[var(--r2a-ink-faint)]" aria-hidden />
-                <span className="truncate">新建项目</span>
+                <span
+                  className="size-1 shrink-0 rounded-full bg-[var(--r2a-ink-faint)] group-hover:bg-[var(--r2a-ink-muted)]"
+                  aria-hidden
+                />
+                <span className="truncate leading-normal">新建项目</span>
               </button>
             ) : null}
             {isProjectsLoading ? (
@@ -413,5 +481,77 @@ export function AppSidebar() {
         </div>
       </div>
     </aside>
+    {authUser ? (
+      <Dialog
+        open={isCreateProjectOpen}
+        onOpenChange={handleCreateProjectOpenChange}
+      >
+        <DialogContent
+          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-[400px]"
+          showCloseButton={!isCreatingProject}
+        >
+          <form onSubmit={handleCreateProjectSubmit}>
+            <div className="px-6 pt-6 pb-5">
+              <DialogHeader className="pr-12">
+                <DialogTitle>新建项目</DialogTitle>
+              </DialogHeader>
+              <div className="mt-5 flex flex-col gap-2.5">
+                <label
+                  htmlFor="new-project-name"
+                  className="text-[13px] font-medium text-[var(--r2a-ink-secondary)]"
+                >
+                  项目名称
+                </label>
+                <input
+                  id="new-project-name"
+                  type="text"
+                  value={projectName}
+                  onChange={(event) => {
+                    setProjectName(event.target.value);
+                    if (createProjectError) setCreateProjectError("");
+                  }}
+                  placeholder="例如：读书笔记"
+                  disabled={isCreatingProject}
+                  autoFocus
+                  className={cn(
+                    "h-10 w-full rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 text-[14px] text-[var(--r2a-ink)] outline-none transition-colors duration-150 ease-out placeholder:text-[var(--r2a-ink-faint)]",
+                    "focus:border-[var(--r2a-accent-ink)] focus:ring-2 focus:ring-[var(--r2a-accent-ink)]/10",
+                    createProjectError &&
+                      "border-[var(--r2a-error)] focus:border-[var(--r2a-error)] focus:ring-[var(--r2a-error)]/15",
+                  )}
+                />
+                {createProjectError ? (
+                  <p className="text-[12px] leading-relaxed text-[var(--r2a-error)]">
+                    {createProjectError}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <DialogFooter className="!mx-0 !mb-0 flex-row flex-wrap justify-end gap-3 border-t border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-4 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="action-outline"
+                className="min-w-[88px]"
+                onClick={() => handleCreateProjectOpenChange(false)}
+                disabled={isCreatingProject}
+              >
+                取消
+              </Button>
+              <Button
+                type="submit"
+                variant="default"
+                size="action"
+                className="min-w-[104px]"
+                disabled={isCreatingProject}
+              >
+                {isCreatingProject ? "创建中..." : "创建项目"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    ) : null}
+    </>
   );
 }
