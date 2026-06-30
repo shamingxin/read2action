@@ -571,7 +571,7 @@ export function AppSidebar() {
                 className="min-w-[104px]"
                 disabled={isCreatingProject}
               >
-                {isCreatingProject ? "新建中..." : "新建项目"}
+                {isCreatingProject ? "新建中…" : "新建项目"}
               </Button>
             </DialogFooter>
           </form>

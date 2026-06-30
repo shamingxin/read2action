@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Link2, Pencil, Trash2 } from "lucide-react";
+import { Download, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -303,19 +303,6 @@ export function ResultPageView({ data }: { data?: ParseResultPreview }) {
                 ⋯
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(window.location.href);
-                      toast.success("已复制链接（演示）");
-                    } catch {
-                      toast.info("当前环境无法复制链接（演示）");
-                    }
-                  }}
-                >
-                  <Link2 className="size-4 text-[var(--r2a-ink-muted)]" aria-hidden />
-                  复制链接
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() => toast.info("删除功能暂未开放")}
