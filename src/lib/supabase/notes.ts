@@ -42,12 +42,21 @@ export async function listNotesByProjectId(
   supabase: SupabaseClient,
   projectId: string,
 ): Promise<Note[] | SupabaseDataError> {
-  const auth = await requireCurrentUser(supabase);
-  if (isAuthError(auth)) return auth;
+  const user = await requireCurrentUser(supabase);
+  if (isAuthError(user)) return user;
 
+  return listNotesByProjectIdForUser(supabase, projectId, user.id);
+}
+
+export async function listNotesByProjectIdForUser(
+  supabase: SupabaseClient,
+  projectId: string,
+  userId: string,
+): Promise<Note[] | SupabaseDataError> {
   let query = supabase
     .from("notes")
     .select(NOTE_LIST_SELECT_COLUMNS)
+    .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
   if (projectId === R2A_TEMPORARY_PROJECT_ID) {
@@ -82,13 +91,22 @@ export async function getNoteById(
   supabase: SupabaseClient,
   noteId: string,
 ): Promise<Note | null | SupabaseDataError> {
-  const auth = await requireCurrentUser(supabase);
-  if (isAuthError(auth)) return auth;
+  const user = await requireCurrentUser(supabase);
+  if (isAuthError(user)) return user;
 
+  return getNoteByIdForUser(supabase, noteId, user.id);
+}
+
+export async function getNoteByIdForUser(
+  supabase: SupabaseClient,
+  noteId: string,
+  userId: string,
+): Promise<Note | null | SupabaseDataError> {
   const { data, error } = await supabase
     .from("notes")
     .select(NOTE_DETAIL_SELECT_COLUMNS)
     .eq("id", noteId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) return toDataError(error.message);

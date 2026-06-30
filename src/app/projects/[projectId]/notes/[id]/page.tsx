@@ -5,11 +5,11 @@ import { getNoteById as getMockNoteById } from "@/data/notes.mock";
 import { getProjectById as getMockProjectById } from "@/data/projects.mock";
 import { R2A_TEMPORARY_PROJECT_ID } from "@/lib/local-saved-notes";
 import {
-  getNoteById as getCloudNoteById,
+  getNoteByIdForUser,
   isDataError as isNoteDataError,
 } from "@/lib/supabase/notes";
 import {
-  getProjectById as getCloudProjectById,
+  getProjectByIdForUser,
   isDataError as isProjectDataError,
 } from "@/lib/supabase/projects";
 import { createClient } from "@/lib/supabase/server";
@@ -34,8 +34,8 @@ export default async function NoteDetailPage({ params }: PageProps) {
 
     if (user) {
       const [cloudProject, noteResult] = await Promise.all([
-        getCloudProjectById(supabase, projectId),
-        getCloudNoteById(supabase, id),
+        getProjectByIdForUser(supabase, projectId, user.id),
+        getNoteByIdForUser(supabase, id, user.id),
       ]);
 
       if (!isProjectDataError(cloudProject) && cloudProject) {

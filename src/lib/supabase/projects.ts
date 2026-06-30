@@ -54,13 +54,22 @@ export async function getProjectById(
   supabase: SupabaseClient,
   projectId: string,
 ): Promise<Project | null | SupabaseDataError> {
-  const auth = await requireCurrentUser(supabase);
-  if (isAuthError(auth)) return auth;
+  const user = await requireCurrentUser(supabase);
+  if (isAuthError(user)) return user;
 
+  return getProjectByIdForUser(supabase, projectId, user.id);
+}
+
+export async function getProjectByIdForUser(
+  supabase: SupabaseClient,
+  projectId: string,
+  userId: string,
+): Promise<Project | null | SupabaseDataError> {
   const { data, error } = await supabase
     .from("projects")
     .select(PROJECT_SELECT_COLUMNS)
     .eq("id", projectId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error) return toDataError(error.message);

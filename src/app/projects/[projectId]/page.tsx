@@ -5,10 +5,10 @@ import { getNotesByProjectId } from "@/data/notes.mock";
 import { getProjectById as getMockProjectById } from "@/data/projects.mock";
 import {
   isDataError as isNotesDataError,
-  listNotesByProjectId,
+  listNotesByProjectIdForUser,
 } from "@/lib/supabase/notes";
 import {
-  getProjectById as getCloudProjectById,
+  getProjectByIdForUser,
   isDataError as isProjectDataError,
 } from "@/lib/supabase/projects";
 import { createClient } from "@/lib/supabase/server";
@@ -37,8 +37,8 @@ export default async function ProjectDirectoryPage({
 
   if (user) {
     const [cloudProject, cloudNotes] = await Promise.all([
-      getCloudProjectById(supabase, projectId),
-      listNotesByProjectId(supabase, projectId),
+      getProjectByIdForUser(supabase, projectId, user.id),
+      listNotesByProjectIdForUser(supabase, projectId, user.id),
     ]);
 
     if (!isProjectDataError(cloudProject) && cloudProject) {
