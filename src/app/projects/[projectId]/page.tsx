@@ -35,10 +35,13 @@ export default async function ProjectDirectoryPage({
   const user = await getCurrentUser(supabase);
 
   if (user) {
-    const cloudProject = await getCloudProjectById(supabase, projectId);
+    const [cloudProject, cloudNotes] = await Promise.all([
+      getCloudProjectById(supabase, projectId),
+      listNotesByProjectId(supabase, projectId),
+    ]);
+
     if (!isProjectDataError(cloudProject) && cloudProject) {
       project = cloudProject;
-      const cloudNotes = await listNotesByProjectId(supabase, projectId);
       if (!isNotesDataError(cloudNotes)) {
         notes = cloudNotes;
       }

@@ -33,10 +33,13 @@ export default async function NoteDetailPage({ params }: PageProps) {
     const user = await getCurrentUser(supabase);
 
     if (user) {
-      const cloudProject = await getCloudProjectById(supabase, projectId);
+      const [cloudProject, noteResult] = await Promise.all([
+        getCloudProjectById(supabase, projectId),
+        getCloudNoteById(supabase, id),
+      ]);
+
       if (!isProjectDataError(cloudProject) && cloudProject) {
         project = cloudProject;
-        const noteResult = await getCloudNoteById(supabase, id);
         if (!isNoteDataError(noteResult) && noteResult) {
           cloudNote = noteResult;
         }
