@@ -1,12 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { Folder } from "lucide-react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { Folder, MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Note, Project, SourceType } from "@/types";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { seedPendingAnalyzeSession } from "@/lib/analyze-client";
 import {
   r2aBtnPrimary,
@@ -19,6 +34,8 @@ import {
   readAllLocalSavedNotes,
   R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
 } from "@/lib/local-saved-notes";
+import { createClient } from "@/lib/supabase/client";
+import { deleteNote, isDataError } from "@/lib/supabase/notes";
 import { cn } from "@/lib/utils";
 
 const TYPE_LABEL: Record<SourceType, string> = {
@@ -61,14 +78,22 @@ function mergeServerAndLocalNotes(projectId: string, serverNotes: Note[]): Note[
 export function ProjectPageView({
   project,
   notes,
+  canManageNotes = false,
 }: {
   project: Project;
   notes: Note[];
+  canManageNotes?: boolean;
 }) {
   const router = useRouter();
   const [quickInput, setQuickInput] = useState("");
   const [mergedNotes, setMergedNotes] = useState<Note[]>(() =>
     sortNotesByUpdatedDesc(notes),
+  );
+  const [deleteNoteTarget, setDeleteNoteTarget] = useState<Note | null>(null);
+  const [isDeletingNote, setIsDeletingNote] = useState(false);
+  const serverNoteIds = useMemo(
+    () => new Set(notes.map((note) => note.id)),
+    [notes],
   );
 
   useEffect(() => {
@@ -87,6 +112,10 @@ export function ProjectPageView({
   }, [notes, project.id]);
 
   const canSubmit = quickInput.trim().length > 0;
+  const isCloudNote = useCallback(
+    (note: Note) => canManageNotes && serverNoteIds.has(note.id),
+    [canManageNotes, serverNoteIds],
+  );
 
   const handleParse = useCallback(() => {
     if (!quickInput.trim()) {
@@ -97,7 +126,60 @@ export function ProjectPageView({
     router.push("/parsing");
   }, [quickInput, project.id, router]);
 
+  const handleDeleteNoteRequest = useCallback(
+    (note: Note) => {
+      if (!isCloudNote(note)) {
+        toast.info("演示笔记暂不支持删除。");
+        return;
+      }
+      setDeleteNoteTarget(note);
+    },
+    [isCloudNote],
+  );
+
+  function handleDeleteNoteOpenChange(nextOpen: boolean) {
+    if (isDeletingNote && !nextOpen) return;
+    if (!nextOpen) setDeleteNoteTarget(null);
+  }
+
+  async function handleDeleteNoteSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    if (isDeletingNote || !deleteNoteTarget) return;
+
+    if (!isCloudNote(deleteNoteTarget)) {
+      setDeleteNoteTarget(null);
+      toast.info("演示笔记暂不支持删除。");
+      return;
+    }
+
+    setIsDeletingNote(true);
+    try {
+      const supabase = createClient();
+      const result = await deleteNote(supabase, deleteNoteTarget.id);
+
+      if (isDataError(result)) {
+        toast.error("删除失败，请稍后重试。");
+        return;
+      }
+
+      setMergedNotes((current) =>
+        current.filter((note) => note.id !== deleteNoteTarget.id),
+      );
+      setDeleteNoteTarget(null);
+      toast.success("笔记已删除");
+      router.refresh();
+    } catch (err) {
+      console.error("[ProjectPageView] deleteNote failed:", err);
+      toast.error("删除失败，请稍后重试。");
+    } finally {
+      setIsDeletingNote(false);
+    }
+  }
+
   return (
+    <>
     <div className="flex min-h-full w-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
       <div className={r2aPageShell1020}>
         <header className="flex items-center gap-3">
@@ -198,7 +280,7 @@ export function ProjectPageView({
                           );
                         }
                       }}
-                      className="grid cursor-pointer grid-cols-1 gap-3 px-5 py-4 transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] lg:grid-cols-[minmax(0,1fr)_minmax(160px,240px)_120px_40px] lg:items-center lg:gap-6"
+                      className="group/note-row grid cursor-pointer grid-cols-1 gap-3 px-5 py-4 transition-colors duration-150 ease-out hover:bg-[var(--r2a-hover)] lg:grid-cols-[minmax(0,1fr)_minmax(160px,240px)_120px_40px] lg:items-center lg:gap-6"
                     >
                       <div className="min-w-0 lg:pr-0">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -227,9 +309,44 @@ export function ProjectPageView({
                         {formatListDate(note.createdAt)}
                       </div>
                       <div className="flex justify-end">
+                        <DropdownMenu>
+                          <div
+                            className={cn(
+                              "flex size-8 items-center justify-center transition-opacity",
+                              "pointer-events-auto opacity-100",
+                              "lg:pointer-events-none lg:opacity-0 lg:group-hover/note-row:pointer-events-auto lg:group-hover/note-row:opacity-100",
+                              "[&:has([data-popup-open])]:pointer-events-auto [&:has([data-popup-open])]:opacity-100",
+                            )}
+                          >
+                            <DropdownMenuTrigger
+                              type="button"
+                              className="inline-flex size-8 items-center justify-center rounded-[var(--r2a-radius-md)] text-[var(--r2a-ink-muted)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-surface)] hover:text-[var(--r2a-ink)] data-popup-open:bg-[var(--r2a-surface)]"
+                              aria-label="更多操作"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                            >
+                              <MoreHorizontal className="size-4" aria-hidden />
+                            </DropdownMenuTrigger>
+                          </div>
+                          <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDeleteNoteRequest(note);
+                              }}
+                            >
+                              <Trash2 className="size-4" aria-hidden />
+                              删除
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <button
                           type="button"
-                          className="inline-flex size-8 items-center justify-center rounded-[var(--r2a-radius-md)] text-[16px] text-[var(--r2a-ink-muted)] transition-colors duration-150 ease-out hover:bg-[var(--r2a-surface)] hover:text-[var(--r2a-ink)]"
+                          className="hidden"
                           aria-label="更多（占位）"
                           onClick={(e) => {
                             e.preventDefault();
@@ -263,5 +380,53 @@ export function ProjectPageView({
         </section>
       </div>
     </div>
+    <Dialog
+      open={deleteNoteTarget !== null}
+      onOpenChange={handleDeleteNoteOpenChange}
+    >
+      <DialogContent
+        className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-[420px]"
+        showCloseButton={!isDeletingNote}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <form onSubmit={handleDeleteNoteSubmit}>
+          <div className="px-6 pt-6 pb-5">
+            <DialogHeader className="pr-12">
+              <DialogTitle>删除笔记</DialogTitle>
+              <DialogDescription className="pt-1 leading-relaxed">
+                删除后无法恢复，是否继续？
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-5 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-3 py-2.5">
+              <p className="truncate text-[13px] font-medium text-[var(--r2a-ink)]">
+                {deleteNoteTarget?.title}
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="!mx-0 !mb-0 flex-row flex-wrap justify-end gap-3 border-t border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-4 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="action-outline"
+              className="min-w-[88px]"
+              onClick={() => handleDeleteNoteOpenChange(false)}
+              disabled={isDeletingNote}
+            >
+              取消
+            </Button>
+            <Button
+              type="submit"
+              variant="destructive"
+              size="action"
+              className="min-w-[88px]"
+              disabled={isDeletingNote}
+            >
+              {isDeletingNote ? "删除中..." : "删除"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

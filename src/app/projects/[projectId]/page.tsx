@@ -30,6 +30,7 @@ export default async function ProjectDirectoryPage({
 
   let project: Project | undefined;
   let notes: Note[] = [];
+  let canManageNotes = false;
 
   const supabase = await createClient();
   const user = await getCurrentUser(supabase);
@@ -42,6 +43,7 @@ export default async function ProjectDirectoryPage({
 
     if (!isProjectDataError(cloudProject) && cloudProject) {
       project = cloudProject;
+      canManageNotes = true;
       if (!isNotesDataError(cloudNotes)) {
         notes = cloudNotes;
       }
@@ -56,7 +58,11 @@ export default async function ProjectDirectoryPage({
 
   return (
     <main className="flex min-h-full flex-1 flex-col bg-[var(--r2a-canvas-soft)]">
-      <ProjectPageView project={project} notes={notes} />
+      <ProjectPageView
+        project={project}
+        notes={notes}
+        canManageNotes={canManageNotes}
+      />
     </main>
   );
 }

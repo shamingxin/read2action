@@ -165,6 +165,26 @@ export async function updateNote(
 }
 
 /** 将应用层 projectId 转为查询条件（含未归档 `project_id IS NULL`） */
+export async function deleteNote(
+  supabase: SupabaseClient,
+  noteId: string,
+): Promise<true | SupabaseDataError> {
+  const user = await requireCurrentUser(supabase);
+  if (isAuthError(user)) return user;
+
+  const { data, error } = await supabase
+    .from("notes")
+    .delete()
+    .eq("id", noteId)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) return toDataError(error.message);
+  if (!data) return toDataError("笔记不存在或无权删除。");
+  return true;
+}
+
 export function resolveDbProjectFilter(projectId: string): {
   column: "project_id";
   value: string | null;
