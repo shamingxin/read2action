@@ -113,6 +113,31 @@ export async function createProject(
   return rowToProject(data as ProjectRow);
 }
 
+export async function renameProject(
+  supabase: SupabaseClient,
+  projectId: string,
+  name: string,
+): Promise<Project | SupabaseDataError> {
+  const auth = await requireCurrentUser(supabase);
+  if (isAuthError(auth)) return auth;
+
+  const nextName = name.trim();
+  if (!nextName) return toDataError("项目名称不能为空。");
+
+  const { data, error } = await supabase
+    .from("projects")
+    .update({
+      name: nextName,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", projectId)
+    .select(PROJECT_SELECT_COLUMNS)
+    .single();
+
+  if (error) return toDataError(error.message);
+  return rowToProject(data as ProjectRow);
+}
+
 /**
  * 策略 A：云端无项目时自动创建「默认项目」。
  * 供 D-2 保存弹窗使用。

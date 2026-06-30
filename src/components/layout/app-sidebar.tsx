@@ -27,7 +27,12 @@ import {
   R2A_LOCAL_SAVED_NOTES_CHANGED_EVENT,
 } from "@/lib/local-saved-notes";
 import { createClient } from "@/lib/supabase/client";
-import { createProject, isDataError, listProjects } from "@/lib/supabase/projects";
+import {
+  createProject,
+  isDataError,
+  listProjects,
+  renameProject,
+} from "@/lib/supabase/projects";
 import { cn } from "@/lib/utils";
 import type { Note, Project } from "@/types";
 
@@ -86,6 +91,11 @@ export function AppSidebar() {
   const [projectName, setProjectName] = useState("");
   const [createProjectError, setCreateProjectError] = useState("");
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [renameProjectTarget, setRenameProjectTarget] =
+    useState<Project | null>(null);
+  const [renameProjectName, setRenameProjectName] = useState("");
+  const [renameProjectError, setRenameProjectError] = useState("");
+  const [isRenamingProject, setIsRenamingProject] = useState(false);
   const [pendingProject, setPendingProject] = useState<{
     href: string;
     fromPathname: string;
@@ -246,6 +256,70 @@ export function AppSidebar() {
       );
     } finally {
       setIsCreatingProject(false);
+    }
+  }
+
+  function handleRenameProjectOpen(project: Project) {
+    setRenameProjectTarget(project);
+    setRenameProjectName(project.name);
+    setRenameProjectError("");
+  }
+
+  function handleRenameProjectOpenChange(nextOpen: boolean) {
+    if (isRenamingProject && !nextOpen) return;
+    if (!nextOpen) {
+      setRenameProjectTarget(null);
+      setRenameProjectName("");
+      setRenameProjectError("");
+    }
+  }
+
+  async function handleRenameProjectSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    if (isRenamingProject || !renameProjectTarget) return;
+
+    const name = renameProjectName.trim();
+    if (!name) {
+      setRenameProjectError("请输入项目名称。");
+      return;
+    }
+    if (name === renameProjectTarget.name) {
+      handleRenameProjectOpenChange(false);
+      return;
+    }
+
+    setIsRenamingProject(true);
+    setRenameProjectError("");
+    try {
+      const supabase = createClient();
+      const result = await renameProject(supabase, renameProjectTarget.id, name);
+
+      if (isDataError(result)) {
+        toast.error("重命名失败，请稍后重试。");
+        return;
+      }
+
+      setCloudProjects((current) =>
+        (current ?? []).map((project) =>
+          project.id === result.id ? result : project,
+        ),
+      );
+      setRenameProjectTarget(null);
+      setRenameProjectName("");
+      setRenameProjectError("");
+      toast.success("项目已重命名");
+
+      const renamedProjectHref = `/projects/${result.id}`;
+      if (isProjectPathname(pathname, renamedProjectHref)) {
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("[AppSidebar] renameProject failed:", err);
+      toast.error("重命名失败，请稍后重试。");
+    } finally {
+      setIsRenamingProject(false);
     }
   }
 
@@ -415,9 +489,7 @@ export function AppSidebar() {
                     </div>
                     <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem
-                        onClick={() =>
-                          toast.info("重命名项目功能暂未开放")
-                        }
+                        onClick={() => handleRenameProjectOpen(p)}
                       >
                         重命名项目
                       </DropdownMenuItem>
@@ -572,6 +644,77 @@ export function AppSidebar() {
                 disabled={isCreatingProject}
               >
                 {isCreatingProject ? "新建中…" : "新建项目"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    ) : null}
+    {authUser ? (
+      <Dialog
+        open={renameProjectTarget !== null}
+        onOpenChange={handleRenameProjectOpenChange}
+      >
+        <DialogContent
+          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-[400px]"
+          showCloseButton={!isRenamingProject}
+        >
+          <form onSubmit={handleRenameProjectSubmit}>
+            <div className="px-6 pt-6 pb-5">
+              <DialogHeader className="pr-12">
+                <DialogTitle>重命名项目</DialogTitle>
+              </DialogHeader>
+              <div className="mt-5 flex flex-col gap-2.5">
+                <label
+                  htmlFor="rename-project-name"
+                  className="text-[13px] font-medium text-[var(--r2a-ink-secondary)]"
+                >
+                  项目名称
+                </label>
+                <input
+                  id="rename-project-name"
+                  type="text"
+                  value={renameProjectName}
+                  onChange={(event) => {
+                    setRenameProjectName(event.target.value);
+                    if (renameProjectError) setRenameProjectError("");
+                  }}
+                  placeholder="输入项目名称"
+                  disabled={isRenamingProject}
+                  autoFocus
+                  className={cn(
+                    "h-10 w-full rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-surface)] px-3 text-[14px] text-[var(--r2a-ink)] outline-none transition-colors duration-150 ease-out placeholder:text-[var(--r2a-ink-faint)]",
+                    "focus:border-[var(--r2a-accent-ink)] focus:ring-2 focus:ring-[var(--r2a-accent-ink)]/10",
+                    renameProjectError &&
+                      "border-[var(--r2a-error)] focus:border-[var(--r2a-error)] focus:ring-[var(--r2a-error)]/15",
+                  )}
+                />
+                {renameProjectError ? (
+                  <p className="text-[12px] leading-relaxed text-[var(--r2a-error)]">
+                    {renameProjectError}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <DialogFooter className="!mx-0 !mb-0 flex-row flex-wrap justify-end gap-3 border-t border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-4 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="action-outline"
+                className="min-w-[88px]"
+                onClick={() => handleRenameProjectOpenChange(false)}
+                disabled={isRenamingProject}
+              >
+                取消
+              </Button>
+              <Button
+                type="submit"
+                variant="default"
+                size="action"
+                className="min-w-[88px]"
+                disabled={isRenamingProject}
+              >
+                {isRenamingProject ? "保存中…" : "保存"}
               </Button>
             </DialogFooter>
           </form>
