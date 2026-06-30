@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -28,7 +29,9 @@ import {
 } from "@/lib/local-saved-notes";
 import { createClient } from "@/lib/supabase/client";
 import {
+  countProjectNotes,
   createProject,
+  deleteProject,
   isDataError,
   listProjects,
   renameProject,
@@ -96,6 +99,13 @@ export function AppSidebar() {
   const [renameProjectName, setRenameProjectName] = useState("");
   const [renameProjectError, setRenameProjectError] = useState("");
   const [isRenamingProject, setIsRenamingProject] = useState(false);
+  const [deleteProjectTarget, setDeleteProjectTarget] =
+    useState<Project | null>(null);
+  const [deleteProjectNoteCount, setDeleteProjectNoteCount] = useState<
+    number | null
+  >(null);
+  const [isCheckingProjectNotes, setIsCheckingProjectNotes] = useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [pendingProject, setPendingProject] = useState<{
     href: string;
     fromPathname: string;
@@ -323,6 +333,100 @@ export function AppSidebar() {
     }
   }
 
+  function handleDeleteProjectOpen(project: Project) {
+    setDeleteProjectTarget(project);
+    setDeleteProjectNoteCount(null);
+  }
+
+  function handleDeleteProjectOpenChange(nextOpen: boolean) {
+    if ((isCheckingProjectNotes || isDeletingProject) && !nextOpen) return;
+    if (!nextOpen) {
+      setDeleteProjectTarget(null);
+      setDeleteProjectNoteCount(null);
+    }
+  }
+
+  async function commitDeleteProject(project: Project) {
+    if (isDeletingProject) return;
+
+    setIsDeletingProject(true);
+    try {
+      const supabase = createClient();
+      const result = await deleteProject(supabase, project.id);
+
+      if (isDataError(result)) {
+        toast.error("删除失败，请稍后重试。");
+        return;
+      }
+
+      const deletedProjectHref = `/projects/${project.id}`;
+      const shouldLeaveDeletedProject = isProjectPathname(
+        pathname,
+        deletedProjectHref,
+      );
+
+      setCloudProjects((current) =>
+        (current ?? []).filter((item) => item.id !== project.id),
+      );
+      setPendingProject((current) =>
+        current?.href === deletedProjectHref ? null : current,
+      );
+      setDeleteProjectTarget(null);
+      setDeleteProjectNoteCount(null);
+      toast.success("删除成功。");
+
+      if (shouldLeaveDeletedProject) {
+        router.push("/");
+      }
+      router.refresh();
+    } catch (err) {
+      console.error("[AppSidebar] deleteProject failed:", err);
+      toast.error("删除失败，请稍后重试。");
+    } finally {
+      setIsDeletingProject(false);
+    }
+  }
+
+  async function handleDeleteProjectSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    if (isCheckingProjectNotes || isDeletingProject || !deleteProjectTarget) {
+      return;
+    }
+
+    if (deleteProjectNoteCount !== null && deleteProjectNoteCount > 0) {
+      await commitDeleteProject(deleteProjectTarget);
+      return;
+    }
+
+    setIsCheckingProjectNotes(true);
+    try {
+      const supabase = createClient();
+      const noteCount = await countProjectNotes(
+        supabase,
+        deleteProjectTarget.id,
+      );
+
+      if (isDataError(noteCount)) {
+        toast.error("删除失败，请稍后重试。");
+        return;
+      }
+
+      if (noteCount > 0) {
+        setDeleteProjectNoteCount(noteCount);
+        return;
+      }
+
+      await commitDeleteProject(deleteProjectTarget);
+    } catch (err) {
+      console.error("[AppSidebar] countProjectNotes failed:", err);
+      toast.error("删除失败，请稍后重试。");
+    } finally {
+      setIsCheckingProjectNotes(false);
+    }
+  }
+
   const isProjectsLoading =
     !authReady || (authUser !== null && cloudProjects === null);
   const isGuestReady = authReady && authUser === null;
@@ -336,6 +440,9 @@ export function AppSidebar() {
       ? pendingProject.href
       : null;
   const activeProjectHref = currentProjectHref ?? pendingProjectHref;
+  const isDeleteProjectConfirmingNotes =
+    deleteProjectNoteCount !== null && deleteProjectNoteCount > 0;
+  const isDeleteProjectBusy = isCheckingProjectNotes || isDeletingProject;
 
   return (
     <>
@@ -495,7 +602,7 @@ export function AppSidebar() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
-                        onClick={() => toast.info("删除项目功能暂未开放")}
+                        onClick={() => handleDeleteProjectOpen(p)}
                       >
                         删除项目
                       </DropdownMenuItem>
@@ -715,6 +822,62 @@ export function AppSidebar() {
                 disabled={isRenamingProject}
               >
                 {isRenamingProject ? "保存中…" : "保存"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    ) : null}
+    {authUser ? (
+      <Dialog
+        open={deleteProjectTarget !== null}
+        onOpenChange={handleDeleteProjectOpenChange}
+      >
+        <DialogContent
+          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-[420px]"
+          showCloseButton={!isDeleteProjectBusy}
+        >
+          <form onSubmit={handleDeleteProjectSubmit}>
+            <div className="px-6 pt-6 pb-5">
+              <DialogHeader className="pr-12">
+                <DialogTitle>
+                  {isDeleteProjectConfirmingNotes ? "确认删除？" : "删除项目？"}
+                </DialogTitle>
+                <DialogDescription className="pt-1 leading-relaxed">
+                  {isDeleteProjectConfirmingNotes
+                    ? `该项目内还有 ${deleteProjectNoteCount} 条笔记，删除后将一并移除。`
+                    : "项目删除后将无法恢复。"}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-5 rounded-[var(--r2a-radius-md)] border border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-3 py-2.5">
+                <p className="truncate text-[13px] font-medium text-[var(--r2a-ink)]">
+                  {deleteProjectTarget?.name}
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="!mx-0 !mb-0 flex-row flex-wrap justify-end gap-3 border-t border-[var(--r2a-hairline)] bg-[var(--r2a-canvas-soft)] px-6 py-4 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="action-outline"
+                className="min-w-[88px]"
+                onClick={() => handleDeleteProjectOpenChange(false)}
+                disabled={isDeleteProjectBusy}
+              >
+                取消
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                size="action"
+                className="min-w-[104px]"
+                disabled={isDeleteProjectBusy}
+              >
+                {isDeletingProject
+                  ? "删除中..."
+                  : isDeleteProjectConfirmingNotes
+                    ? "仍然删除"
+                    : "删除项目"}
               </Button>
             </DialogFooter>
           </form>

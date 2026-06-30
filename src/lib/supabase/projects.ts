@@ -138,6 +138,61 @@ export async function renameProject(
   return rowToProject(data as ProjectRow);
 }
 
+export async function countProjectNotes(
+  supabase: SupabaseClient,
+  projectId: string,
+): Promise<number | SupabaseDataError> {
+  const user = await requireCurrentUser(supabase);
+  if (isAuthError(user)) return user;
+
+  const { count, error } = await supabase
+    .from("notes")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", projectId)
+    .eq("user_id", user.id);
+
+  if (error) return toDataError(error.message);
+  return count ?? 0;
+}
+
+export async function deleteProject(
+  supabase: SupabaseClient,
+  projectId: string,
+): Promise<true | SupabaseDataError> {
+  const user = await requireCurrentUser(supabase);
+  if (isAuthError(user)) return user;
+
+  const { data: project, error: projectReadError } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("id", projectId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (projectReadError) return toDataError(projectReadError.message);
+  if (!project) return toDataError("项目不存在或无权删除。");
+
+  const { error: notesDeleteError } = await supabase
+    .from("notes")
+    .delete()
+    .eq("project_id", projectId)
+    .eq("user_id", user.id);
+
+  if (notesDeleteError) return toDataError(notesDeleteError.message);
+
+  const { data: deletedProject, error: projectDeleteError } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId)
+    .eq("user_id", user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (projectDeleteError) return toDataError(projectDeleteError.message);
+  if (!deletedProject) return toDataError("项目删除失败。");
+  return true;
+}
+
 /**
  * 策略 A：云端无项目时自动创建「默认项目」。
  * 供 D-2 保存弹窗使用。
