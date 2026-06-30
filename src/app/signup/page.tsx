@@ -9,7 +9,7 @@ export default function SignupPage() {
   return (
     <AuthPageGate>
       <AuthPageShell
-        title="注册 Read2Action"
+        title="注册 Memo"
         description="创建账号，跨设备同步你的笔记"
         footer={
           <>

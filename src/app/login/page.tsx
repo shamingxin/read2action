@@ -9,7 +9,7 @@ export default function LoginPage() {
   return (
     <AuthPageGate>
       <AuthPageShell
-        title="登录 Read2Action"
+        title="登录 Memo"
         description="把阅读转化为行动"
         footer={
           <>

@@ -1,6 +1,7 @@
 "use client";
 
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -448,15 +449,26 @@ export function AppSidebar() {
     <>
     <aside className="sticky top-0 flex h-screen w-[240px] shrink-0 flex-col border-r border-[var(--r2a-hairline)] bg-[var(--r2a-sidebar-bg)]">
       <div className="flex items-center gap-2.5 px-4 pt-5 pb-[18px]">
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-[var(--r2a-radius-sm)] bg-[var(--r2a-ink)] font-heading text-[14px] font-semibold leading-none text-[var(--r2a-canvas-soft)]">
-          读
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-[var(--r2a-radius-sm)] bg-white">
+          <Image
+            src="/memo-bird-icon.png"
+            alt=""
+            width={24}
+            height={24}
+            aria-hidden="true"
+            className="size-6 object-contain"
+          />
         </div>
         <div className="flex min-w-0 flex-col">
           <Link
             href="/"
-            className="text-[14px] font-semibold leading-tight text-[var(--r2a-ink)]"
+            className="text-base font-bold leading-tight text-[var(--r2a-ink)]"
+            style={{
+              fontFamily:
+                '"MM Extreme", var(--font-geist-sans), system-ui, sans-serif',
+            }}
           >
-            Read2Action
+            Memo
           </Link>
         </div>
       </div>

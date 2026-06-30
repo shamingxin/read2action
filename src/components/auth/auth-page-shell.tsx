@@ -24,7 +24,7 @@ export function AuthPageShell({
               读
             </div>
             <span className="text-[14px] font-semibold leading-tight text-[var(--r2a-ink)]">
-              Read2Action
+              Memo
             </span>
           </div>
           <div className="flex flex-col gap-2">

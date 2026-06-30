@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Read2Action",
-  description: "将阅读与想法整理成清晰的笔记",
+  title: "Memo",
+  description: "你的思考，值得被整理",
 };
 
 export default function RootLayout({
